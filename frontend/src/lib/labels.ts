@@ -1,4 +1,11 @@
-import type { FormStatus, Verdict } from './contract'
+import rules from '@contract/rules.json'
+import type { Catalog, FormStatus, Verdict } from './contract'
+
+const KATALOG = rules as unknown as Catalog
+
+/** Semua pemeriksa + modul dari rules.json, urutannya sama dengan formulir inspeksi. */
+export const CEK = KATALOG.checks
+export const ATURAN = KATALOG.rules
 
 export const VERDICT_LABEL: Record<Verdict, string> = {
   sesuai: 'Sesuai data',
@@ -6,14 +13,6 @@ export const VERDICT_LABEL: Record<Verdict, string> = {
   tidak_sesuai: 'Tidak sesuai',
   tidak_bisa_dicek: 'Tidak bisa dicek',
   info: 'Info',
-}
-
-export const VERDICT_COLOR: Record<Verdict, string> = {
-  sesuai: 'var(--cd-sesuai)',
-  menyesatkan: 'var(--cd-menyesatkan)',
-  tidak_sesuai: 'var(--cd-tidak-sesuai)',
-  tidak_bisa_dicek: 'var(--cd-tidak-bisa)',
-  info: 'var(--cd-info)',
 }
 
 export const STATUS_LABEL: Record<FormStatus, string> = {

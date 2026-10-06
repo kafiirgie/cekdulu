@@ -14,8 +14,8 @@ export default function Metodologi() {
       <h2 className="text-lg font-semibold">Aturan yang memutuskan, bukan AI</h2>
       <ul className="mt-3 space-y-3 text-sm">
         {cat.rules.map((r) => (
-          <li key={r.id} className="rounded-lg bg-white p-3 shadow-sm">
-            <b>{r.id}</b> {r.status === 'usulan' && <em className="text-amber-700">(usulan)</em>}
+          <li key={r.id} className="rounded-lg bg-surface p-3 shadow-soft">
+            <b>{r.id}</b> {r.status === 'usulan' && <em className="text-menyesatkan">(usulan)</em>}
             <p className="mt-1">{r.text}</p>
           </li>
         ))}

@@ -1,17 +1,347 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-/* Token warna diisi dari prototipe iterasi 3 (tugas A0). */
+/* Tema dipasang lewat atribut data-theme di <html> oleh skrip di index.html (sebelum render). */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+/* Token dari prototipe iterasi 3, aksen Kuning. Muted, ink-3, menyesatkan, dan tidak-bisa
+   digelapkan sedikit dari prototipe supaya lolos kontras WCAG AA (teks 4,5:1, judul besar 3:1). */
 :root {
-  --cd-ink: #1b1b1b;
-  --cd-paper: #fbf8f1;
-  --cd-sesuai: #2f7d4f;
-  --cd-menyesatkan: #b7791f;
-  --cd-tidak-sesuai: #b42318;
-  --cd-tidak-bisa: #6b7280;
-  --cd-info: #2b5c9e;
+  color-scheme: light;
+  --cd-page: #ffffff;
+  --cd-dot: #e6e3dd;
+  --cd-surface: #ffffff;
+  --cd-surface-2: #fff5e3;
+  --cd-surface-3: #fbe7c4;
+  --cd-ink: #18181b;
+  --cd-ink-2: #45454c;
+  --cd-ink-3: #8a8a91;
+  --cd-muted: #66666e;
+  --cd-line: #f1e6d2;
+  --cd-line-2: #ead9bc;
+  --cd-hl: #ffc04a;
+  /* Latar stabilo di balik teks; di tema gelap dibuat lebih tua supaya teks terang tetap terbaca. */
+  --cd-hl-mark: #ffc04a;
+  --cd-hl-soft: #ffe9c2;
+  --cd-hl-edge: #eaa52c;
+  --cd-on-hl: #18181b;
+  --cd-sticky: #ffdfa3;
+  /* Kertas tempel tetap terang di tema gelap, jadi teksnya selalu gelap. */
+  --cd-on-sticky: #27272a;
+  --cd-btn: #18181b;
+  --cd-on-btn: #ffffff;
+  --cd-pop: #18181b;
+  --cd-on-pop: #ffffff;
+  --cd-sesuai: #2b4eb8;
+  --cd-menyesatkan: #a85a12;
+  --cd-tidak-sesuai: #a8392d;
+  --cd-tidak-bisa: #686870;
+  --cd-info: #18181b;
+  --cd-shadow-soft: 0 1px 2px rgb(24 24 27 / 0.04), 0 4px 14px -6px rgb(24 24 27 / 0.1);
+  --cd-shadow-lift: 0 1px 2px rgb(24 24 27 / 0.04), 0 18px 40px -18px rgb(24 24 27 / 0.22);
+
+  --radius: 1rem;
+  --background: var(--cd-page);
+  --foreground: var(--cd-ink);
+  --card: var(--cd-surface);
+  --card-foreground: var(--cd-ink);
+  --popover: var(--cd-surface);
+  --popover-foreground: var(--cd-ink);
+  --primary: var(--cd-btn);
+  --primary-foreground: var(--cd-on-btn);
+  --secondary: var(--cd-surface-3);
+  --secondary-foreground: var(--cd-ink);
+  --muted: var(--cd-surface-3);
+  --muted-foreground: var(--cd-muted);
+  --accent: var(--cd-surface-2);
+  --accent-foreground: var(--cd-ink);
+  --destructive: var(--cd-tidak-sesuai);
+  --border: var(--cd-line);
+  --input: var(--cd-line-2);
+  --ring: var(--cd-ink-2);
 }
 
-body {
-  background: var(--cd-paper);
-  color: var(--cd-ink);
+/* Tema gelap: bukan dari prototipe. Semua pasangan teks/latar dicek ≥ 4,5:1. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --cd-page: #111113;
+  --cd-dot: #26262b;
+  --cd-surface: #1a1a1e;
+  --cd-surface-2: #221f19;
+  --cd-surface-3: #2d2820;
+  --cd-ink: #f3f3f1;
+  --cd-ink-2: #cfcfd4;
+  --cd-ink-3: #8a8a93;
+  --cd-muted: #9c9ca5;
+  --cd-line: #2a2a2f;
+  --cd-line-2: #3a3730;
+  --cd-hl-mark: #7a5a12;
+  --cd-hl-soft: #3a2f17;
+  --cd-hl-edge: #c98f22;
+  --cd-sticky: #e9c98a;
+  --cd-btn: #ffc04a;
+  --cd-on-btn: #18181b;
+  --cd-pop: #2c2c32;
+  --cd-on-pop: #f3f3f1;
+  --cd-sesuai: #8ea6ff;
+  --cd-menyesatkan: #f2a65a;
+  --cd-tidak-sesuai: #ff8f80;
+  --cd-tidak-bisa: #a6a6ae;
+  --cd-info: #f3f3f1;
+  --cd-shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 14px -6px rgb(0 0 0 / 0.5);
+  --cd-shadow-lift: 0 1px 2px rgb(0 0 0 / 0.3), 0 18px 40px -18px rgb(0 0 0 / 0.7);
+}
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --font-stamp: "Big Shoulders Display", Impact, "Arial Narrow", sans-serif;
+  --font-hand: "Kalam", "Comic Sans MS", cursive;
+}
+
+@theme inline {
+  --color-page: var(--cd-page);
+  --color-surface: var(--cd-surface);
+  --color-surface-2: var(--cd-surface-2);
+  --color-surface-3: var(--cd-surface-3);
+  --color-ink: var(--cd-ink);
+  --color-ink-2: var(--cd-ink-2);
+  --color-ink-3: var(--cd-ink-3);
+  --color-line: var(--cd-line);
+  --color-line-2: var(--cd-line-2);
+  --color-hl: var(--cd-hl);
+  --color-hl-mark: var(--cd-hl-mark);
+  --color-hl-edge: var(--cd-hl-edge);
+  --color-on-hl: var(--cd-on-hl);
+  --color-pop: var(--cd-pop);
+  --color-on-pop: var(--cd-on-pop);
+  --color-sesuai: var(--cd-sesuai);
+  --color-menyesatkan: var(--cd-menyesatkan);
+  --color-tidak-sesuai: var(--cd-tidak-sesuai);
+  --color-tidak-bisa: var(--cd-tidak-bisa);
+  --color-info: var(--cd-info);
+  --shadow-soft: var(--cd-shadow-soft);
+  --shadow-lift: var(--cd-shadow-lift);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-size: 15.5px;
+    line-height: 1.55;
+    background-image: radial-gradient(var(--cd-dot) 1px, transparent 1.3px);
+    background-size: 20px 20px;
+    overflow-x: hidden;
+  }
+  :focus-visible {
+    outline: 2.5px solid var(--cd-ink);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+}
+
+@layer components {
+  /* Cap vonis. Warna dari data-verdict, kemiringan lewat --r. Filter #ink (di Layout) memberi bintik tinta. */
+  .stamp {
+    --c: var(--cd-info);
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    font-family: var(--font-stamp);
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    line-height: 1;
+    font-size: 14px;
+    color: var(--c);
+    border: 2.2px solid var(--c);
+    border-radius: 6px;
+    padding: 0.34em 0.6em 0.26em;
+    box-shadow: inset 0 0 0 3.2px var(--c);
+    transform: rotate(var(--r, -6deg));
+    filter: url(#ink);
+  }
+  .stamp[data-verdict="sesuai"] { --c: var(--cd-sesuai); }
+  .stamp[data-verdict="menyesatkan"] { --c: var(--cd-menyesatkan); }
+  .stamp[data-verdict="tidak_sesuai"] { --c: var(--cd-tidak-sesuai); }
+  .stamp[data-verdict="tidak_bisa_dicek"] { --c: var(--cd-tidak-bisa); }
+  .stamp[data-verdict="info"] {
+    border-style: dashed;
+    box-shadow: none;
+  }
+
+  /* Stabilo: lebar latar beranimasi dari 0 ke 100% sesaat setelah halaman tampil. */
+  .stabilo {
+    background-image: linear-gradient(
+      100deg,
+      transparent 0.15em,
+      var(--cd-hl-mark) 0.3em,
+      var(--cd-hl-mark) calc(100% - 0.35em),
+      transparent calc(100% - 0.12em)
+    );
+    background-repeat: no-repeat;
+    background-position: 0 64%;
+    background-size: 100% 70%;
+    padding-inline: 0.12em;
+    margin-inline: -0.12em;
+    box-decoration-break: clone;
+    animation: stabilo-masuk 0.75s cubic-bezier(0.6, 0.1, 0.2, 1) 0.45s both;
+  }
+
+  .tulisan-tangan {
+    font-family: var(--font-hand);
+    line-height: 1.25;
+  }
+
+  /* Benda di meja (hero & sabuk): kertas tempel, potongan chat, kartu hasil. */
+  .kertas-tempel {
+    color: var(--cd-on-sticky);
+    background: var(--cd-sticky);
+    border-radius: 4px;
+    box-shadow: var(--cd-shadow-lift);
+    text-align: left;
+  }
+  .gelembung-chat {
+    background: var(--cd-surface-3);
+    border-radius: 4px 14px 14px 14px;
+  }
+
+  /* Sabuk klaim */
+  .sabuk {
+    --iw: 134px;
+    --ih: 100px;
+    --mw: 140px;
+    position: relative;
+    height: calc(var(--mw) + 40px);
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  @media (min-width: 640px) {
+    .sabuk {
+      --iw: 176px;
+      --ih: 120px;
+      --mw: 180px;
+    }
+  }
+  .sabuk-jalur {
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: calc(var(--ih) + 36px);
+    transform: translateY(-50%);
+    overflow: hidden;
+    background-color: var(--cd-surface-3);
+    border-block: 1px solid var(--cd-line-2);
+  }
+  /* Garis jalur digeser lewat transform (bukan background-position) supaya tidak di-repaint tiap frame. */
+  .sabuk-garis {
+    position: absolute;
+    inset-block: 0;
+    left: -23px;
+    right: 0;
+    background-image: repeating-linear-gradient(90deg, transparent 0 22px, var(--cd-line-2) 22px 23px);
+    will-change: transform;
+  }
+  .sabuk-item {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: var(--iw);
+    height: var(--ih);
+    margin-top: calc(var(--ih) / -2);
+    /* Di luar layar sampai JS menaruhnya di posisi sabuk. */
+    transform: translateX(-200%);
+    will-change: transform;
+    z-index: 2;
+  }
+  .sabuk-item > * {
+    position: absolute;
+    inset: 0;
+  }
+  .sabuk-item .klaim-mentah {
+    transform: rotate(var(--rot, 0deg));
+  }
+  .sabuk-item .klaim-hasil {
+    opacity: 0;
+  }
+  .sabuk-item.selesai .klaim-mentah {
+    opacity: 0;
+  }
+  .sabuk-item.selesai .klaim-hasil {
+    opacity: 1;
+  }
+  .sabuk-item .stamp {
+    opacity: 0;
+  }
+  .sabuk-item.stamped .stamp {
+    animation: stamp-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  }
+  /* Hentakan dipasang di kartu, bukan item: transform item dipakai JS untuk posisi di sabuk. */
+  .sabuk-item.stamped .klaim-hasil {
+    animation: thud 0.35s 0.18s;
+  }
+  .sabuk-item.instant .stamp,
+  .sabuk-item.instant .klaim-hasil {
+    animation: none;
+    opacity: 1;
+  }
+  .meja-periksa.sibuk .led {
+    background: var(--cd-hl);
+    box-shadow: 0 0 0 3px var(--cd-hl-soft);
+  }
+  .meja-periksa.sibuk svg {
+    animation: press 0.4s;
+  }
+}
+
+@keyframes stamp-in {
+  0% { opacity: 0; transform: rotate(var(--r, -6deg)) scale(2); }
+  55% { opacity: 1; transform: rotate(var(--r, -6deg)) scale(0.9); }
+  78% { transform: rotate(var(--r, -6deg)) scale(1.04); }
+  100% { opacity: 1; transform: rotate(var(--r, -6deg)) scale(1); }
+}
+@keyframes thud {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(2px) scale(0.995); }
+}
+@keyframes press {
+  50% { transform: rotate(-8deg) scale(0.92); }
+}
+@keyframes stabilo-masuk {
+  from { background-size: 0% 70%; }
+}
+
+/* Sabuk sudah diam sendiri di mode ini (Sabuk.tsx hanya menggambar satu frame dengan .instant). */
+@media (prefers-reduced-motion: reduce) {
+  .stabilo { animation: none; }
 }

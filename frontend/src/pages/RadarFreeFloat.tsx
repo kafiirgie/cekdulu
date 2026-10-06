@@ -13,10 +13,10 @@ export default function RadarFreeFloat() {
   return (
     <section>
       <h2 className="text-lg font-semibold">Radar Free Float</h2>
-      <p className="text-sm text-neutral-600">Saham yang wajib menambah porsi publik, dan seberapa berat tekanannya.</p>
+      <p className="text-sm text-muted-foreground">Saham yang wajib menambah porsi publik, dan seberapa berat tekanannya.</p>
       <ul className="mt-3 space-y-2 text-sm">
         {data.items.slice(0, 50).map((i) => (
-          <li key={i.ticker} className="rounded-lg bg-white p-3 shadow-sm">
+          <li key={i.ticker} className="rounded-lg bg-surface p-3 shadow-soft">
             <b>{i.ticker}</b> · free float {fmt(i.free_float, 'pct')} → target {fmt(i.target, 'pct')} ({i.tenggat})
             <br />
             Harus dilepas {i.nilai_dilepas != null ? rupiah(i.nilai_dilepas) : '-'} · hari serap{' '}
