@@ -36,12 +36,12 @@ export default function Hasil() {
   }, [klaim, hasil, setHasil, nav])
 
   if (!klaim?.ticker) return <Navigate to="/cek" replace />
-  if (err) return <p className="text-red-700">{err}</p>
+  if (err) return <p className="text-destructive">{err}</p>
   if (!hasil) {
     return (
       <section>
         <h2 className="text-lg font-semibold">Memeriksa {klaim.ticker}…</h2>
-        <p className="mt-2 text-sm text-neutral-600">Pemeriksaan ke-{langkah}</p>
+        <p className="mt-2 text-sm text-muted-foreground">Pemeriksaan ke-{langkah}</p>
       </section>
     )
   }
@@ -50,7 +50,7 @@ export default function Hasil() {
   return (
     <section className="space-y-4">
       <header>
-        <p className="text-sm text-neutral-500">{hasil.company ?? hasil.ticker} · data per {hasil.data_as_of}</p>
+        <p className="text-sm text-muted-foreground">{hasil.company ?? hasil.ticker} · data per {hasil.data_as_of}</p>
         <h2 className="text-xl font-bold">{hasil.summary}</h2>
       </header>
       {hasil.claims.map((c) => (

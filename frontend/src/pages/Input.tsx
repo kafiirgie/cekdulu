@@ -1,6 +1,7 @@
 // Layar 2 — Input. [A1] unggah screenshot (image_base64), gaya kertas bergaris dari prototipe.
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api'
 import { CONTOH_KLAIM } from '@/lib/labels'
 import { useCek } from '@/lib/store'
@@ -35,7 +36,7 @@ export default function Input() {
         onChange={(e) => setText(e.target.value)}
         rows={6}
         placeholder="Tempel pesan dari grup, atau ketik kode saham saja (mis. BBRI)"
-        className="mt-2 w-full rounded-lg border border-neutral-300 bg-white p-3"
+        className="mt-2 w-full rounded-lg border border-line-2 bg-surface p-3"
       />
       <div className="mt-2 flex flex-wrap gap-2">
         {CONTOH_KLAIM.map((c) => (
@@ -44,14 +45,13 @@ export default function Input() {
           </button>
         ))}
       </div>
-      <button
+      <Button size="lg"
         disabled={!text.trim() || loading}
         onClick={lanjut}
-        className="mt-4 w-full rounded-lg bg-black py-3 font-semibold text-white disabled:opacity-40"
-      >
+        className="mt-4 w-full">
         {loading ? 'Membaca klaim…' : 'Cek dulu'}
-      </button>
-      {err && <p className="mt-2 text-sm text-red-700">{err}</p>}
+      </Button>
+      {err && <p className="mt-2 text-sm text-destructive">{err}</p>}
     </section>
   )
 }

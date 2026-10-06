@@ -15,7 +15,7 @@ export default function Formulir() {
             <tr key={f.check} className="border-b align-top">
               <td className="py-2 pr-2 font-medium">{f.check}</td>
               <td className="py-2 pr-2">{STATUS_LABEL[f.status]}</td>
-              <td className="py-2 text-neutral-600">{f.why}</td>
+              <td className="py-2 text-muted-foreground">{f.why}</td>
             </tr>
           ))}
         </tbody>

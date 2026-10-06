@@ -5,6 +5,27 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>cek dulu.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Kalam:wght@400&family=Plus+Jakarta+Sans:wght@400..800&display=swap"
+    />
+    <!-- Font cap vonis hanya dipakai untuk label huruf kapital (.stamp), jadi cukup subset A–Z. -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&text=ABCDEFGHIJKLMNOPQRSTUVWXYZ%20&display=swap"
+    />
+    <script>
+      // Pasang tema sebelum render supaya halaman tidak berkedip putih. Kunci sama dengan src/lib/tema.ts.
+      try {
+        var t = localStorage.getItem('cekdulu_tema')
+        if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        document.documentElement.dataset.theme = t
+      } catch (e) {
+        document.documentElement.dataset.theme = 'light'
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
