@@ -1,0 +1,27 @@
+{
+  "_catatan": "CONTOH dari FINAL_PLAN §6 (snapshot 29–30 Sep). Wajib dicek ulang dengan fixture sebelum rekam video.",
+  "ticker": "MGLV",
+  "company": "PT Panca Anugrah Wisesa Tbk",
+  "claims": [
+    {
+      "id": "c1",
+      "text": "masih bakal terbang",
+      "span": [
+        5,
+        24
+      ],
+      "checks": []
+    },
+    {
+      "id": "c2",
+      "text": "dari 600 udah 14 ribuan",
+      "span": [
+        26,
+        49
+      ],
+      "checks": [
+        "lonjakan_harga"
+      ]
+    }
+  ]
+}

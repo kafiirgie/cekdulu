@@ -1,0 +1,29 @@
+komoditas_filter,symbol,nama,slug,tipe,komoditas
+Nickel,NICE,PT Adhi Kartiko Pratama Tbk,pt-adhi-kartiko-pratama-tbk,Holding,Nickel
+Nickel,ANTM,PT Aneka Tambang Tbk,pt-aneka-tambang-tbk,Mine Owner,"Nickel, Gold"
+Nickel,DKFT,PT Central Omega Resources Tbk,pt-central-omega-resources-tbk,Holding,Nickel
+Nickel,HRUM,PT Harum Energy Tbk,pt-harum-energy-tbk,Holding,"Coal, Nickel"
+Nickel,IFSH,PT Ifishdeco Tbk,pt-ifishdeco-tbk,Holding,Nickel
+Nickel,MBMA,PT Merdeka Battery Minerals Tbk,pt-merdeka-battery-minerals-tbk,Holding,Nickel
+Nickel,NICL,PT PAM Mineral Tbk,pt-pam-mineral-tbk,Holding,Nickel
+Nickel,TOBA,PT TBS Energi Utama Tbk,pt-tbs-energi-utama-tbk,Holding,"Coal, Nickel"
+Nickel,NCKL,PT Trimegah Bangun Persada Tbk,pt-trimegah-bangun-persada-tbk,Holding,Nickel
+Gold,AMMN,PT Amman Mineral Internasional Tbk,pt-amman-mineral-internasional-tbk,Holding,"Copper, Gold"
+Gold,ANTM,PT Aneka Tambang Tbk,pt-aneka-tambang-tbk,Mine Owner,"Nickel, Gold"
+Gold,ARCI,PT Archi Indonesia Tbk,pt-archi-indonesia-tbk,Mine Owner,"Gold, Silver"
+Gold,BRMS,PT Bumi Resources Minerals Tbk,pt-bumi-resources-minerals-tbk,Holding,"Gold, Copper, Zinc and Lead"
+Gold,DSSA,PT Dian Swastatika Sentosa Tbk,pt-dian-swastatika-sentosa-tbk,Holding,"Coal, Gold"
+Gold,INDY,PT Indika Energy Tbk,pt-indika-energy-tbk,Holding,"Coal, Gold"
+Gold,PSAB,PT J Resources Asia Pasifik Tbk,pt-j-resources-asia-pasifik-tbk,Mine Owner,Gold
+Gold,MDKA,PT Merdeka Copper Gold Tbk,pt-merdeka-copper-gold-tbk,Holding,"Copper, Gold, Silver"
+Gold,MYOH,PT Samindo Resources Tbk,pt-samindo-resources-tbk,Contractor,"Coal, Gold, Copper"
+Gold,,PT Transkon Jaya Tbk,pt-transkon-jaya-tbk,Contractor,"Coal, Gold, Copper"
+Copper,AMMN,PT Amman Mineral Internasional Tbk,pt-amman-mineral-internasional-tbk,Holding,"Copper, Gold"
+Copper,BRMS,PT Bumi Resources Minerals Tbk,pt-bumi-resources-minerals-tbk,Holding,"Gold, Copper, Zinc and Lead"
+Copper,MDKA,PT Merdeka Copper Gold Tbk,pt-merdeka-copper-gold-tbk,Holding,"Copper, Gold, Silver"
+Copper,MYOH,PT Samindo Resources Tbk,pt-samindo-resources-tbk,Contractor,"Coal, Gold, Copper"
+Copper,,PT Transkon Jaya Tbk,pt-transkon-jaya-tbk,Contractor,"Coal, Gold, Copper"
+Aluminium,ADMR,PT Adaro Minerals Indonesia Tbk,pt-adaro-minerals-indonesia-tbk,Holding,"Coal, Aluminium"
+Silver,ARCI,PT Archi Indonesia Tbk,pt-archi-indonesia-tbk,Mine Owner,"Gold, Silver"
+Silver,MDKA,PT Merdeka Copper Gold Tbk,pt-merdeka-copper-gold-tbk,Holding,"Copper, Gold, Silver"
+Zinc and Lead,BRMS,PT Bumi Resources Minerals Tbk,pt-bumi-resources-minerals-tbk,Holding,"Gold, Copper, Zinc and Lead"

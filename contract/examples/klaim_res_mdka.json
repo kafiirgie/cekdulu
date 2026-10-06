@@ -1,0 +1,27 @@
+{
+  "_catatan": "CONTOH dari FINAL_PLAN §6 (snapshot 29–30 Sep). Wajib dicek ulang dengan fixture sebelum rekam video.",
+  "ticker": "MDKA",
+  "company": "PT Merdeka Copper Gold Tbk",
+  "claims": [
+    {
+      "id": "c1",
+      "text": "MDKA saham emas",
+      "span": [
+        11,
+        26
+      ],
+      "checks": [
+        "m_komoditas"
+      ]
+    },
+    {
+      "id": "c2",
+      "text": "pasti ikut naik",
+      "span": [
+        43,
+        58
+      ],
+      "checks": []
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+"""Tes aturan murni. Ini bukti utama "aturan yang memutuskan, bukan AI".
+Setiap aturan di contract/rules.json idealnya punya minimal satu tes di sini."""
+from datetime import date, timedelta
+
+from app.checkers.asing import aturan_a1
+from app.checkers.base import angka_persen, angka_rupiah, rp
+from app.checkers.dividen import aturan_d1, aturan_d1_periode, aturan_d2
+from app.checkers.free_float import aturan_f1
+from app.checkers.laba import arah_tren, aturan_l1, aturan_l2, pertumbuhan_yoy
+from app.checkers.lonjakan_harga import aturan_h1, aturan_h2
+from app.checkers.orang_dalam import aturan_o1
+from app.checkers.suspensi import aturan_s1
+from app.checkers.valuasi import aturan_v1
+from app.data.normal import AliranAsing, HargaHarian, Kuartal, Suspensi, TransaksiOrangDalam
+from app.modul import free_float as ff
+from app.modul.komoditas import aturan_k1, aturan_k2, komoditas_disebut
+
+HARI = date(2026, 9, 30)
+
+
+def harga_seri(closes, mulai=date(2026, 1, 1)):
+    return [HargaHarian(mulai + timedelta(days=i), c) for i, c in enumerate(closes)]
+
+
+# ---------- pembaca angka ----------
+def test_angka_dari_teks_grup():
+    assert angka_rupiah("dari 600 udah 14 ribuan") == [600, 14000]
+    assert angka_rupiah("harga 14.650") == [14650]
+    assert angka_persen("laba naik 200%") == 2.0
+    assert rp(14650) == "Rp14.650"
+
+
+# ---------- L ----------
+def test_laba_yoy_dan_periode():
+    k = [Kuartal(f"Q{i}", v) for i, v in enumerate([100, 120, 110, 90, 80])]
+    assert round(pertumbuhan_yoy(k), 2) == -0.2
+    assert arah_tren(k) == -1
+    assert aturan_l2(2.0, -1) is True          # klaim naik, tren turun → menyesatkan
+    assert aturan_l1(-0.18, -0.20) is True      # dalam toleransi 5 poin
+    assert aturan_l1(2.0, -0.20) is False
+
+
+def test_laba_dari_rugi_tidak_dihitung_persen():
+    assert pertumbuhan_yoy([Kuartal(str(i), v) for i, v in enumerate([-5, 1, 2, 3, 10])]) is None
+
+
+# ---------- V, D ----------
+def test_valuasi_toleransi_15_persen():
+    assert aturan_v1(10, 11) is True
+    assert aturan_v1(5, 11) is False
+
+
+def test_dividen():
+    assert aturan_d1(0.09, 0.05) is True and aturan_d1(0.06, 0.05) is False
+    assert aturan_d1_periode(0.25, 0.20) is True     # beda 5 poin → periode lain
+    assert aturan_d2(1.14) is True and aturan_d2(0.6) is False and aturan_d2(None) is False
+
+
+# ---------- O ----------
+def test_orang_dalam_jendela_dan_batas():
+    t = [TransaksiOrangDalam(HARI - timedelta(days=30), "A", "jual", 5e9, 0.78, 0.63),
+         TransaksiOrangDalam(HARI - timedelta(days=30), "B", "beli", 5e8, None, None),   # < Rp1 M
+         TransaksiOrangDalam(HARI - timedelta(days=400), "C", "jual", 9e9, None, None)]  # > 12 bulan
+    assert [x.nama for x in aturan_o1(t, HARI)] == ["A"]
+    assert aturan_o1([], HARI) == []  # tidak ada transaksi = aman
+
+
+# ---------- A ----------
+def test_asing_borong():
+    masuk = [AliranAsing(HARI - timedelta(days=i), 1e9 if i % 3 else -5e8) for i in range(20)]
+    borong, total, porsi = aturan_a1(masuk)
+    assert borong and total > 0 and porsi >= 0.6
+    keluar = [AliranAsing(HARI - timedelta(days=i), -1e9) for i in range(20)]
+    assert aturan_a1(keluar)[0] is False
+
+
+# ---------- H ----------
+def test_lonjakan_terdeteksi():
+    h = harga_seri([100] * 10 + [100 * 1.02 ** i for i in range(1, 22)])
+    hasil = aturan_h1(h, set())
+    assert hasil is not None and hasil[1] > 0.25
+
+
+def test_lonjakan_abaikan_ex_dividen():
+    # ADRO −25% karena ex-dividen tidak boleh dihitung sebagai lonjakan
+    h = harga_seri([100] * 15 + [70] * 15)
+    assert aturan_h1(h, set()) is not None
+    assert aturan_h1(h, {h[15].tanggal}) is None
+
+
+def test_klaim_dari_ke():
+    assert aturan_h2(600, 14000, terendah=600, terakhir=14650) is True
+    assert aturan_h2(600, 20000, terendah=600, terakhir=14650) is False
+
+
+# ---------- S, F ----------
+def test_suspensi_36_bulan():
+    s = [Suspensi(HARI - timedelta(days=100), "peningkatan harga kumulatif"),
+         Suspensi(HARI - timedelta(days=1200), "lama")]
+    assert len(aturan_s1(s, HARI)) == 1
+
+
+def test_free_float():
+    assert aturan_f1(0.11) and not aturan_f1(0.2)
+
+
+# ---------- R (radar) ----------
+def test_radar_kelompok_dan_tenggat():
+    assert ff.kelompok(8e12, 0.10) == ("kap_besar_ff_rendah", 0.125, "2027-03-31")
+    assert ff.kelompok(8e12, 0.13) == ("kap_besar_ff_menengah", 0.15, "2027-03-31")
+    assert ff.kelompok(1e12, 0.05) == ("kap_kecil", 0.15, "2029-03-31")
+
+
+def test_radar_hari_serap_dan_tekanan():
+    item = ff.hitung("XXXX", None, ff=0.10, market_cap=8e12, rata_transaksi=1e9)
+    assert item.nilai_dilepas == (0.125 - 0.10) * 8e12
+    assert round(item.hari_serap) == 200 and item.tekanan == "berat"
+    assert ff.tekanan(10) == "ringan" and ff.tekanan(40) == "sedang"
+    assert ff.label_hari(100_000) == "> 1.000 hari"
+    assert ff.hitung("X", None, 0.1, 8e12, None).hari_serap is None
+
+
+# ---------- K ----------
+def test_komoditas():
+    assert komoditas_disebut("MDKA saham emas") == "emas"
+    assert komoditas_disebut("ADRO batu bara") == "batubara"
+    assert aturan_k1(0.12) is True and aturan_k1(0.82) is False
+    assert aturan_k2(0.11) == "lemah" and aturan_k2(0.46) == "sedang" and aturan_k2(0.63) == "cukup kuat"
+
+
+def test_radar_cocok_dengan_csv_lab_data():
+    """Hari serap hitungan R-1 harus sama dengan hasil skrip lab data (cekdulu-datacheck)."""
+    import pytest
+    from app.data import bahan
+    try:
+        rows = bahan.baca("radar_free_float")
+    except Exception:
+        pytest.skip("bahan_produk belum disalin")
+    cek = 0
+    for r in rows:
+        if r["hari_serap"] and r["rata2_nilai_transaksi_60h"]:
+            it = ff.hitung(r["symbol"], None, float(r["free_float"]), float(r["market_cap"]),
+                           float(r["rata2_nilai_transaksi_60h"]))
+            assert it.target == float(r["target_pertama"]), r["symbol"]
+            assert abs(it.hari_serap - float(r["hari_serap"])) < 0.01 * float(r["hari_serap"]) + 0.01, r["symbol"]
+            cek += 1
+    assert cek >= 50

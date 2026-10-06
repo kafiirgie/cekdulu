@@ -1,0 +1,48 @@
+"""Kontrak tetap sinkron: contoh JSON valid, ID aturan ada di katalog, span cocok."""
+import json
+
+import pytest
+
+from app.catalog import catalog, known_ids
+from app.config import settings
+from app.schemas import CekResponse, FreeFloatList, KlaimRequest, KlaimResponse, TanyaRequest, TanyaResponse
+
+EX = settings.contract_dir / "examples"
+RULE_IDS = {r["id"] for r in catalog()["rules"]}
+
+
+def load(name):
+    d = json.loads((EX / name).read_text(encoding="utf-8"))
+    d.pop("_catatan", None)
+    return d
+
+
+@pytest.mark.parametrize("t", ["mglv", "mdka"])
+def test_contoh_valid(t):
+    req = KlaimRequest.model_validate(load(f"klaim_req_{t}.json"))
+    res = KlaimResponse.model_validate(load(f"klaim_res_{t}.json"))
+    for c in res.claims:  # span menunjuk teks asli (untuk stabilo di layar Konfirmasi)
+        assert req.text[c.span[0]:c.span[1]] == c.text
+        assert set(c.checks) <= known_ids()
+    cek = CekResponse.model_validate(load(f"cek_res_{t}.json"))
+    for card in cek.claims + cek.untold:
+        assert card.rule_id is None or card.rule_id in RULE_IDS, card.rule_id
+        assert card.check is None or card.check in known_ids()
+    std = [c["id"] for c in catalog()["checks"] if c["standar"]]
+    assert [f.check for f in cek.form][:8] == std, "formulir: 8 pemeriksa standar, urutan tetap"
+
+
+def test_contoh_lain_valid():
+    t = load("tanya.json")
+    TanyaRequest.model_validate(t["req"])
+    TanyaResponse.model_validate(t["res_tolak"])
+    TanyaResponse.model_validate(t["res_jawab"])
+    FreeFloatList.model_validate(load("modul_free_float_list.json"))
+
+
+def test_katalog_konsisten():
+    checks = {c["id"] for c in catalog()["checks"]}
+    for r in catalog()["rules"]:
+        assert r["check"] is None or r["check"] in checks, r["id"]
+        assert r["status"] in ("final", "usulan")
+    assert len([c for c in catalog()["checks"] if c["standar"]]) == 8

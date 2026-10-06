@@ -1,0 +1,486 @@
+symbol,nama,tanggal_masuk,tanggal_keluar,aktif,kriteria,durasi_hari
+PICO,Pelangi Indah Canindo Tbk,2021-07-19,2022-06-13,tidak,8,329
+BINA,PT Bank Ina Perdana Tbk.,2021-07-21,2021-08-20,tidak,10,30
+GMFI,PT Garuda Maintenance Facility Aero Asia Tbk.,2021-07-29,2026-03-31,tidak,5,1706
+BOLA,PT Bali Bintang Sejahtera Tbk.,2021-08-20,2021-09-20,tidak,10,31
+PEGE,PT Panca Global Kapital Tbk.,2021-08-23,2021-09-22,tidak,10,30
+TMAS,PT Temas Tbk.,2021-12-24,2022-01-24,tidak,10,31
+BPTR,PT Batavia Prosperindo Trans Tbk.,2021-12-28,2022-01-27,tidak,10,30
+ADMR,PT Adaro Minerals Indonesia Tbk,2022-01-28,2022-03-01,tidak,10,32
+CMPP,PT AirAsia Indonesia Tbk,2022-05-31,,ya,5,1583
+OKAS,Ancora Indonesia Resources Tbk,2022-05-31,2022-08-02,tidak,5,63
+SULI,PT SLJ Global Tbk,2022-05-31,2022-11-29,tidak,5,182
+MKPI,Metropolitan Kentjana Tbk,2022-05-31,2022-11-30,tidak,7,183
+RELI,Reliance Sekuritas Indonesia Tbk,2022-05-31,2022-11-30,tidak,7,183
+CARS,PT Industri dan Perdagangan Bintraco Dharma Tbk,2022-05-31,2022-11-30,tidak,1,183
+LCKM,PT LCK Global Kedaton Tbk,2022-05-31,2024-05-31,tidak,7,731
+CTBN,Citra Tubindo Tbk,2022-05-31,2025-11-27,tidak,7,1276
+JGLE,PT Graha Andrasentra Propertindo Tbk.,2022-05-31,2026-05-29,tidak,1,1459
+IKAI,Intikeramik Alamasri Industri Tbk,2022-05-31,2026-09-28,tidak,1,1581
+ELTY,Bakrieland Development Tbk,2022-05-31,2026-09-28,tidak,1,1581
+BSWD,Bank of India Indonesia Tbk,2022-05-31,2026-09-28,tidak,7,1581
+BTEK,Bumi Teknokultura Unggul Tbk,2022-05-31,2026-09-28,tidak,1,1581
+ANDI,PT Andira Agro Tbk,2022-05-31,2026-09-28,tidak,1,1581
+BLTA,Berlian Laju Tanker Tbk,2022-05-31,2026-09-28,tidak,1,1581
+TAXI,Express Transindo Utama Tbk,2022-05-31,2026-09-28,tidak,1,1581
+PALM,Provident Agro Tbk,2022-06-17,2022-11-08,tidak,3,144
+BMSR,Bintang Mitra Semestaraya Tbk,2022-06-28,2022-07-28,tidak,10,30
+PANI,PT Pratama Abadi Nusa Industri Tbk.,2022-07-29,2022-08-29,tidak,10,31
+TAYS,PT Jaya Swarasa Agung Tbk,2022-11-09,2022-12-09,tidak,10,30
+OASA,PT Maharaksa Biru Energi Tbk,2022-11-17,2023-04-18,tidak,3,152
+BAYU,Bayu Buana Tbk,2022-11-30,2023-05-31,tidak,7,182
+GEMA,Gema Grahasarana Tbk,2022-11-30,2023-05-31,tidak,7,182
+TALF,TUNAS ALFIN Tbk,2022-11-30,2023-11-30,tidak,7,365
+TIFA,KDB Tifa Finance Tbk,2022-11-30,2025-07-16,tidak,7,959
+WOWS,PT Ginting Jaya Energi Tbk,2022-11-30,2025-08-29,tidak,1,1003
+KOTA,PT DMS Propertindo Tbk.,2022-11-30,2026-02-27,tidak,1,1185
+KREN,PT Kresna Graha Investama Tbk.,2022-11-30,2026-09-28,tidak,1,1398
+KBAG,PT Karya Bersama Anugerah Tbk,2022-11-30,2026-09-28,tidak,1,1398
+BAUT,PT Mitra Angkasa Sejahtera Tbk,2022-11-30,2026-09-28,tidak,1,1398
+BEKS,PT Bank Pembangunan Daerah Banten Tbk.,2022-11-30,2026-09-28,tidak,1,1398
+ARKA,PT Arkha Jayanti Persada Tbk.,2022-11-30,2026-09-28,tidak,1,1398
+PPRO,PT PP Properti Tbk.,2022-11-30,2026-09-28,tidak,1,1398
+PURA,PT Putra Rajawali Kencana Tbk.,2022-11-30,2026-09-28,tidak,1,1398
+NETV,PT Net Visi Media Tbk,2023-03-14,2025-04-09,tidak,5,757
+PTIS,Indo Straits Tbk,2023-03-21,2023-04-26,tidak,10,36
+CHIP,PT Pelita Teknologi Global Tbk,2023-04-06,2023-05-08,tidak,10,32
+CENT,PT Centratama Telekomunikasi Indonesia Tbk.,2023-04-18,2025-04-09,tidak,5,722
+DKFT,Central Omega Resources Tbk,2023-05-04,2023-08-02,tidak,3,90
+BOLT,PT Garuda Metalindo Tbk.,2023-05-31,2023-11-30,tidak,7,183
+TRST,Trias Sentosa Tbk,2023-05-31,2023-11-30,tidak,7,183
+SRSN,Indo Acidatama Tbk,2023-05-31,2023-11-30,tidak,1,183
+SURE,PT Super Energy Tbk.,2023-05-31,2024-05-31,tidak,7,366
+BKSL,Sentul City Tbk,2023-05-31,2025-02-28,tidak,1,639
+BIPP,Bhuwanatala Indah Permai Tbk,2023-05-31,2026-02-27,tidak,1,1003
+RBMS,Ristia Bintang Mahkotasejati Tbk,2023-05-31,2026-05-29,tidak,1,1094
+WINR,PT Winner Nusantara Jaya Tbk,2023-05-31,2026-09-28,tidak,1,1216
+HRME,PT Menteng Heritage Realty Tbk.,2023-05-31,2026-09-28,tidak,1,1216
+IBST,Inti Bangun Sejahtera Tbk,2023-05-31,2026-09-28,tidak,7,1216
+LPPF,Matahari Department Store Tbk,2023-08-02,2023-10-30,tidak,5,89
+LAJU,PT Jasa Berdikari Logistics Tbk,2023-08-09,2023-09-11,tidak,10,33
+UNIQ,PT Ulima Nitra Tbk,2023-08-18,2023-09-18,tidak,10,31
+DEWI,PT Dewi Shri Farmindo Tbk,2023-09-25,2023-10-26,tidak,10,31
+WIDI,PT Widiant Jaya Krenindo Tbk.,2023-10-27,2023-11-27,tidak,10,31
+SATU,PT Kota Satu Properti Tbk.,2023-11-07,2023-12-07,tidak,10,30
+SOUL,PT Mitra Tirta Buwana Tbk,2023-11-30,2023-12-01,tidak,1,1
+NANO,PT Nanotech Indonesia Global Tbk,2023-11-30,2023-12-01,tidak,1,1
+PLAN,PT Planet Properindo Jaya Tbk,2023-11-30,2023-12-01,tidak,1,1
+BMBL,PT Lavender Bina Cendikia Tbk,2023-11-30,2023-12-01,tidak,1,1
+ISAP,PT Isra Presisi Indonesia Tbk,2023-11-30,2023-12-01,tidak,1,1
+BPII,PT Batavia Prosperindo Internasional Tbk.,2023-11-30,2024-05-31,tidak,7,183
+BSBK,PT Wulandari Bangun Laksana Tbk,2023-11-30,2024-05-31,tidak,1,183
+YULE,Yulie Sekuritas Indonesia Tbk,2023-11-30,2024-05-31,tidak,7,183
+SDMU,Sidomulyo Selaras Tbk,2023-11-30,2025-11-28,tidak,1,729
+ESIP,PT Sinergi Inti Plastindo Tbk.,2023-11-30,2025-11-28,tidak,1,729
+HDIT,PT Hensel Davest Indonesia Tbk,2023-11-30,2025-11-28,tidak,1,729
+ESTI,Ever Shine Textile Industry Tbk,2023-11-30,2025-11-28,tidak,1,729
+RODA,Pikko Land Development Tbk,2023-11-30,2026-02-27,tidak,1,820
+EPAC,PT Megalestari Epack Sentosaraya Tbk.,2023-11-30,2026-05-29,tidak,1,911
+ASMI,PT Asuransi Maximus Graha Persada Tbk.,2023-11-30,2026-09-28,tidak,1,1033
+HADE,PT Himalaya Energi Perkasa Tbk,2023-11-30,2026-09-28,tidak,1,1033
+KIAS,Keramika Indonesia Assosiasi Tbk,2023-11-30,2026-09-28,tidak,1,1033
+PBRX,Pan Brothers Tbk,2023-11-30,2026-09-28,tidak,1,1033
+NASA,PT Andalan Perkasa Abadi Tbk,2023-11-30,2026-09-28,tidak,1,1033
+MIRA,Mitra International Resources Tbk,2023-11-30,2026-09-28,tidak,1,1033
+TAMU,PT Pelayaran Tamarin Samudra Tbk.,2023-11-30,2026-09-28,tidak,1,1033
+TARA,PT Agung Semesta Sejahtera Tbk,2023-11-30,2026-09-28,tidak,1,1033
+CUAN,PT Petrindo Jaya Kreasi Tbk,2024-01-16,2024-02-16,tidak,10,31
+SHID,Hotel Sahid Jaya Tbk,2024-01-30,2024-03-01,tidak,10,31
+GIAA,Garuda Indonesia (Persero) Tbk,2024-01-30,2026-03-26,tidak,5,786
+KMTR,PT Kirana Megatara Tbk.,2024-01-31,2024-03-07,tidak,6,36
+JAWA,Jaya Agra Wattie Tbk,2024-01-31,2024-04-04,tidak,6,64
+SCCO,PT Supreme Cable Manufacturing & Commerce Tbk,2024-01-31,2024-04-04,tidak,6,64
+SCNP,PT Selaras Citra Nusantara Perkasa Tbk,2024-01-31,2024-04-29,tidak,6,89
+GDYR,Goodyear Indonesia Tbk,2024-01-31,2024-05-21,tidak,6,111
+INPP,Indonesian Paradise Property Tbk,2024-01-31,2024-05-27,tidak,6,117
+SKLT,Sekar Laut Tbk,2024-01-31,2024-06-12,tidak,6,133
+AGRS,PT Bank IBK Indonesia Tbk.,2024-01-31,2024-07-03,tidak,6,154
+EPMT,Enseval Putera Megatrading Tbk,2024-01-31,2024-07-05,tidak,6,156
+TOTO,Surya Toto Indonesia Tbk,2024-01-31,2024-07-09,tidak,6,160
+SKBM,Sekar Bumi Tbk,2024-01-31,2024-07-25,tidak,6,176
+LMPI,Langgeng Makmur Industri Tbk,2024-01-31,2024-10-07,tidak,6,250
+BKSW,PT Bank QNB Indonesia Tbk,2024-01-31,2024-10-31,tidak,6,274
+KDSI,Kedawung Setia Industrial Tbk,2024-01-31,2024-11-14,tidak,6,288
+CITA,Cita Mineral Investindo Tbk,2024-01-31,2024-11-15,tidak,6,289
+DUCK,PT Jaya Bersama Indo Tbk.,2024-01-31,2026-09-28,tidak,"6,7",971
+LMSH,Lionmesh Prima Tbk,2024-01-31,2026-09-28,tidak,"6,7",971
+LCGP,PT Eureka Prima Jakarta Tbk.,2024-01-31,2026-09-28,tidak,"6,7",971
+SKYB,PT Northcliff Citranusa Indonesia Tbk.,2024-01-31,2026-09-28,tidak,"6,7",971
+SMCB,PT Solusi Bangun Indonesia Tbk,2024-01-31,2026-09-28,tidak,6,971
+CGAS,PT Citra Nusantara Gemilang Tbk.,2024-03-04,2024-04-04,tidak,10,31
+PTPS,PT Pulau Subur Tbk.,2024-03-06,2024-04-16,tidak,10,41
+GMTD,Gowa Makassar Tourism Development Tbk,2024-03-15,2024-05-31,tidak,7,77
+MPIX,PT Mitra Pedagang Indonesia Tbk.,2024-03-20,2024-04-22,tidak,10,33
+NIKL,Pelat Timah Nusantara Tbk,2024-03-27,2024-04-29,tidak,10,33
+SUPR,Solusi Tunas Pratama Tbk,2024-04-30,2026-09-28,tidak,"6,7",881
+DMMX,PT Digital Mediatama Maxima Tbk,2024-05-06,2024-06-06,tidak,10,31
+BREN,PT Barito Renewables Energy Tbk.,2024-05-29,2024-06-21,tidak,10,23
+HALO,PT Haloni Jane Tbk,2024-05-31,2024-06-21,tidak,1,21
+MAXI,PT Maxindo Karya Anugerah Tbk,2024-05-31,2024-06-21,tidak,1,21
+BCAP,MNC Kapital Indonesia Tbk,2024-05-31,2024-08-30,tidak,1,91
+BRNA,Berlina Tbk,2024-05-31,2024-11-29,tidak,7,182
+JAST,PT Jasnita Telekomindo Tbk. ,2024-05-31,2024-11-29,tidak,1,182
+CSIS,PT Cahayasakti Investindo Sukses Tbk,2024-05-31,2025-02-28,tidak,1,273
+NPGF,PT Nusa Palapa Gemilang Tbk,2024-05-31,2025-07-21,tidak,1,416
+REAL,PT Repower Asia Indonesia Tbk.,2024-05-31,2025-09-09,tidak,1,466
+DADA,PT Diamond Citra Propertindo Tbk.,2024-05-31,2025-10-10,tidak,1,497
+ASHA,PT Cilacap Samudera Fishing Industry Tbk,2024-05-31,2025-11-28,tidak,1,546
+IATA,PT MNC Energy Investments Tbk,2024-05-31,2025-11-28,tidak,1,546
+ICON,Island Concepts Indonesia Tbk,2024-05-31,2026-02-27,tidak,1,637
+OMRE,Indonesia Prima Property Tbk,2024-05-31,2026-05-29,tidak,7,728
+KKES,PT Kusuma Kemindo Sentosa Tbk,2024-05-31,2026-08-31,tidak,1,822
+IPTV,PT MNC Vision Networks Tbk.,2024-05-31,2026-09-28,tidak,1,850
+BEBS,PT Berkah Beton Sadaya Tbk,2024-05-31,2026-09-28,tidak,1,850
+BHIT,PT MNC Asia Holding Tbk,2024-05-31,2026-09-28,tidak,1,850
+RAFI,PT Sari Kreasi Boga Tbk,2024-05-31,2026-09-28,tidak,1,850
+SAGE,PT Saptausaha Gemilangindah Tbk,2024-05-31,2026-09-28,tidak,1,850
+SWAT,PT Sriwahana Adityakarta Tbk.,2024-05-31,2026-09-28,tidak,1,850
+HELI,PT Jaya Trishindo Tbk,2024-06-20,2024-07-01,tidak,10,11
+ASRM,Asuransi Ramayana Tbk,2024-06-21,2024-07-09,tidak,6,18
+FISH,FKS Multi Agro Tbk,2024-06-21,2025-09-18,tidak,6,454
+GAMA,Aksara Global Development Tbk,2024-06-21,2026-09-28,tidak,"1,6",829
+HOME,Hotel Mandarine Regency Tbk,2024-06-21,2026-09-28,tidak,1,829
+IIKP,Inti Agri Resources Tbk,2024-06-21,2026-09-28,tidak,1,829
+BAPI,PT Bhakti Agung Propertindo Tbk.,2024-06-21,2026-09-28,tidak,1,829
+ARMY,PT Armidian Karyatama Tbk,2024-06-21,2026-09-28,tidak,1,829
+CBMF,PT Cahaya Bintang Medan Tbk,2024-06-21,2026-09-28,tidak,"1,6",829
+SUGI,Sugih Energy Tbk,2024-06-21,2026-09-28,tidak,"1,6",829
+RIMO,PT Rimo International Lestari Tbk.,2024-06-21,2026-09-28,tidak,"1,6",829
+POOL,Pool Advista Indonesia Tbk,2024-06-21,2026-09-28,tidak,1,829
+NUSA,PT Sinergi Megah Internusa Tbk,2024-06-21,2026-09-28,tidak,"1,6",829
+PLAS,Polaris Investama Tbk,2024-06-21,2026-09-28,tidak,"1,6",829
+MFMI,Multifiling Mitra Indonesia Tbk,2024-06-21,2026-09-28,tidak,6,829
+WSKT,PT Waskita Karya (Persero) Tbk,2024-06-26,2026-09-28,tidak,7,824
+NASI,PT Wahana Inti Makmur Tbk,2024-07-02,2024-07-11,tidak,10,9
+DSSA,Dian Swastatika Sentosa Tbk,2024-07-18,2024-07-29,tidak,10,11
+ASBI,Asuransi Bintang Tbk,2024-07-31,2024-11-05,tidak,6,97
+TRIL,Triwira Insanlestari Tbk,2024-07-31,2026-09-28,tidak,"1,6",789
+KARW,Meratus Jasa Prima Tbk,2024-08-08,,ya,5,783
+KPIG,MNC Land Tbk,2024-08-23,2024-09-03,tidak,10,11
+MSIN,PT MNC Digital Entertainment Tbk,2024-08-30,2024-09-10,tidak,10,11
+POLI,PT Pollux Hotels Group Tbk,2024-08-30,2026-02-27,tidak,7,546
+META,Nusantara Infrastructure Tbk,2024-08-30,2026-02-27,tidak,7,546
+BLTZ,PT Graha Layar Prima Tbk.,2024-08-30,2026-09-28,tidak,7,759
+JMAS,PT Asuransi Jiwa Syariah Jasa Mitra Abadi Tbk,2024-09-09,2024-09-19,tidak,10,10
+TMPO,Tempo Inti Media Tbk,2024-09-10,2024-09-20,tidak,10,10
+SAPX,PT Satria Antaran Prima Tbk.,2024-09-17,2024-09-26,tidak,10,9
+AKSI,PT Mineral Sumberdaya Mandiri Tbk,2024-09-24,2024-10-03,tidak,10,9
+TNCA,PT Trimuda Nuansa Citra Tbk.,2024-10-04,2024-10-15,tidak,10,11
+INTD,Inter-Delta Tbk,2024-10-11,2024-10-22,tidak,10,11
+ARTA,Arthavest Tbk,2024-10-31,2025-02-11,tidak,6,103
+SMMT,GOLDEN EAGLE ENERGY Tbk,2024-10-31,2025-05-14,tidak,6,195
+MAGP,Multi Agro Gemilang Plantation Tbk,2024-10-31,2026-09-28,tidak,"1,6",697
+LPGI,Lippo General Insurance Tbk,2024-11-11,2025-03-17,tidak,6,126
+JIHD,Jakarta International Hotels & Development Tbk,2024-11-15,2024-11-26,tidak,10,11
+KLIN,PT Klinko Karya Imaji Tbk,2024-11-22,2024-12-04,tidak,10,12
+DAAZ,PT Daaz Bara Lestari Tbk,2024-11-25,2024-12-05,tidak,10,10
+SCPI,PT Organon Pharma Indonesia Tbk,2024-11-29,2026-09-28,tidak,7,668
+PNSE,Pudjiadi & Sons Tbk,2024-12-04,2024-12-13,tidak,10,9
+INPC,Bank Artha Graha Internasional Tbk,2024-12-13,2024-12-24,tidak,10,11
+HOMI,PT Grand House Mulia Tbk,2024-12-18,2025-01-02,tidak,10,15
+DMND,PT Diamond Food Indonesia Tbk.,2025-01-08,2025-05-28,tidak,7,140
+RATU,PT Raharja Energi Cepu Tbk,2025-01-22,2025-02-05,tidak,10,14
+FMII,Fortune Mate Indonesia Tbk,2025-01-30,2025-02-10,tidak,10,11
+CBUT,PT Citra Borneo Utama Tbk,2025-01-31,2025-04-15,tidak,6,74
+GDST,Gunawan Dianjaya Steel Tbk,2025-01-31,2025-06-05,tidak,6,125
+LINK,PT Link Net Tbk.,2025-01-31,2025-10-31,tidak,6,273
+UNIT,Nusantara Inti Corpora Tbk,2025-01-31,2026-09-28,tidak,"6,7",605
+BRRC,PT Raja Roti Cemerlang Tbk,2025-02-03,2025-02-12,tidak,10,9
+CMNP,Citra Marga Nusaphala Persada Tbk,2025-02-04,2025-02-13,tidak,10,9
+WIFI,PT Solusi Sinergi Digital Tbk,2025-02-06,2025-02-17,tidak,10,11
+JSPT,Jakarta Setiabudi Internasional Tbk,2025-02-24,2025-03-05,tidak,10,9
+SMDM,Suryamas Dutamakmur Tbk,2025-02-27,2025-03-10,tidak,10,11
+KSIX,PT Kentanix Supra International Tbk,2025-03-05,2025-03-14,tidak,10,9
+BESS,PT Batulicin Nusantara Maritim Tbk.,2025-03-10,2025-03-19,tidak,10,9
+IKAN,PT Era Mandiri Cemerlang Tbk,2025-03-25,2025-05-28,tidak,1,64
+ABDA,Asuransi Bina Dana Arta Tbk,2025-04-09,2026-05-04,tidak,7,390
+IPPE,PT Indo Pureco Pratama Tbk,2025-04-30,2026-09-28,tidak,"1,6",516
+AREA,PT Dunia Virtual Online Tbk,2025-05-06,2025-05-19,tidak,10,13
+TIRA,Tira Austenite Tbk,2025-05-15,2025-05-26,tidak,10,11
+WMUU,PT Widodo Makmur Unggas Tbk,2025-05-21,2026-02-27,tidak,1,282
+KRYA,PT Bangun Karya Perkasa Jaya Tbk,2025-05-22,2025-06-04,tidak,10,13
+NICL,PT PAM Mineral Tbk,2025-05-26,2025-06-09,tidak,10,14
+BTON,Betonjaya Manunggal Tbk,2025-05-28,2025-06-02,tidak,7,5
+JATI,PT Informasi Teknologi Indonesia Tbk.,2025-05-28,2025-06-12,tidak,10,15
+MASB,PT Bank Multiarta Sentosa Tbk,2025-05-28,2025-07-08,tidak,7,41
+BCIC,PT Bank JTrust Indonesia Tbk. ,2025-05-28,2025-11-28,tidak,7,184
+FASW,Fajar Surya Wisesa Tbk,2025-05-28,2026-09-28,tidak,"6,7",488
+MTSM,Metro Realty Tbk,2025-05-28,2026-09-28,tidak,"6,7",488
+PCAR,PT Prima Cakrawala Abadi Tbk,2025-05-28,2026-09-28,tidak,1,488
+PLIN,Plaza Indonesia Realty Tbk,2025-06-11,2026-09-28,tidak,6,474
+MARI,PT Mahaka Radio Integra Tbk.,2025-06-23,,ya,5,464
+BATA,Sepatu Bata Tbk,2025-06-23,,ya,5,464
+GGRP,PT Gunung Raja Paksi Tbk.,2025-06-24,2025-08-29,tidak,7,66
+LAND,PT Trimitra Propertindo Tbk.,2025-06-24,2026-02-27,tidak,1,248
+TFCO,Tifico Fiber Indonesia Tbk,2025-06-24,2026-09-28,tidak,7,461
+SOLA,PT Xolare RCR Energy Tbk,2025-06-26,2025-07-08,tidak,10,12
+KRAS,Krakatau Steel (Persero) Tbk,2025-07-16,2025-07-25,tidak,10,9
+DKHH,PT Cipta Sarana Medika Tbk,2025-07-22,2025-07-31,tidak,10,9
+CDIA,PT Chandra Daya Investasi Tbk,2025-07-25,2025-08-05,tidak,10,11
+ARCI,PT Archi Indonesia Tbk,2025-07-28,2025-08-06,tidak,10,9
+ARGO,Argo Pantes Tbk,2025-08-01,2025-08-12,tidak,10,11
+DCII,PT DCI Indonesia Tbk,2025-08-06,2025-08-15,tidak,10,9
+VIVA,PT Visi Media Asia Tbk,2025-08-13,2026-09-28,tidak,1,411
+BMAS,PT Bank Maspion Indonesia Tbk.,2025-08-25,2025-08-29,tidak,7,4
+IMPC,PT Impack Pratama Industri Tbk,2025-08-26,2025-09-04,tidak,10,9
+PYFA,PT Pyridam Farma Tbk,2025-08-26,2025-09-04,tidak,10,9
+HITS,Humpuss Intermoda Transportasi Tbk,2025-08-29,2026-09-28,tidak,7,395
+COIN,PT Indokripto Koin Semesta Tbk,2025-09-01,2025-09-11,tidak,10,10
+HOPE,PT Harapan Duta Pertiwi Tbk.,2025-09-02,2025-09-12,tidak,10,10
+BWPT,Eagle High Plantations Tbk,2025-09-09,2025-09-18,tidak,10,9
+HBAT,PT Minahasa Membangun Hebat Tbk,2025-09-10,2025-09-19,tidak,10,9
+DATA,PT Remala Abadi Tbk,2025-09-11,2025-09-22,tidak,10,11
+SMKM,PT Sumber Mas Konstruksi Tbk,2025-09-12,2025-09-23,tidak,10,11
+CPRI,PT Capri Nusa Satu Properti Tbk.,2025-09-15,2026-09-28,tidak,1,378
+STRK,PT Lovina Beach Brewery Tbk.,2025-09-17,2025-09-26,tidak,10,9
+LAPD,Leyand International Tbk,2025-09-19,2025-11-28,tidak,1,70
+LION,Lion Metal Works Tbk,2025-09-23,2025-10-02,tidak,10,9
+UANG,PT Pakuan Tbk,2025-09-23,2025-10-02,tidak,10,9
+PBSA,PT Paramita Bangun Sarana Tbk,2025-09-23,2025-10-02,tidak,10,9
+NAYZ,PT Hassana Boga Sejahtera Tbk,2025-09-24,2025-10-03,tidak,10,9
+POLU,PT Golden Flower Tbk.,2025-09-24,2025-10-03,tidak,10,9
+CBRE,PT Cakra Buana Resources Energi Tbk,2025-09-24,2025-10-03,tidak,10,9
+LOPI,PT Logisticsplus International Tbk,2025-09-26,2025-10-07,tidak,10,11
+MLPT,PT Multipolar Technology Tbk.,2025-09-29,2025-10-08,tidak,10,9
+RONY,PT Aracord Nusantara Group Tbk,2025-09-29,2025-11-28,tidak,7,60
+KJEN,PT Krida Jaringan Nusantara Tbk.,2025-09-30,2025-10-09,tidak,10,9
+DWGL,PT Dwi Guna Laksana Tbk,2025-10-02,2025-10-13,tidak,10,11
+JARR,PT Jhonlin Agro Raya Tbk,2025-10-03,2025-10-14,tidak,10,11
+WMPP,PT Widodo Makmur Perkasa Tbk,2025-10-03,2026-09-28,tidak,1,360
+ITIC,PT Indonesian Tobacco Tbk.,2025-10-06,2025-10-15,tidak,10,9
+FUTR,PT Futura Energi Global Tbk,2025-10-06,2025-10-15,tidak,10,9
+FITT,PT Hotel Fitra International Tbk,2025-10-06,2025-10-15,tidak,10,9
+GPSO,PT Geoprima Solusi Tbk,2025-10-07,2025-10-16,tidak,10,9
+TEBE,PT Dana Brata Luhur Tbk.,2025-10-07,2025-10-16,tidak,10,9
+OLIV,PT Oscar Mitra Sukses Sejahtera Tbk,2025-10-07,2025-10-16,tidak,10,9
+PGUN,PT Pradiksi Gunatama Tbk,2025-10-07,2025-10-16,tidak,10,9
+SMLE,PT Sinergi Multi Lestarindo Tbk,2025-10-08,2025-10-17,tidak,10,9
+SRAJ,Sejahteraraya Anugrahjaya Tbk,2025-10-09,2025-10-20,tidak,10,11
+CLAY,PT Citra Putra Realty Tbk,2025-10-09,2025-10-20,tidak,10,11
+INDX,Tanah Laut Tbk,2025-10-10,2025-10-21,tidak,10,11
+RISE,PT Jaya Sukses Makmur Sentosa Tbk.,2025-10-10,2025-10-21,tidak,10,11
+RANC,Supra Boga Lestari Tbk,2025-10-13,2025-10-22,tidak,10,9
+FAST,PT Fast Food Indonesia Tbk,2025-10-13,2025-10-22,tidak,10,9
+KBLV,First Media Tbk,2025-10-13,2025-10-22,tidak,10,9
+BEEF,PT Estika Tata Tiara Tbk.,2025-10-13,2025-10-22,tidak,10,9
+IDPR,PT Indonesia Pondasi Raya Tbk.,2025-10-14,2025-10-23,tidak,10,9
+PIPA,PT Multi Makmur Lemindo Tbk.,2025-10-14,2025-10-23,tidak,10,9
+LPLI,Star Pacific Tbk,2025-10-16,2025-10-27,tidak,10,11
+LABA,PT Green Power Group Tbk,2025-10-20,2025-10-29,tidak,10,9
+FUJI,PT Fuji Finance Indonesia Tbk.,2025-10-20,2025-10-29,tidak,10,9
+SOFA,PT Boston Furniture Industries Tbk..,2025-10-20,2025-10-29,tidak,10,9
+IPAC,PT Era Graharealty Tbk,2025-10-21,2025-10-30,tidak,10,9
+TINS,PT Timah Tbk. ,2025-10-22,2025-10-31,tidak,10,9
+NTBK,PT Nusatama Berkah Tbk,2025-10-27,2025-11-05,tidak,10,9
+PGLI,Pembangunan Graha Lestari Indah Tbk,2025-10-29,2025-11-07,tidak,10,9
+ASPI,PT Andalan Sakti Primaindo Tbk.,2025-10-29,2025-11-07,tidak,10,9
+BLUE,PT Berkah Prima Perkasa Tbk,2025-10-30,2025-11-10,tidak,10,11
+SOSS,PT Shield On Service Tbk.,2025-10-31,2026-09-28,tidak,6,332
+PURI,PT Puri Global Sukses Tbk,2025-11-05,2025-11-14,tidak,10,9
+MEJA,PT Harta Djaya Karya Tbk,2025-11-10,2025-11-19,tidak,10,9
+KONI,Perdana Bangun Pusaka Tbk,2025-11-10,2025-11-19,tidak,10,9
+KOKA,PT Koka Indonesia Tbk.,2025-11-11,2025-11-20,tidak,10,9
+SOHO,PT Soho Global Health Tbk,2025-11-14,2025-11-25,tidak,10,11
+NIRO,City Retail Developments Tbk,2025-11-19,2025-11-28,tidak,10,9
+FPNI,PT Lotte Chemical Titan Tbk.,2025-11-21,2025-12-02,tidak,10,11
+AMMS,PT Agung Menjangan Mas Tbk,2025-11-21,2025-12-02,tidak,10,11
+LFLO,PT Imago Mulia Persada Tbk,2025-11-26,2025-12-05,tidak,10,9
+ABBA,Mahaka Media Tbk,2025-11-28,,ya,5,306
+CNKO,Exploitasi Energi Indonesia Tbk,2025-11-28,,ya,5,306
+PTMR,PT Master Print Tbk,2025-11-28,2026-09-28,tidak,7,304
+WIKA,PT Wijaya Karya (Persero) Tbk,2025-11-28,2026-09-28,tidak,7,304
+FOOD,PT Sentra Food Indonesia Tbk.,2025-12-01,,ya,5,303
+TRIN,PT Perintis Triniti Properti Tbk,2025-12-02,2025-12-11,tidak,10,9
+BUVA,PT Bukit Uluwatu Villa Tbk,2025-12-03,2025-12-12,tidak,10,9
+KDTN,PT Puri Sentul Permai Tbk,2025-12-05,2025-12-16,tidak,10,11
+VKTR,PT VKTR Teknologi Mobilitas Tbk,2025-12-08,2025-12-17,tidak,10,9
+MORA,PT Mora Telematika Indonesia Tbk,2025-12-10,2025-12-10,tidak,10,0
+PUDP,Pudjiadi Prestige Tbk,2025-12-10,2025-12-19,tidak,10,9
+INET,PT Sinergi Inti Andalan Prima Tbk.,2025-12-10,2025-12-19,tidak,10,9
+NRCA,PT Nusa Raya Cipta Tbk.,2025-12-11,2025-12-22,tidak,10,11
+PADA,PT Personel Alih Daya Tbk,2025-12-11,2025-12-22,tidak,10,11
+MPRO,PT Maha Properti Indonesia Tbk.,2025-12-12,2025-12-23,tidak,10,11
+ASLI,PT Asri Karya Lestari Tbk.,2025-12-12,2025-12-23,tidak,10,11
+FILM,PT MD Entertainment Tbk,2025-12-16,2025-12-29,tidak,10,13
+PSKT,PT Red Planet Indonesia Tbk,2025-12-16,2025-12-29,tidak,10,13
+AYAM,PT Janu Putra Sejahtera Tbk.,2025-12-17,2025-12-30,tidak,10,13
+MINA,PT Sanurhasta Mitra Tbk.,2025-12-18,2026-01-02,tidak,10,15
+TRON,PT Teknologi Karya Digital Nusa Tbk.,2025-12-19,2026-01-05,tidak,10,17
+DEFI,Danasupra Erapacific Tbk,2025-12-19,2026-01-05,tidak,10,17
+GTSI,PT GTS Internasional Tbk,2025-12-19,2026-01-05,tidak,10,17
+CITY,PT Natura City Developments Tbk.,2025-12-22,2026-01-06,tidak,10,15
+NINE,PT Techno9 Indonesia Tbk,2025-12-23,2026-01-07,tidak,10,15
+RICY,Ricky Putra Globalindo Tbk,2025-12-24,2026-04-14,tidak,5,111
+SSTM,Sunson Textile Manufacturer Tbk,2025-12-29,2026-01-09,tidak,10,11
+FOLK,PT Multi Garam Utama Tbk.,2025-12-29,2026-01-09,tidak,10,11
+IRSX,PT Folago Global Nusantara Tbk,2025-12-30,2026-01-12,tidak,10,13
+CARE,PT Metro Healthcare Indonesia Tbk,2025-12-30,2026-01-12,tidak,10,13
+AYLS,PT Agro Yasa Lestari Tbk,2025-12-30,2026-01-12,tidak,10,13
+ESTA,PT Esta Multi Usaha Tbk.,2026-01-06,2026-01-15,tidak,10,9
+YELO,PT Yelooo Integra Datanet Tbk.,2026-01-06,2026-01-15,tidak,10,9
+KIOS,PT Kioson Komersial Indonesia Tbk.,2026-01-07,2026-01-19,tidak,10,12
+ALTO,Tri Banyan Tirta Tbk,2026-01-07,2026-09-28,tidak,1,264
+RMKO,PT Royaltama Mulia Kontraktorindo Tbk.,2026-01-09,2026-01-21,tidak,10,12
+BBRM,Pelayaran Nasional Bina Buana Raya Tbk,2026-01-12,2026-01-22,tidak,10,10
+BNBR,Bakrie & Brothers Tbk,2026-01-12,2026-02-27,tidak,1,46
+ALII,PT Ancara Logistics Indonesia Tbk,2026-01-13,2026-01-23,tidak,10,10
+COCO,PT Wahana Interfood Nusantara Tbk.,2026-01-13,2026-04-02,tidak,5,79
+PKPK,Paragon Karya Perkasa Tbk,2026-01-15,2026-01-27,tidak,10,12
+NSSS,PT Nusantara Sawit Sejahtera Tbk,2026-01-20,2026-01-29,tidak,10,9
+INPS,PT Indah Prakasa Sentosa Tbk.,2026-01-21,,ya,5,252
+HUMI,PT Humpuss Maritim Internasional Tbk,2026-01-21,2026-01-30,tidak,10,9
+FIRE,PT Alfa Energi Investama Tbk.,2026-01-21,2026-01-30,tidak,10,9
+AHAP,Asuransi Harta Aman Pratama Tbk,2026-01-21,2026-01-30,tidak,10,9
+RMKE,PT RMK Energy Tbk,2026-01-21,2026-01-30,tidak,10,9
+UNSP,Bakrie Sumatera Plantations Tbk,2026-01-21,2026-09-23,tidak,5,245
+SOCI,PT Soechi Lines Tbk. ,2026-01-22,2026-02-02,tidak,10,11
+BIPI,PT Astrindo Nusantara Infrastruktur Tbk.,2026-01-22,2026-02-02,tidak,10,11
+ATAP,PT Trimitra Prawara Goldland Tbk ,2026-01-23,2026-02-03,tidak,10,11
+ARKO,PT Arkora Hydro Tbk.,2026-01-23,2026-02-03,tidak,10,11
+LEAD,PT Logindo Samudramakmur Tbk.,2026-01-23,2026-02-03,tidak,10,11
+TRUE,PT Triniti Dinamik Tbk,2026-01-23,2026-02-03,tidak,10,11
+GRPM,PT Graha Prima Mentari Tbk.,2026-01-26,2026-02-04,tidak,10,9
+KOCI,PT Kokoh Exa Nusantara,2026-01-27,2026-02-05,tidak,10,9
+PADI,Minna Padi Investama Sekuritas Tbk,2026-01-27,2026-02-05,tidak,10,9
+SOTS,PT Satria Mega Kencana Tbk.,2026-01-29,2026-02-09,tidak,10,11
+RLCO,PT Abadi Lestari Indonesia Tbk,2026-01-30,2026-02-10,tidak,10,11
+TRAM,Trada Alam Minera Tbk.,2026-01-30,2026-09-28,tidak,"1,6",241
+SPRE,PT Soraya Berjaya Indonesia Tbk,2026-02-02,2026-02-11,tidak,10,9
+NATO,PT Surya Permata Andalan Tbk,2026-02-02,2026-02-11,tidak,10,9
+MGNA,PT Magna Investama Mandiri Tbk,2026-02-02,2026-02-11,tidak,10,9
+MKAP,PT Multikarya Asia Pasifik Raya Tbk,2026-02-02,2026-02-11,tidak,10,9
+ROCK,PT Rockfields Properti Indonesia Tbk.,2026-02-03,2026-02-12,tidak,10,9
+INDS,Indospring Tbk,2026-02-03,2026-02-12,tidak,10,9
+BELL,PT Trisula Textile Industries Tbk,2026-02-04,2026-02-13,tidak,10,9
+VISI,PT Satu Visi Putra Tbk.,2026-02-05,2026-02-18,tidak,10,13
+PPGL,PT Prima Globalindo Logistik Tbk.,2026-02-06,2026-02-19,tidak,10,13
+DPUM,PT Dua Putra Utama Makmur Tbk.,2026-02-09,2026-02-20,tidak,10,11
+SIPD,PT Sreeya Sewu Indonesia Tbk,2026-02-10,2026-02-27,tidak,7,17
+STAR,PT Buana Artha Anugerah Tbk.,2026-02-11,2026-02-24,tidak,10,13
+IBOS,PT Indo Boga Sukses Tbk,2026-02-11,2026-02-24,tidak,10,13
+SINI,PT Singaraja Putra Tbk.,2026-02-12,2026-08-31,tidak,5,200
+ELPI,PT Pelayaran Nasional Ekalya Purnamasari Tbk,2026-02-13,2026-02-26,tidak,10,13
+MPPA,Matahari Putra Prima Tbk,2026-02-19,,ya,5,223
+ENZO,PT Morenzo Abadi Perkasa Tbk,2026-02-24,2026-02-27,tidak,1,3
+IBFN,PT Intan Baru Prana Tbk,2026-02-27,,ya,5,215
+INTA,Intraco Penta Tbk,2026-02-27,,ya,5,215
+MDRN,Modern Internasional Tbk,2026-02-27,,ya,5,215
+CANI,PT Capitol Nusantara Indonesia Tbk.,2026-02-27,,ya,5,215
+NZIA,"PT Nusantara Almazia, Tbk.",2026-03-05,2026-03-16,tidak,10,11
+POLA,PT Pool Advista Finance Tbk.,2026-03-05,2026-03-16,tidak,10,11
+ZATA,PT Bersama Zatta Jaya Tbk,2026-03-05,2026-03-16,tidak,10,11
+LUCY,PT Lima Dua Lima Tiga Tbk,2026-03-11,2026-03-27,tidak,10,16
+AGII,PT Samator Indo Gas Tbk,2026-03-12,2026-03-30,tidak,10,18
+RSGK,PT Kedoya Adyaraya Tbk,2026-03-25,2026-05-29,tidak,7,65
+ACST,PT Acset Indonusa Tbk.,2026-04-02,,ya,5,181
+TIRT,Tirta Mahakam Resources Tbk,2026-04-06,,ya,5,177
+MGLV,PT Panca Anugrah Wisesa Tbk,2026-04-06,2026-04-15,tidak,10,9
+ASPR,PT Asia Pramulia Tbk,2026-04-15,2026-04-24,tidak,10,9
+UDNG,PT Agro Bahari Nusantara Tbk,2026-04-17,2026-04-28,tidak,10,11
+YPAS,Yanaprima Hastapersada Tbk,2026-04-22,2026-05-04,tidak,10,12
+EURO,PT Estee Gold Feet Tbk,2026-04-29,2026-05-11,tidak,10,12
+PTSP,Pioneerindo Gourmet International Tbk,2026-04-30,2026-05-04,tidak,6,4
+SGRO,PT Prime Agri Resources Tbk,2026-04-30,2026-05-04,tidak,6,4
+KOPI,PT Mitra Energi Persada Tbk,2026-04-30,2026-05-13,tidak,6,13
+BABY,PT Multitrend Indo Tbk.,2026-04-30,2026-06-09,tidak,6,40
+CSAP,Catur Sentosa Adiprana Tbk,2026-04-30,2026-06-18,tidak,6,49
+JECC,Jembo Cable Company Tbk,2026-04-30,2026-06-18,tidak,6,49
+MENN,PT Menn Teknologi Indonesia Tbk.,2026-04-30,2026-09-28,tidak,"6,7",151
+IFSH,PT Ifishdeco Tbk.,2026-04-30,2026-09-28,tidak,6,151
+DUTI,Duta Pertiwi Tbk,2026-04-30,2026-09-28,tidak,6,151
+MLIA,Mulia Industrindo Tbk,2026-04-30,2026-09-28,tidak,6,151
+URBN,PT Urban Jakarta Propertindo Tbk.,2026-04-30,2026-09-28,tidak,6,151
+TECH,PT Indosterling Technomedia Tbk,2026-04-30,2026-09-28,tidak,1,151
+WBSA,PT BSA Logistics Indonesia Tbk,2026-05-05,2026-05-18,tidak,10,13
+BAIK,PT Bersama Mencapai Puncak Tbk.,2026-05-06,2026-05-19,tidak,10,13
+CTTH,Citatah Tbk,2026-05-22,2026-06-05,tidak,10,14
+MYTX,PT Asia Pacific Investama Tbk.,2026-05-29,,ya,5,124
+INRU,Toba Pulp Lestari Tbk,2026-05-29,2026-09-28,tidak,7,122
+MAPB,PT Map Boga Adiperkasa Tbk,2026-05-29,2026-09-28,tidak,7,122
+MSIE,PT Multisarana Intan Eduka Tbk,2026-06-03,2026-06-12,tidak,10,9
+KING,PT Hoffmen Cleanindo Tbk,2026-06-11,2026-06-23,tidak,10,12
+MMIX,PT Multi Medika Internasional Tbk,2026-06-17,2026-06-26,tidak,10,9
+SHIP,PT Sillo Maritime Perdana Tbk,2026-06-22,2026-07-01,tidak,10,9
+FORU,Fortune Indonesia Tbk,2026-06-24,2026-07-03,tidak,10,9
+BAPA,Bekasi Asri Pemula Tbk,2026-07-08,2026-07-08,tidak,10,0
+SQMI,Wilton Makmur Indonesia Tbk,2026-07-08,2026-07-08,tidak,5,0
+FLMC,PT Falmaco Nonwoven Industri Tbk,2026-07-17,2026-07-29,tidak,10,12
+AIMS,PT Artha Mahiya Investama Tbk,2026-07-20,2026-07-29,tidak,3,9
+RDTX,Roda Vivatex Tbk,2026-07-31,2026-08-06,tidak,6,6
+PDES,Destinasi Tirta Nusantara Tbk,2026-07-31,2026-08-06,tidak,6,6
+POLL,PT Pollux Properties Indonesia Tbk.,2026-07-31,2026-09-28,tidak,"6,7",59
+PNGO,PT AEP Pinago Plantations Tbk,2026-07-31,2026-09-28,tidak,6,59
+SONA,Sona Topas Tourism Industry Tbk,2026-07-31,2026-09-28,tidak,6,59
+ADES,Akasha Wira International Tbk  Tbk,2026-07-31,2026-09-28,tidak,6,59
+INCF,PT Indo Komoditi Korpora Tbk,2026-07-31,2026-09-28,tidak,6,59
+HILL,PT Hillcon Tbk,2026-08-04,,ya,"5,9",57
+ALMI,Alumindo Light Metal Industry Tbk,2026-08-05,2026-09-28,tidak,"6,7",54
+RGAS,PT Kian Santang Muliatama Tbk.,2026-08-11,2026-08-21,tidak,10,10
+FIMP,PT Fimperkasa Utama Tbk,2026-08-12,2026-09-28,tidak,7,47
+BAJA,Saranacentral Bajatama Tbk,2026-08-19,2026-08-31,tidak,10,12
+GTBO,Garda Tujuh Buana Tbk,2026-08-26,,ya,3,35
+BKDP,Bukit Darmo Property Tbk,2026-08-28,2026-09-08,tidak,10,11
+TGUK,PT Platinum Wahab Nusantara Tbk.,2026-08-31,,ya,11,30
+BIKE,PT Bhineka Inovasi Ketahanan Energi Tbk,2026-08-31,2026-09-28,tidak,7,28
+AKKU,PT Anugerah Kagum Karya Utama Tbk,2026-08-31,2026-09-28,tidak,1,28
+EDGE,PT Indointernet Tbk.,2026-08-31,2026-09-28,tidak,7,28
+DPNS,Duta Pertiwi Nusantara Tbk,2026-08-31,2026-09-28,tidak,7,28
+TAMA,PT Lancartama Sejati Tbk.,2026-09-03,,ya,5,27
+PGJO,PT Bahtera Bumi Raya Tbk,2026-09-03,2026-09-03,tidak,5,0
+MDIA,PT Intermedia Capital Tbk.,2026-09-03,2026-09-03,tidak,10,0
+AGAR,PT Asia Sejahtera Mina Tbk,2026-09-03,2026-09-14,tidak,10,11
+ALKA,Alakasa Industrindo Tbk,2026-09-03,2026-09-14,tidak,10,11
+DOOH,PT Era Media Sejahtera Tbk,2026-09-09,2026-09-18,tidak,10,9
+CSMI,PT Cipta Selera Murni Tbk.,2026-09-10,2026-09-21,tidak,10,11
+SAFE,Steady Safe Tbk,2026-09-15,2026-09-24,tidak,10,9
+TRUK,PT Guna Timur Raya Tbk.,2026-09-16,2026-09-25,tidak,10,9
+PACK,PT Abadi Nusantara Hijau Investama Tbk,2026-09-17,2026-09-28,tidak,10,11
+LIFE,PT MSIG Life Insurance Indonesia Tbk.,2026-09-21,2026-09-28,tidak,10,7
+GRPH,PT Griptha Putra Persada Tbk.,2026-09-21,2026-09-28,tidak,10,7
+CASH,PT Cashlez Worldwide Indonesia Tbk.,2026-09-22,,ya,5,8
+BTEL,Bakrie Telecom Tbk,2026-09-28,,ya,5,2
+COWL,COWELL DEVELOPMENT Tbk,2026-09-28,,ya,"2,5,8",2
+COAL,PT Black Diamond Resources Tbk,2026-09-28,,ya,3,2
+DEAL,PT Dewata Freightinternational Tbk.,2026-09-28,,ya,"5,8",2
+DIGI,PT Arkadia Digital Media Tbk,2026-09-28,,ya,5,2
+ENVY,PT Envy Technologies Indonesia Tbk,2026-09-28,,ya,5,2
+ARTI,Ratu Prabu Energi Tbk,2026-09-28,,ya,5,2
+BIMA,Primarindo Asia Infrastructure Tbk,2026-09-28,,ya,2,2
+BOSS,PT Borneo Olah Sarana Sukses Tbk.,2026-09-28,,ya,"5,9",2
+BIKA,PT Binakarya Jaya Abadi Tbk.,2026-09-28,,ya,5,2
+GOLL,PT Golden Plantation Tbk,2026-09-28,,ya,9,2
+GLOB,PT Globe Kita Terang Tbk,2026-09-28,,ya,5,2
+ETWA,Eterindo Wahanatama Tbk,2026-09-28,,ya,5,2
+HKMU,PT HK Metals Utama Tbk,2026-09-28,,ya,"2,5",2
+HOTL,Saraswati Griya Lestari Tbk,2026-09-28,,ya,"8,9",2
+INAF,Indofarma Tbk.,2026-09-28,,ya,5,2
+LMAS,Limas Indonesia Makmur Tbk,2026-09-28,,ya,"2,5",2
+MABA,PT Marga Abhinaya Abadi Tbk,2026-09-28,,ya,2,2
+KBRI,Kertas Basuki Rachmat Indonesia Tbk,2026-09-28,,ya,3,2
+KAYU,PT Darmi Bersaudara Tbk.,2026-09-28,,ya,2,2
+KOIN,Kokoh Inti Arebama Tbk,2026-09-28,,ya,5,2
+JSKY,PT Sky Energy Indonesia Tbk.,2026-09-28,,ya,5,2
+OCAP,ONIX CAPITAL Tbk,2026-09-28,,ya,"2,3,5",2
+PMMP,PT Panca Mitra Multiperdana Tbk.,2026-09-28,,ya,"2,5",2
+MTFN,Capitalinc Investment Tbk,2026-09-28,,ya,5,2
+MTPS,PT Meta Epsi Tbk.,2026-09-28,,ya,3,2
+MTRA,PT Mitra Pemuda Tbk.,2026-09-28,,ya,"2,5,8",2
+MKNT,PT Mitra Komunikasi Nusantara Tbk.,2026-09-28,,ya,5,2
+PTDU,PT Djasa Ubersakti Tbk,2026-09-28,,ya,5,2
+POLY,Asia Pacific Fibers Tbk,2026-09-28,,ya,"2,5",2
+POSA,PT Bliss Properti Indonesia Tbk.,2026-09-28,,ya,5,2
+PURE,PT Trinitan Metals and Minerals Tbk,2026-09-28,,ya,5,2
+SRIL,PT Sri Rejeki Isman Tbk,2026-09-28,,ya,"5,8",2
+SMRU,SMR Utama Tbk,2026-09-28,,ya,5,2
+SIMA,Siwani Makmur Tbk,2026-09-28,,ya,5,2
+SBAT,PT Sejahtera Bintang Abadi Textile Tbk.,2026-09-28,,ya,"3,8",2
+WICO,Wicaksana Overseas International Tbk,2026-09-28,,ya,5,2
+WSBP,PT Waskita Beton Precast Tbk.,2026-09-28,,ya,5,2
+ZBRA,PT Dosni Roha Indonesia Tbk,2026-09-28,,ya,9,2
+ZINC,PT Kapuas Prima Coal Tbk,2026-09-28,,ya,2,2
+TELE,PT Omni Inovasi Indonesia Tbk,2026-09-28,,ya,"2,5,8",2
+TDPM,PT Tianrong Chemicals Industry Tbk,2026-09-28,,ya,8,2
+TGRA,PT Terregra Asia Energy,2026-09-28,,ya,3,2
+TRIO,Trikomsel Oke Tbk,2026-09-28,,ya,5,2
+TOYS,PT Sunindo Adipersada Tbk.,2026-09-28,,ya,8,2
+TOPS,PT Totalindo Eka Persada Tbk.,2026-09-28,,ya,3,2

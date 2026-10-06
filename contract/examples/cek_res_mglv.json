@@ -1,0 +1,238 @@
+{
+  "_catatan": "CONTOH dari FINAL_PLAN §6 (snapshot 29–30 Sep). Wajib dicek ulang dengan fixture sebelum rekam video.",
+  "id": "cek_contoh_mglv",
+  "ticker": "MGLV",
+  "company": "PT Panca Anugrah Wisesa Tbk",
+  "data_as_of": "2026-09-30",
+  "summary": "Dari 2 klaim, 1 sesuai data dan 1 tidak bisa dicek. Ada 4 hal yang tidak diceritakan.",
+  "steps": [
+    {
+      "check": "laba",
+      "label": "Laba 4 kuartal terakhir",
+      "ms": 1800
+    },
+    {
+      "check": "valuasi",
+      "label": "PER & PBV",
+      "ms": 900
+    },
+    {
+      "check": "dividen",
+      "label": "Dividen 12 bulan",
+      "ms": 700
+    },
+    {
+      "check": "orang_dalam",
+      "label": "Transaksi orang dalam 12 bulan",
+      "ms": 1400
+    },
+    {
+      "check": "asing",
+      "label": "Aliran asing 20 hari bursa",
+      "ms": 1200
+    },
+    {
+      "check": "lonjakan_harga",
+      "label": "Perubahan harga 21 hari bursa",
+      "ms": 1100
+    },
+    {
+      "check": "suspensi",
+      "label": "Riwayat suspensi 36 bulan",
+      "ms": 800
+    },
+    {
+      "check": "free_float",
+      "label": "Porsi saham publik",
+      "ms": 600
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "c1",
+      "verdict": "tidak_bisa_dicek",
+      "check": null,
+      "headline": "\"Bakal terbang\" adalah prediksi. Kami tidak menebak harga.",
+      "reason": "Tidak ada data yang bisa membuktikan atau membantah harga di masa depan.",
+      "rule_id": "T-1",
+      "rule_text": "Prediksi, opini, dan rumor tanpa angka diberi vonis Tidak bisa dicek.",
+      "evidence": [],
+      "chart": null,
+      "sources": []
+    },
+    {
+      "claim_id": "c2",
+      "verdict": "sesuai",
+      "check": "lonjakan_harga",
+      "headline": "Benar, harga MGLV naik dari Rp600 ke Rp14.650 (sekitar 24 kali).",
+      "reason": "Kenaikan ini tercatat di harga penutupan harian. Sepanjang kenaikan itu saham ini juga beberapa kali disuspensi.",
+      "rule_id": "H-2",
+      "rule_text": "Klaim \"dari A ke B\" sesuai jika harga terendah tercatat dan harga terakhir masing-masing berada dalam 10% dari angka di klaim.",
+      "evidence": [
+        {
+          "label": "Harga awal",
+          "value": 600,
+          "fmt": "rp"
+        },
+        {
+          "label": "Harga terakhir",
+          "value": 14650,
+          "fmt": "rp"
+        },
+        {
+          "label": "Kelipatan",
+          "value": 24.4,
+          "fmt": "x"
+        }
+      ],
+      "chart": null,
+      "sources": [
+        {
+          "name": "Sectors · harga harian",
+          "as_of": "2026-09-30"
+        }
+      ]
+    }
+  ],
+  "untold": [
+    {
+      "verdict": "info",
+      "check": "suspensi",
+      "headline": "MGLV disuspensi 7 kali, 6 di antaranya karena kenaikan harga.",
+      "reason": "Alasan tertulis BEI: peningkatan harga kumulatif yang signifikan.",
+      "rule_id": "S-1",
+      "rule_text": "Temuan jika ada suspensi dalam 36 bulan terakhir.",
+      "evidence": [
+        {
+          "label": "Jumlah suspensi",
+          "value": 7,
+          "fmt": "int"
+        }
+      ],
+      "chart": null,
+      "sources": [
+        {
+          "name": "Sectors · suspensi",
+          "as_of": "2026-09-30"
+        }
+      ]
+    },
+    {
+      "verdict": "info",
+      "check": "papan_pemantauan",
+      "headline": "MGLV pernah masuk Papan Pemantauan Khusus (6–15 Apr 2026).",
+      "reason": "Masuk karena kriteria 10 BEI.",
+      "rule_id": null,
+      "rule_text": null,
+      "evidence": [],
+      "chart": null,
+      "sources": [
+        {
+          "name": "BEI · Papan Pemantauan Khusus (unduh manual)",
+          "as_of": "2026-09-30"
+        }
+      ]
+    },
+    {
+      "verdict": "info",
+      "check": "orang_dalam",
+      "headline": "Pengendali menjual: kepemilikan turun dari 78,74% ke 62,71%.",
+      "reason": "Tercatat di laporan transaksi orang dalam.",
+      "rule_id": "O-1",
+      "rule_text": "Temuan jika ada transaksi orang dalam di atas Rp1 miliar dalam 12 bulan.",
+      "evidence": [
+        {
+          "label": "Sebelum",
+          "value": 0.7874,
+          "fmt": "pct"
+        },
+        {
+          "label": "Sesudah",
+          "value": 0.6271,
+          "fmt": "pct"
+        }
+      ],
+      "chart": null,
+      "sources": [
+        {
+          "name": "Sectors · filings",
+          "as_of": "2026-09-30"
+        }
+      ]
+    },
+    {
+      "verdict": "info",
+      "check": "aksi_korporasi",
+      "headline": "Right issue: ex 2 Nov 2026 di Rp8.880, jauh di bawah harga Rp14.650.",
+      "reason": "Harga pelaksanaan lebih rendah dari harga pasar sekarang.",
+      "rule_id": null,
+      "rule_text": null,
+      "evidence": [
+        {
+          "label": "Harga right issue",
+          "value": 8880,
+          "fmt": "rp"
+        },
+        {
+          "label": "Harga sekarang",
+          "value": 14650,
+          "fmt": "rp"
+        }
+      ],
+      "chart": null,
+      "sources": [
+        {
+          "name": "Sectors · corporate actions",
+          "as_of": "2026-09-30"
+        }
+      ]
+    }
+  ],
+  "form": [
+    {
+      "check": "laba",
+      "status": "aman",
+      "why": "Tidak ada temuan menurut aturan."
+    },
+    {
+      "check": "valuasi",
+      "status": "aman",
+      "why": "Tidak ada temuan menurut aturan."
+    },
+    {
+      "check": "dividen",
+      "status": "tidak_relevan",
+      "why": "Belum membagi dividen."
+    },
+    {
+      "check": "orang_dalam",
+      "status": "temuan",
+      "why": "Pengendali menjual 78,74% → 62,71%."
+    },
+    {
+      "check": "asing",
+      "status": "aman",
+      "why": "Tidak ada temuan menurut aturan."
+    },
+    {
+      "check": "lonjakan_harga",
+      "status": "temuan",
+      "why": "Harga naik >25% dalam 21 hari bursa beberapa kali."
+    },
+    {
+      "check": "suspensi",
+      "status": "temuan",
+      "why": "7 suspensi dalam 36 bulan."
+    },
+    {
+      "check": "free_float",
+      "status": "aman",
+      "why": "Tidak ada temuan menurut aturan."
+    }
+  ],
+  "quota": {
+    "used": 1,
+    "limit": 5,
+    "reset_at": "2026-10-07T00:00:00+07:00"
+  }
+}

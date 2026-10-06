@@ -1,0 +1,213 @@
+{
+  "_catatan": "CONTOH dari FINAL_PLAN §6 (snapshot 29–30 Sep). Wajib dicek ulang dengan fixture sebelum rekam video.",
+  "id": "cek_contoh_mdka",
+  "ticker": "MDKA",
+  "company": "PT Merdeka Copper Gold Tbk",
+  "data_as_of": "2026-09-30",
+  "summary": "Dari 2 klaim, 1 menyesatkan dan 1 tidak bisa dicek.",
+  "steps": [
+    {
+      "check": "laba",
+      "label": "Laba 4 kuartal terakhir",
+      "ms": 1800
+    },
+    {
+      "check": "valuasi",
+      "label": "PER & PBV",
+      "ms": 900
+    },
+    {
+      "check": "dividen",
+      "label": "Dividen 12 bulan",
+      "ms": 700
+    },
+    {
+      "check": "orang_dalam",
+      "label": "Transaksi orang dalam 12 bulan",
+      "ms": 1400
+    },
+    {
+      "check": "asing",
+      "label": "Aliran asing 20 hari bursa",
+      "ms": 1200
+    },
+    {
+      "check": "lonjakan_harga",
+      "label": "Perubahan harga 21 hari bursa",
+      "ms": 1100
+    },
+    {
+      "check": "suspensi",
+      "label": "Riwayat suspensi 36 bulan",
+      "ms": 800
+    },
+    {
+      "check": "free_float",
+      "label": "Porsi saham publik",
+      "ms": 600
+    },
+    {
+      "check": "m_komoditas",
+      "label": "Modul komoditas",
+      "ms": 1500
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "c1",
+      "verdict": "menyesatkan",
+      "check": "m_komoditas",
+      "headline": "82% pendapatan MDKA dari proyek nikel, bukan emas.",
+      "reason": "Emas hanya bagian kecil dari pendapatan. Hubungan harga saham dengan emas sedang (0,40); dengan tembaga 0,46. Jan 2023–Agu 2026 MDKA turun 36% saat emas naik 132%.",
+      "rule_id": "K-1",
+      "rule_text": "Menyesatkan jika porsi pendapatan dari komoditas yang disebut di bawah 50%.",
+      "evidence": [
+        {
+          "label": "Porsi pendapatan proyek nikel 2024",
+          "value": 0.82,
+          "fmt": "pct"
+        },
+        {
+          "label": "Korelasi dengan emas",
+          "value": 0.4,
+          "fmt": "num"
+        },
+        {
+          "label": "Perubahan saham Jan 2023–Agu 2026",
+          "value": -0.36,
+          "fmt": "pct"
+        },
+        {
+          "label": "Perubahan emas, periode sama",
+          "value": 1.32,
+          "fmt": "pct"
+        }
+      ],
+      "chart": {
+        "type": "bar",
+        "series": [
+          {
+            "name": "Porsi pendapatan 2024",
+            "points": [
+              [
+                "Proyek nikel",
+                0.82
+              ],
+              [
+                "Tujuh Bukit",
+                0.12
+              ],
+              [
+                "Wetar",
+                0.06
+              ]
+            ]
+          }
+        ]
+      },
+      "sources": [
+        {
+          "name": "Sectors · get-segments",
+          "as_of": "2024"
+        },
+        {
+          "name": "World Bank Pink Sheet (CC BY)",
+          "as_of": "2026-09-02"
+        }
+      ]
+    },
+    {
+      "claim_id": "c2",
+      "verdict": "tidak_bisa_dicek",
+      "check": null,
+      "headline": "\"Pasti ikut naik\" adalah prediksi. Kami tidak menebak harga.",
+      "reason": "Data hanya bisa menunjukkan hubungan di masa lalu.",
+      "rule_id": "T-1",
+      "rule_text": "Prediksi, opini, dan rumor tanpa angka diberi vonis Tidak bisa dicek.",
+      "evidence": [],
+      "chart": null,
+      "sources": []
+    }
+  ],
+  "untold": [
+    {
+      "verdict": "info",
+      "check": "analis",
+      "headline": "40 dari 42 rekomendasi analis adalah buy.",
+      "reason": "Jumlah rekomendasi, bukan jumlah analis.",
+      "rule_id": null,
+      "rule_text": null,
+      "evidence": [
+        {
+          "label": "Buy",
+          "value": 40,
+          "fmt": "int"
+        },
+        {
+          "label": "Total rekomendasi",
+          "value": 42,
+          "fmt": "int"
+        }
+      ],
+      "chart": null,
+      "sources": [
+        {
+          "name": "Sectors · report future",
+          "as_of": "2026-09-30"
+        }
+      ]
+    }
+  ],
+  "form": [
+    {
+      "check": "laba",
+      "status": "aman",
+      "why": "Tidak ada temuan menurut aturan."
+    },
+    {
+      "check": "valuasi",
+      "status": "aman",
+      "why": "Tidak ada temuan menurut aturan."
+    },
+    {
+      "check": "dividen",
+      "status": "aman",
+      "why": "Tidak ada temuan menurut aturan."
+    },
+    {
+      "check": "orang_dalam",
+      "status": "aman",
+      "why": "Tidak ada temuan menurut aturan."
+    },
+    {
+      "check": "asing",
+      "status": "aman",
+      "why": "Tidak ada temuan menurut aturan."
+    },
+    {
+      "check": "lonjakan_harga",
+      "status": "aman",
+      "why": "Tidak ada temuan menurut aturan."
+    },
+    {
+      "check": "suspensi",
+      "status": "aman",
+      "why": "Tidak ada temuan menurut aturan."
+    },
+    {
+      "check": "free_float",
+      "status": "aman",
+      "why": "Tidak ada temuan menurut aturan."
+    },
+    {
+      "check": "m_komoditas",
+      "status": "modul_aktif",
+      "why": "Klaim menyebut komoditas."
+    }
+  ],
+  "quota": {
+    "used": 2,
+    "limit": 5,
+    "reset_at": "2026-10-07T00:00:00+07:00"
+  }
+}

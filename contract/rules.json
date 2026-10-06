@@ -1,0 +1,108 @@
+{
+  "_catatan": "Katalog aturan = satu sumber kebenaran. Backend memuat ambang dari sini, halaman Metodologi menampilkannya. Ubah ambang HANYA di file ini, lalu jalankan tes. 'status': 'final' = disepakati di FINAL_PLAN; 'usulan' = angka sementara, perlu disepakati tim.",
+  "checks": [
+    { "id": "laba", "label": "Laba", "step_label": "Laba 4 kuartal terakhir", "standar": true },
+    { "id": "valuasi", "label": "Valuasi", "step_label": "PER & PBV", "standar": true },
+    { "id": "dividen", "label": "Dividen", "step_label": "Dividen 12 bulan", "standar": true },
+    { "id": "orang_dalam", "label": "Orang dalam", "step_label": "Transaksi orang dalam 12 bulan", "standar": true },
+    { "id": "asing", "label": "Investor asing", "step_label": "Aliran asing 20 hari bursa", "standar": true },
+    { "id": "lonjakan_harga", "label": "Lonjakan harga", "step_label": "Perubahan harga 21 hari bursa", "standar": true },
+    { "id": "suspensi", "label": "Suspensi", "step_label": "Riwayat suspensi 36 bulan", "standar": true },
+    { "id": "free_float", "label": "Free float", "step_label": "Porsi saham publik", "standar": true },
+    { "id": "m_free_float", "label": "Radar Free Float", "step_label": "Modul Radar Free Float", "standar": false },
+    { "id": "m_komoditas", "label": "Saham vs komoditas", "step_label": "Modul komoditas", "standar": false }
+  ],
+  "untold": [
+    { "id": "papan_pemantauan", "label": "Papan Pemantauan Khusus" },
+    { "id": "segmen", "label": "Sumber pendapatan" },
+    { "id": "analis", "label": "Analis vs proyeksi laba" },
+    { "id": "pemegang", "label": "Siapa yang pegang" },
+    { "id": "aksi_korporasi", "label": "Aksi korporasi mendatang" },
+    { "id": "likuiditas", "label": "Likuiditas" }
+  ],
+  "rules": [
+    {
+      "id": "L-1", "check": "laba", "status": "usulan",
+      "text": "Klaim \"laba naik X%\" dihitung ulang dari laporan kuartalan. Sesuai jika selisih dengan hitungan kami tidak lebih dari toleransi.",
+      "params": { "toleransi_poin_persen": 5 }
+    },
+    {
+      "id": "L-2", "check": "laba", "status": "final",
+      "text": "Menyesatkan jika klaim memakai satu kuartal/periode pilihan sementara tren 4 kuartal terakhir berlawanan arah.",
+      "params": { "jumlah_kuartal": 4 }
+    },
+    {
+      "id": "V-1", "check": "valuasi", "status": "final",
+      "text": "Klaim PER/PBV sesuai jika selisihnya tidak lebih dari 15% dari hitungan kami. Forward PE kosong ditampilkan \"tidak tersedia\", bukan 0.",
+      "params": { "toleransi_relatif": 0.15 }
+    },
+    {
+      "id": "D-1", "check": "dividen", "status": "final",
+      "text": "\"Dividen besar\" sesuai jika yield 12 bulan minimal 1,5× rata-rata sektor. Menyesatkan jika klaim memakai periode lain dan selisihnya lebih dari 2 poin persen.",
+      "params": { "kelipatan_sektor": 1.5, "selisih_periode_poin": 0.02 },
+      "catatan": "Sumber rata-rata yield sektor belum diputuskan (keputusan terbuka #4)."
+    },
+    {
+      "id": "D-2", "check": "dividen", "status": "final",
+      "text": "Payout ratio di atas 100% dicatat sebagai temuan: dividen dibayar melebihi laba, belum tentu berulang.",
+      "params": { "batas_payout": 1.0 }
+    },
+    {
+      "id": "O-1", "check": "orang_dalam", "status": "final",
+      "text": "Temuan jika ada transaksi orang dalam di atas Rp1 miliar dalam 12 bulan terakhir. Tidak ada transaksi = aman.",
+      "params": { "batas_nilai_rp": 1000000000, "jendela_hari": 365 }
+    },
+    {
+      "id": "A-1", "check": "asing", "status": "final",
+      "text": "\"Asing borong\" sesuai jika aliran bersih asing 20 hari bursa terakhir positif DAN minimal 60% harinya masuk bersih.",
+      "params": { "jendela_hari_bursa": 20, "porsi_hari_masuk": 0.6 }
+    },
+    {
+      "id": "A-2", "check": "asing", "status": "final",
+      "text": "Tren porsi asing/ritel dari komposisi pemegang saham bulanan (3–6 bulan). Hanya dibandingkan dalam satu emiten.",
+      "params": { "bulan_min": 3, "bulan_maks": 6 }
+    },
+    {
+      "id": "H-1", "check": "lonjakan_harga", "status": "final",
+      "text": "Temuan jika harga berubah lebih dari 25% dalam 21 hari bursa. Lompatan pada tanggal aksi korporasi (ex-dividen, split, right issue) tidak dihitung, karena harga Sectors tidak disesuaikan.",
+      "params": { "batas_perubahan": 0.25, "jendela_hari_bursa": 21 }
+    },
+    {
+      "id": "H-2", "check": "lonjakan_harga", "status": "usulan",
+      "text": "Klaim \"dari A ke B\" sesuai jika harga terendah tercatat dan harga terakhir masing-masing berada dalam 10% dari angka di klaim.",
+      "params": { "toleransi_relatif": 0.10 }
+    },
+    {
+      "id": "S-1", "check": "suspensi", "status": "final",
+      "text": "Temuan jika ada suspensi perdagangan dalam 36 bulan terakhir. Alasan tertulis BEI ditampilkan.",
+      "params": { "jendela_bulan": 36 }
+    },
+    {
+      "id": "F-1", "check": "free_float", "status": "final",
+      "text": "Temuan jika porsi saham publik di bawah 15%; modul Radar Free Float aktif. Definisi Sectors tidak persis sama dengan BEI.",
+      "params": { "batas_free_float": 0.15 }
+    },
+    {
+      "id": "R-1", "check": "m_free_float", "status": "final",
+      "text": "Nilai yang harus dilepas = (target − free float) × kapitalisasi pasar. Hari serap = nilai dilepas ÷ rata-rata nilai transaksi harian 60 hari. Tekanan: ringan < 20 hari, sedang 20–60, berat > 60. Ditampilkan maksimal \"> 1.000 hari\".",
+      "params": { "hari_ringan": 20, "hari_berat": 60, "batas_tampil_hari": 1000, "jendela_likuiditas_hari": 60 }
+    },
+    {
+      "id": "K-1", "check": "m_komoditas", "status": "usulan",
+      "text": "Klaim \"saham X = saham komoditas Y\" menyesatkan jika porsi pendapatan dari Y di bawah 50%.",
+      "params": { "batas_porsi_pendapatan": 0.5 }
+    },
+    {
+      "id": "K-2", "check": "m_komoditas", "status": "final",
+      "text": "Hubungan saham–komoditas dari korelasi perubahan bulanan dengan harga pasar World Bank (bukan HBA): lemah < 0,3; sedang 0,3–0,6; cukup kuat ≥ 0,6.",
+      "params": { "batas_lemah": 0.3, "batas_kuat": 0.6 }
+    },
+    {
+      "id": "T-1", "check": null, "status": "final",
+      "text": "Prediksi (\"pasti terbang\"), opini, dan rumor tanpa angka diberi vonis Tidak bisa dicek. Kami tidak menebak.",
+      "params": {}
+    }
+  ],
+  "quota": { "cek_per_hari": 5 },
+  "tanya_tolak_regex": "\\b(beli|jual|masuk|hold|cuan|layak|harus|saran|rekomendasi(kan)?|serok|average|cut ?loss|target harga|tp)\\b"
+}

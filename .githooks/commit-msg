@@ -1,0 +1,12 @@
+#!/bin/sh
+# Membuang baris atribusi AI (Co-Authored-By agent, Claude-Session, "Generated with ...")
+# dari pesan commit. Aktifkan sekali per clone: git config core.hooksPath .githooks
+msg_file="$1"
+pattern='^co-authored-by:.*(claude|anthropic|codex|openai|copilot|cursor)|^claude-session:|generated with \[?(claude|codex|cursor)|noreply@anthropic\.com|🤖'
+
+if grep -qiE "$pattern" "$msg_file"; then
+    grep -viE "$pattern" "$msg_file" > "$msg_file.tmp"
+    mv "$msg_file.tmp" "$msg_file"
+    echo "commit-msg: baris atribusi AI dibuang dari pesan commit" >&2
+fi
+exit 0

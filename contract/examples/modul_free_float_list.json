@@ -1,0 +1,19 @@
+{
+  "_catatan": "CONTOH bentuk. Isi asli dari data/bahan_produk/radar_free_float.csv.",
+  "as_of": "2026-09-30",
+  "items": [
+    {
+      "ticker": "XXXX",
+      "company": "Contoh Tbk",
+      "free_float": 0.11,
+      "market_cap": 8000000000000,
+      "kelompok": "kap_besar_ff_rendah",
+      "target": 0.125,
+      "tenggat": "2027-03-31",
+      "nilai_dilepas": 120000000000,
+      "hari_serap": 45,
+      "tekanan": "sedang",
+      "papan_pemantauan": false
+    }
+  ]
+}

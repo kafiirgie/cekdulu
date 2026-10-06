@@ -1,0 +1,29 @@
+# rahasia
+.env
+.env.local
+frontend/.env.local
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# node
+node_modules/
+frontend/dist/
+
+# data
+# fixtures = respons Sectors mentah; dibagikan di luar git sampai panitia mengizinkan (lihat data/fixtures/README.md)
+data/fixtures/*
+!data/fixtures/README.md
+data/cache/*
+!data/cache/.gitkeep
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

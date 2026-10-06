@@ -1,0 +1,15 @@
+{
+  "req": {
+    "cek_id": "cek_contoh_mdka",
+    "card": "c1",
+    "question": "Jadi MDKA layak dibeli nggak?"
+  },
+  "res_tolak": {
+    "answer": "Kami tidak memberi saran beli atau jual. Kami hanya bisa menjelaskan angka di kartu ini.",
+    "refused": true
+  },
+  "res_jawab": {
+    "answer": "Proyek nikel menyumbang 82% pendapatan MDKA tahun 2024 (Sectors · get-segments).",
+    "refused": false
+  }
+}

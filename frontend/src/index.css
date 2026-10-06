@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+/* Token warna diisi dari prototipe iterasi 3 (tugas A0). */
+:root {
+  --cd-ink: #1b1b1b;
+  --cd-paper: #fbf8f1;
+  --cd-sesuai: #2f7d4f;
+  --cd-menyesatkan: #b7791f;
+  --cd-tidak-sesuai: #b42318;
+  --cd-tidak-bisa: #6b7280;
+  --cd-info: #2b5c9e;
+}
+
+body {
+  background: var(--cd-paper);
+  color: var(--cd-ink);
+}

@@ -1,0 +1,2 @@
+# hook shell harus LF, kalau CRLF sh gagal di Windows (core.autocrlf=true)
+.githooks/* text eol=lf
