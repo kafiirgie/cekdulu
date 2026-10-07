@@ -39,6 +39,13 @@ export const ARTI_STATUS: Partial<Record<FormStatus, string>> = {
   gagal: 'Pemeriksaan ini error saat dijalankan; pemeriksaan lain tetap jalan. Coba cek ulang nanti.',
 }
 
+/** Kelompok tenggat Radar Free Float (Peraturan I-A BEI); target dan tanggalnya ikut data backend. */
+export const KELOMPOK_FF: Record<string, string> = {
+  kap_besar_ff_rendah: 'Besar, free float rendah',
+  kap_besar_ff_menengah: 'Besar, hampir cukup',
+  kap_kecil: 'Kecil dan menengah',
+}
+
 export const CONTOH_KLAIM = [
   'MGLV masih bakal terbang, dari 600 udah 14 ribuan, buruan!',
   'Kata grup, MDKA saham emas, emas lagi naik pasti ikut naik',

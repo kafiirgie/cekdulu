@@ -3,6 +3,7 @@
 import { MessageCircle } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import InputBulat from '@/components/InputBulat'
 import Stamp from '@/components/Stamp'
 import StatusIkon from '@/components/StatusIkon'
 import { Button } from '@/components/ui/button'
@@ -120,12 +121,11 @@ export default function PanelTanya({ item, kunci }: { item: ItemKartu; kunci: st
             </div>
           )}
           <form onSubmit={kirim} className="flex gap-2">
-            <input
+            <InputBulat
               value={ketik}
               onChange={(e) => setKetik(e.target.value)}
               placeholder="Tanya tentang kartu ini…"
               aria-label="Tanya tentang kartu ini"
-              className="min-w-0 flex-1 rounded-full border border-line-2 bg-surface px-4 py-2 text-[15px] outline-none focus:border-ink-2"
             />
             <Button type="submit" disabled={sibuk || !ketik.trim()}>
               Tanya
