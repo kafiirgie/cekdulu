@@ -158,21 +158,26 @@ means the threshold is still a team proposal; the UI must display that label.
 
 | ID | Check | Status | Rule summary |
 |---|---|---|---|
-| L-1 | Profit | Proposed | Recompute a claimed profit change; tolerance is 5 percentage points. |
-| L-2 | Profit | Final | A selected period is misleading when the four-quarter trend moves the other way. |
+| L-1 | Profit | Final | Recompute a claimed profit change; tolerance is 5 percentage points. |
+| L-2 | Profit | Final | A selected period is misleading when the four-quarter trend moves the other way. One-off items are not separated (stated in Methodology). |
 | V-1 | Valuation | Final | Claimed PER/PBV may differ by at most 15%; missing forward PE is not zero. |
-| D-1 | Dividend | Final | “Large dividend” means at least 1.5× sector yield; period cherry-picking has a 2-point threshold. |
+| D-1 | Dividend | Final | "Large dividend" means at least 1.5× sector yield; with no sector source yet, a claim without a number returns insufficient data. A claimed yield more than 2 points off the 12-month yield is misleading. |
 | D-2 | Dividend | Final | Payout above 100% is a finding, because it exceeds profit and may not recur. |
 | O-1 | Insider | Final | Flag insider transactions above Rp1 billion within 12 months. |
-| A-1 | Foreign flow | Final | “Foreigners are buying” requires positive 20-day net flow and inflow on at least 60% of days. |
-| A-2 | Holders | Final | Compare the foreign/retail-holder trend over 3–6 months within one issuer only. |
+| A-1 | Foreign flow | Final | "Foreigners are buying" requires positive 20-day net flow and inflow on at least 60% of days. |
+| A-2 | Foreign flow | Final | Foreign/retail-holder trend over 3–6 monthly observations within one issuer; changes under 1 point are flat. |
+| A-3 | Foreign flow | Proposed | A claim without a period is misleading when A-1 and A-2 point in opposite directions; a stated period selects A-1 or A-2. |
 | H-1 | Price jump | Final | Flag changes above 25% over 21 trading days, excluding corporate-action dates. |
-| H-2 | Price claim | Proposed | The recorded low and latest price must each be within 10% of the claimed endpoints. |
+| H-2 | Price claim | Final | "From A to B" matches when A was a daily close anywhere in the window and the latest close is within 10% of B. |
 | S-1 | Suspension | Final | Flag an exchange suspension within the last 36 months and show the stated reason. |
 | F-1 | Free float | Final | Flag public ownership below 15% and activate Free Float Radar. |
 | R-1 | Free Float Radar | Final | Estimate value to release and absorption days; pressure bands are <20, 20–60, and >60 days. |
-| K-1 | Commodity | Proposed | “Stock X is commodity Y” is misleading when Y contributes below 50% of revenue. |
+| K-1 | Commodity | Final | "Stock X is commodity Y" is misleading when Y contributes below 50% of revenue. |
 | K-2 | Commodity | Final | Monthly correlation is weak below 0.3, medium at 0.3–0.6, and fairly strong from 0.6. |
+| N-1 | Analysts | Proposed | "All analysts say buy" needs every recommendation to be buy/strong buy; "most" needs at least 90%. |
+| P-1 | Holders | Proposed | "Retail is piling in" needs the local retail share up at least 1 point and the shareholder count up. |
+| Q-1 | Context card | Proposed | Note low liquidity when estimated 60-day average daily value is below Rp1 billion. |
+| C-1 | Context card | Proposed | Show corporate actions whose ex-date falls within the next 90 days. |
 | T-1 | Prediction | Final | Predictions, opinions, and numberless rumours cannot be checked. |
 
 ## Data sources and licences
@@ -233,7 +238,7 @@ a single instance.
 
 - Replace the three submission-link placeholders.
 - Confirm the Lane B, C, and D owner names.
-- Decide the sector-yield source for D-1 and one-off handling for L-2.
+- Decide whether the proposed rules (A-3, N-1, P-1, Q-1, C-1) ship as proposed or final.
 - Confirm whether screenshot OCR ships; otherwise keep it in “Deliberately not done”.
 - Test the public URL from a real phone and verify MGLV/MDKA fixture numbers.
 - Make the repository public, submit before 8 Oct 2026 23:59 WIB, then freeze it.
