@@ -55,7 +55,7 @@ function BarisKlaim({ klaim, nomor, onUbah }: { klaim: Claim; nomor: number; onU
 }
 
 export default function Konfirmasi() {
-  const { text, klaim, setKlaim, mulaiCek } = useCek()
+  const { teksAsli, klaim, setKlaim, mulaiCek } = useCek()
   const nav = useNavigate()
   if (!klaim?.ticker) return <Navigate to="/cek" replace />
 
@@ -80,9 +80,10 @@ export default function Konfirmasi() {
           ? 'Bagian yang distabilo yang akan diperiksa. Ubah atau hapus kalau ada yang keliru.'
           : `Kami tetap menjalankan ${CEK_STANDAR.length} pemeriksaan standar untuk ${klaim.ticker}.`}
       </JudulLayar>
-      {text.trim() && (
+      {teksAsli.trim() && (
         <div className="rounded-xl border border-line-2 bg-surface p-[18px] shadow-lift">
-          <TeksDistabilo teks={text} claims={klaim.claims} />
+          {klaim.source_text && <p className="m-0 mb-2 text-[12.5px] font-semibold text-muted-foreground">Teks yang dibaca AI dari screenshot</p>}
+          <TeksDistabilo teks={teksAsli} claims={klaim.claims} />
         </div>
       )}
       <ul className="mt-4 grid gap-2">

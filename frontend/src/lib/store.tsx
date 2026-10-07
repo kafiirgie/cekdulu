@@ -8,6 +8,8 @@ interface CekState {
   setText: (t: string) => void
   klaim: KlaimResponse | null
   setKlaim: (k: KlaimResponse | null) => void
+  /** Teks yang diperiksa: hasil baca screenshot kalau ada, selain itu teks yang ditempel. `span` klaim menunjuk ke sini. */
+  teksAsli: string
   /** Permintaan /api/cek yang sedang/sudah berjalan untuk `klaim`. Dibaca layar Hasil. */
   cek: Promise<CekResponse> | null
   /** Mulai satu cek. Dipanggil dari aksi pengguna (bukan efek), jadi kuota terpakai tepat sekali. */
@@ -58,7 +60,9 @@ export function CekProvider({ children }: { children: ReactNode }) {
   }, [setKlaim, setHasil])
 
   return (
-    <Ctx.Provider value={{ text, setText, klaim, setKlaim, cek, mulaiCek, hasil, setHasil }}>{children}</Ctx.Provider>
+    <Ctx.Provider value={{ text, setText, klaim, setKlaim, teksAsli: klaim?.source_text ?? text, cek, mulaiCek, hasil, setHasil }}>
+      {children}
+    </Ctx.Provider>
   )
 }
 

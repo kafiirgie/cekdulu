@@ -163,7 +163,8 @@ Pesan:
                 span=(awal, awal + len(claim_text)),
                 checks=item.get("checks", []),
             ))
-        return KlaimResponse(ticker=mentah.get("ticker"), claims=claims, used_ai=True)
+        return KlaimResponse(ticker=mentah.get("ticker"), claims=claims, used_ai=True,
+                             source_text=source_text if image_base64 else None)
 
     def answer(self, card: Card, question: str) -> str:
         isi_kartu = {

@@ -68,9 +68,11 @@ def _ticker_valid(teks: str, ticker: Optional[str]) -> Optional[str]:
 
 
 def _normalisasi(res: KlaimResponse, teks: Optional[str], ticker: Optional[str],
-                 used_ai: bool) -> KlaimResponse:
+                 used_ai: bool, dari_gambar: bool) -> KlaimResponse:
     """Hitung ulang semua bagian yang tidak boleh dipercayakan kepada LLM."""
-    sumber = teks or ""
+    # Untuk screenshot, teks hasil baca AI menggantikan teks pengguna: klaim dan ticker
+    # harus benar-benar ada di teks yang nanti disorot di layar konfirmasi.
+    sumber = (res.source_text or "") if dari_gambar else (teks or "")
     ticker_input = _ticker_valid("", ticker) if ticker else None
     ticker_ai = _ticker_valid(sumber, res.ticker)
     ticker_akhir = ticker_input or ticker_ai or fallback.cari_ticker(sumber)
@@ -94,20 +96,18 @@ def _normalisasi(res: KlaimResponse, teks: Optional[str], ticker: Optional[str],
         company=res.company,
         claims=klaim_bersih,
         used_ai=used_ai,
+        source_text=sumber if dari_gambar and sumber else None,
     )
 
 
 def extract_with_fallback(text, image_base64, ticker) -> KlaimResponse:
-    # C2 core sudah dapat membaca gambar, tetapi jangan habiskan request Gemini
-    # sebelum kontrak `source_text` disetujui. Tanpa field itu, normalisasi pusat
-    # tidak dapat memverifikasi span terhadap teks OCR dan FE tidak bisa menyorotnya.
-    if image_base64:
-        return sanitize(NoLLM().extract_claims(text, image_base64, ticker))
+    dari_gambar = bool(image_base64)
     try:
         llm = get_llm()
         hasil = sanitize(llm.extract_claims(text, image_base64, ticker))
         memakai_ai = not isinstance(llm, NoLLM) and bool(text or image_base64)
-        return _normalisasi(hasil, text, ticker, memakai_ai)
+        return _normalisasi(hasil, text, ticker, memakai_ai, dari_gambar)
     except Exception:
+        # Tanpa AI screenshot tidak terbaca: hasilnya tanpa ticker dan klaim, FE meminta teksnya.
         hasil = sanitize(NoLLM().extract_claims(text, image_base64, ticker))
-        return _normalisasi(hasil, text, ticker, False)
+        return _normalisasi(hasil, text, ticker, False, dari_gambar)

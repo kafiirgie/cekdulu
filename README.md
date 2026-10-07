@@ -121,6 +121,16 @@ external AI calls. Automated tests use fake LLM implementations and must not
 call Gemini or Sectors. The default data mode remains `fixture`, so enabling
 Gemini does not enable the Sectors API.
 
+Screenshots are read in the same single request: Gemini returns the message
+text it read as `source_text`, and code drops any claim or ticker that is not
+in that text before the confirm screen highlights it. Without Gemini a
+screenshot cannot be read, so the user is asked to paste the text instead.
+Screenshots on the free tier may be used by Google, so the input screen asks
+users to crop names and phone numbers. Measured from a home connection, the
+free model took 10–14 seconds per text message, so the read timeout is 20
+seconds (`BATAS_WAKTU` in `backend/app/ai/gemini.py`); lower it for a faster
+model.
+
 C0's evaluation set contains ten Indonesian stock messages: the four product examples plus
 mixed data/prediction claims, "ARA", "asing net buy", multiple checks, and two
 tickers in one message. The keyword fallback produced valid claim structures
@@ -218,8 +228,6 @@ a single instance.
 - Investment advice, price targets, and predictions: refused by design.
 - Full multi-ticker checking in one message: the first ticker is selected; users
   should check the second ticker separately.
-- Screenshot OCR: held until the `source_text` contract change is approved and
-  implemented together with Lane A.
 - Sectors live mode for the public demo: fixtures avoid spending limited credits
   and keep the recorded results reproducible.
 - Durable Tanya/check sessions: a server restart clears in-memory results, and
@@ -239,6 +247,5 @@ a single instance.
 - Replace the three submission-link placeholders.
 - Confirm the Lane B, C, and D owner names.
 - Decide whether the proposed rules (A-3, N-1, P-1, Q-1, C-1) ship as proposed or final.
-- Confirm whether screenshot OCR ships; otherwise keep it in “Deliberately not done”.
 - Test the public URL from a real phone and verify MGLV/MDKA fixture numbers.
 - Make the repository public, submit before 8 Oct 2026 23:59 WIB, then freeze it.
