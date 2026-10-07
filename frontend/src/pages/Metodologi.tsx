@@ -144,7 +144,6 @@ export default function Metodologi() {
       </Seksi>
       <Seksi judul="Pemeriksa dan aturannya" sub="usulan = angka sementara">
         <DaftarPemeriksa cat={cat} pesan={pesan} />
-
       </Seksi>
       <Seksi judul="Peran AI" sub="aturan yang memutuskan">
         <PeranAi />
@@ -153,6 +152,10 @@ export default function Metodologi() {
         <p className="m-0 mb-2.5 text-sm text-ink-2">
           Prediksi harga, opini, rumor tanpa angka, dan informasi yang belum dipublikasikan. Kami juga sengaja tidak
           membuat ramalan harga atau saran beli/jual.
+        </p>
+        <p className="m-0 mb-2.5 text-sm text-ink-2">
+          Pos sekali jadi belum dibedakan: kalau <Istilah k="laba" /> naik karena kejadian satu kali, misalnya penjualan
+          aset atau keuntungan selisih kurs, cek laba tetap membacanya sebagai kenaikan laba biasa.
         </p>
         {cat && <DaftarAturan aturan={cat.rules.filter((r) => r.check === null)} />}
       </Seksi>
