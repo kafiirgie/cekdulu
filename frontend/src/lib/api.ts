@@ -7,10 +7,13 @@ import klaimReqMglv from '@contract/examples/klaim_req_mglv.json'
 import klaimMdka from '@contract/examples/klaim_res_mdka.json'
 import klaimMglv from '@contract/examples/klaim_res_mglv.json'
 import ffList from '@contract/examples/modul_free_float_list.json'
+import komoditasMdka from '@contract/examples/modul_komoditas_detail_mdka.json'
+import komoditasEmas from '@contract/examples/modul_komoditas_list_emas.json'
 import rules from '@contract/rules.json'
 import tanyaContoh from '@contract/examples/tanya.json'
 import type {
-  Catalog, CekRequest, CekResponse, FreeFloatList, KlaimRequest, KlaimResponse, TanyaRequest, TanyaResponse,
+  Catalog, CekRequest, CekResponse, FreeFloatList, KlaimRequest, KlaimResponse, KomoditasDetail, KomoditasList,
+  TanyaRequest, TanyaResponse,
 } from './contract'
 import { KuotaHabisError } from './contract'
 import { deviceId } from './device'
@@ -83,6 +86,22 @@ export const api = {
   async freeFloat(): Promise<FreeFloatList> {
     if (API_MODE === 'mock') return ffList as unknown as FreeFloatList
     return get('/api/modul/free-float')
+  },
+  // Mock punya daftar emas dan detail MDKA; komoditas lain diisi dari detail MDKA seperti mock backend.
+  async komoditas(jenis: string): Promise<KomoditasList> {
+    if (API_MODE === 'mock') {
+      if (jenis === 'emas') return komoditasEmas as KomoditasList
+      const d = komoditasMdka as KomoditasDetail
+      return { as_of: d.as_of, jenis, items: d.items.filter((i) => i.komoditas === jenis) }
+    }
+    return get(`/api/modul/komoditas?jenis=${encodeURIComponent(jenis)}`)
+  },
+  async komoditasDetail(ticker: string): Promise<KomoditasDetail> {
+    if (API_MODE === 'mock') {
+      if (ticker !== 'MDKA') throw new GalatHttp(`/api/modul/komoditas/${ticker}`, 404)
+      return komoditasMdka as KomoditasDetail
+    }
+    return get(`/api/modul/komoditas/${encodeURIComponent(ticker)}`)
   },
   async rules(): Promise<Catalog> {
     if (API_MODE === 'mock') return rules as unknown as Catalog

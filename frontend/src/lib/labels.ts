@@ -56,6 +56,16 @@ export const KELOMPOK_FF: Record<string, string> = {
   kap_kecil: 'Kecil dan menengah',
 }
 
+/** Komoditas yang didukung modul komoditas, dalam urutan pilihan di layar. */
+export const KOMODITAS: Record<string, string> = {
+  batubara: 'Batu bara',
+  nikel: 'Nikel',
+  emas: 'Emas',
+  tembaga: 'Tembaga',
+  timah: 'Timah',
+}
+export const namaKomoditas = (k: string) => KOMODITAS[k] ?? k
+
 export const CONTOH_KLAIM = [
   'MGLV masih bakal terbang, dari 600 udah 14 ribuan, buruan!',
   'Kata grup, MDKA saham emas, emas lagi naik pasti ikut naik',
