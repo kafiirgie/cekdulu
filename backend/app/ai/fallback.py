@@ -49,6 +49,26 @@ def prediksi_tanpa_angka(kalimat: str) -> bool:
     return any(k in teks for k in KATA_PREDIKSI) and not POLA_ANGKA.search(teks)
 
 
+# Kalimat sapaan/ucapan/pertanyaan/ngobrol yang bukan klaim saham. Hanya sebagai
+# penjaga tambahan (JEV lebih pintar); sengaja konservatif supaya tidak membuang klaim asli.
+POLA_BUKAN_KLAIM = re.compile(
+    r"^\s*(halo|hai|hi|assalam|selamat|pagi|siang|malam|thanks|thank|makasih|terima\s*kasih|"
+    r"oke|ok|siap|mantap|nice|wkwk|haha)\b",
+    re.IGNORECASE)
+POLA_TANYA = re.compile(r"\?\s*$")
+
+
+def bukan_klaim(kalimat: str) -> bool:
+    """Sapaan/ucapan/pertanyaan/ngobrol — tidak layak jadi klaim yang diperiksa."""
+    teks = kalimat.strip()
+    if POLA_TANYA.search(teks):
+        return True
+    if POLA_BUKAN_KLAIM.search(teks) and not any(k in teks.lower() for kata, _ in KATA_CEK for k in kata):
+        return True
+    # Salam + kata saham ("HALO semua, ada yang tau MDKA?") tetap bukan klaim.
+    return bool(re.match(r"^\s*(halo|hai|assalam)\b", teks, re.IGNORECASE))
+
+
 def _potong(teks: str) -> list[tuple[str, int, int]]:
     hasil, awal = [], 0
     for m in re.finditer(r"[,.;!?\n]| dan | tapi ", teks):
@@ -81,6 +101,8 @@ def pecah_klaim(teks: str, ticker: Optional[str] = None) -> KlaimResponse:
     for kalimat, s, e in _potong(teks):
         bersih = kalimat.replace(ticker, "").strip() if ticker else kalimat
         if len(bersih) < 3 or kalimat.lower() in PEMBUKA:
+            continue
+        if bukan_klaim(kalimat):  # sapaan/pertanyaan/ngobrol, bukan klaim saham
             continue
         claims.append(Claim(id=f"c{len(claims) + 1}", text=kalimat, span=(s, e), checks=pilih_cek(kalimat)))
     return KlaimResponse(ticker=ticker, company=None, claims=claims, used_ai=False)

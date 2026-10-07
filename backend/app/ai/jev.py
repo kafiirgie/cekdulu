@@ -27,6 +27,7 @@ KUNCI_ISTILAH = "istilah_key"
 KUNCI_TAHU = "tahu"
 KUNCI_SARAN = "minta_saran"
 KUNCI_PREDIKSI = "prediksi"
+KUNCI_KLAIM = "klaim_saham"
 
 # Ambang "sanity" untuk `noul`. Hasil pengukuran ke model sungguhan: `noul` bukan
 # skor ketersediaan yang andal (pertanyaan yang jawabannya ADA pun bisa bernilai 0,15,
@@ -45,6 +46,11 @@ AMBANG_SARAN = 0.5
 # Hasil ukur: "momen bagus buat masuk, gaskeun" 0,91 dan "saya yakin cuan besar" 0,93
 # (dua-duanya lolos dari heuristik kata kunci) vs "laba naik 20%" 0,02 · "yield 6%" 0,03.
 AMBANG_PREDIKSI = 0.5
+
+# Ambang `klaim_saham`: pisahkan kalimat yang LAYAK diperiksa dari sapaan/pertanyaan/ngobrol.
+# Hasil ukur: non-klaim maksimum 0,28 ("mantap, lanjut pantau"), klaim minimum 0,55
+# ("cuan gede nih"). 0,4 di tengah-tengahnya.
+AMBANG_KLAIM = 0.4
 
 # Label bagian yang dikenal kode. FE memakai nama yang sama (BagianJawaban).
 BAGIAN = ("angka_bukti", "alasan_aturan", "sumber_tanggal", "istilah", "di_luar_kartu")
@@ -199,6 +205,33 @@ class Jev:
         response.raise_for_status()
         return response.json().get("answers", {})
 
+    def klaim(self, kalimat: str) -> dict[str, Any]:
+        """Noul: apakah kalimat ini klaim/kabar tentang saham yang layak diperiksa? Tanpa kartu."""
+        body = {
+            "state": json.dumps({"kalimat": kalimat}, ensure_ascii=False),
+            "model": self.model,
+            "questions": {
+                KUNCI_KLAIM: {
+                    "type": "noul",
+                    "instructions": ("Apakah kalimat ini berisi klaim, kabar, atau pendapat tentang "
+                                     "saham yang bisa diperiksa? Jawab tidak kalau hanya sapaan, ucapan "
+                                     "terima kasih, pertanyaan, rencana pribadi, atau ajakan ngobrol."),
+                    "criteria": {
+                        "true": "Klaim/kabar/pendapat tentang saham yang bisa diperiksa.",
+                        "false": "Sapaan, terima kasih, pertanyaan, rencana pribadi, atau ngobrol.",
+                    },
+                },
+            },
+        }
+        response = httpx.post(
+            f"{self.base_url}/systemone",
+            headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+            json=body,
+            timeout=BATAS_WAKTU,
+        )
+        response.raise_for_status()
+        return response.json().get("answers", {})
+
 
 def minta_saran_jev(jev: Any, pertanyaan: str) -> bool:
     """JEV sebagai pengaman kedua penolakan saran. True = minta saran.
@@ -230,6 +263,22 @@ def prediksi_jev(jev: Any, kalimat: str) -> bool:
         return False
     nilai = jawab.get("noul") if isinstance(jawab, dict) else None
     return isinstance(nilai, (int, float)) and nilai >= AMBANG_PREDIKSI
+
+
+def klaim_jev(jev: Any, kalimat: str) -> bool:
+    """True = kalimat ini klaim/kabar tentang saham yang layak diperiksa.
+
+    JEV mati/gagal -> True (JANGAN buang klaim): melewatkan klaim asli lebih berbahaya
+    daripada memeriksa satu kalimat yang sebenarnya tak perlu.
+    """
+    try:
+        jawab = jev.klaim(kalimat).get(KUNCI_KLAIM)
+    except Exception:
+        return True
+    nilai = jawab.get("noul") if isinstance(jawab, dict) else None
+    if not isinstance(nilai, (int, float)):
+        return True
+    return nilai >= AMBANG_KLAIM
 
 
 def pilih_bagian(answers: dict[str, Any]) -> Optional[str]:
