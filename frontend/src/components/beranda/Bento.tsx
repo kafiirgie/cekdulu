@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { Logo, Wordmark } from '@/components/Logo'
 import Stamp from '@/components/Stamp'
 import type { Verdict } from '@/lib/contract'
-import { ATURAN, CEK } from '@/lib/labels'
+import { ATURAN, CEK_STANDAR } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 import JudulBagian, { CatatanSumber } from './Bagian'
 
@@ -38,7 +38,7 @@ const GAYA_LANGKAH = {
 }
 
 function LangkahMini() {
-  const [a, b, c] = CEK.filter((x) => x.standar)
+  const [a, b, c] = CEK_STANDAR
   const baris: { teks: string; tanda: keyof typeof GAYA_LANGKAH }[] = [
     { teks: 'Membaca klaim', tanda: 'ok' },
     { teks: a.step_label, tanda: 'ok' },

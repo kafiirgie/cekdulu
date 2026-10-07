@@ -1,10 +1,8 @@
 // Pintu ke Alat analisis. Angka contoh dari FINAL_PLAN §4.1 dan §6 (data 30 Sep 2026).
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { CEK } from '@/lib/labels'
+import { labelCek } from '@/lib/labels'
 import JudulBagian, { CatatanSumber } from './Bagian'
-
-const label = (id: string) => CEK.find((c) => c.id === id)?.label ?? id
 
 function IlustrasiFreeFloat() {
   return (
@@ -52,7 +50,7 @@ interface Modul {
 
 const MODUL: Modul[] = [
   {
-    nama: label('m_free_float'),
+    nama: labelCek('m_free_float'),
     tanya: 'Apakah saham ini wajib melepas saham ke publik, dan seberapa berat tekanannya?',
     angka: '242',
     arti: 'emiten dengan free float di bawah 15%',
@@ -60,7 +58,7 @@ const MODUL: Modul[] = [
     ke: '/alat/free-float',
   },
   {
-    nama: label('m_komoditas'),
+    nama: labelCek('m_komoditas'),
     tanya: 'Saham ini benar-benar ikut harga komoditasnya, atau tidak?',
     angka: '82%',
     arti: 'pendapatan MDKA dari nikel, bukan emas',

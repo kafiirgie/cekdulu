@@ -2,6 +2,8 @@
 // VITE_API_MODE=mock → contoh dari contract/examples (FE bisa jalan tanpa backend).
 import cekMdka from '@contract/examples/cek_res_mdka.json'
 import cekMglv from '@contract/examples/cek_res_mglv.json'
+import klaimReqMdka from '@contract/examples/klaim_req_mdka.json'
+import klaimReqMglv from '@contract/examples/klaim_req_mglv.json'
 import klaimMdka from '@contract/examples/klaim_res_mdka.json'
 import klaimMglv from '@contract/examples/klaim_res_mglv.json'
 import ffList from '@contract/examples/modul_free_float_list.json'
@@ -19,6 +21,13 @@ const BASE = import.meta.env.VITE_API_BASE ?? ''
 const tunggu = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const pilih = <T,>(ticker: string | null | undefined, mglv: unknown, mdka: unknown) =>
   ((ticker ?? '').toUpperCase() === 'MGLV' ? mglv : mdka) as T
+
+// Mock hanya punya pecahan klaim untuk teks contoh MGLV & MDKA. Teks lain dijawab jujur seperti backend
+// tanpa klaim: kode saham saja (cek umum), atau tanpa kode kalau teksnya tidak menyebut saham.
+const CONTOH_KLAIM_MOCK: [string, unknown][] = [
+  [klaimReqMglv.text, klaimMglv],
+  [klaimReqMdka.text, klaimMdka],
+]
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const r = await fetch(BASE + path, {
@@ -44,8 +53,9 @@ export const api = {
   async klaim(req: KlaimRequest): Promise<KlaimResponse> {
     if (API_MODE === 'mock') {
       await tunggu(600)
-      const t = req.ticker ?? (req.text?.match(/\b[A-Z]{4}\b/)?.[0] ?? null)
-      return pilih(t, klaimMglv, klaimMdka)
+      const contoh = CONTOH_KLAIM_MOCK.find(([teks]) => teks === req.text)?.[1]
+      if (contoh) return contoh as KlaimResponse
+      return { ticker: req.ticker ?? req.text?.match(/\b[A-Z]{4}\b/)?.[0] ?? null, claims: [] }
     }
     return post('/api/klaim', req)
   },
