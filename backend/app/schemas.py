@@ -39,6 +39,8 @@ class KlaimResponse(_Lenient):
     company: Optional[str] = None
     claims: list[Claim]
     used_ai: bool = False  # False = fallback heuristik
+    # Teks yang dibaca AI dari screenshot; span klaim menunjuk ke teks ini. None untuk input teks.
+    source_text: Optional[str] = None
 
 
 # ---------- /api/cek ----------
