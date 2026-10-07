@@ -1,5 +1,6 @@
 // "ⓘ Tentang modul ini": aturan F-1/R-1 dari rules.json + target dan tenggat tiap kelompok dari data.
 import DaftarAturan from '@/components/DaftarAturan'
+import Istilah from '@/components/Istilah'
 import type { FreeFloatItem } from '@/lib/contract'
 import { fmt, tanggal } from '@/lib/format'
 import { KELOMPOK_FF } from '@/lib/labels'
@@ -24,7 +25,7 @@ export default function TentangRadar({ items }: { items: FreeFloatItem[] }) {
       <summary className="cursor-pointer text-sm font-semibold text-ink">ⓘ Tentang modul ini (Peraturan I-A BEI)</summary>
       <div className="mt-2.5 grid gap-3 text-sm">
         <p className="m-0">
-          BEI mewajibkan porsi saham di tangan publik (free float) mencapai batas minimal sebelum tenggat. Saham tambahan
+          BEI mewajibkan porsi saham di tangan publik (<Istilah k="free_float" />) mencapai batas minimal sebelum tenggat. Saham tambahan
           yang dilepas ke pasar bisa menekan harga kalau pasar tidak cukup kuat menyerapnya.
         </p>
         <TenggatKelompok items={items} />

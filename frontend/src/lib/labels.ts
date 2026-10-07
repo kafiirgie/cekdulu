@@ -11,6 +11,7 @@ const ID_STANDAR = new Set(CEK_STANDAR.map((c) => c.id))
 /** Selain 8 pemeriksa standar, sisanya modul khusus (mis. m_komoditas). */
 export const isStandar = (check: string) => ID_STANDAR.has(check)
 export const ATURAN = KATALOG.rules
+export const KUOTA_PER_HARI = KATALOG.quota.cek_per_hari
 
 // Pemecah klaim bisa memilih pemeriksa maupun kartu "Yang tidak diceritakan" (mis. analis, pemegang).
 const LABEL_CEK = new Map([...KATALOG.checks, ...KATALOG.untold].map((c) => [c.id, c.label]))
@@ -22,6 +23,15 @@ export const VERDICT_LABEL: Record<Verdict, string> = {
   tidak_sesuai: 'Tidak sesuai',
   tidak_bisa_dicek: 'Tidak bisa dicek',
   info: 'Info',
+}
+
+/** Arti tiap vonis (FINAL_PLAN §3.1), untuk Metodologi. */
+export const VERDICT_ARTI: Record<Verdict, string> = {
+  sesuai: 'Klaim cocok dengan data yang tercatat, sesuai aturan pemeriksanya.',
+  menyesatkan: 'Angkanya ada, tapi konteks penting hilang atau periode yang dipakai tidak adil.',
+  tidak_sesuai: 'Data menunjukkan hal yang berbeda dari klaim.',
+  tidak_bisa_dicek: 'Prediksi, opini, atau rumor tanpa angka. Kami tidak menebak.',
+  info: 'Konteks penting yang tidak disebut di klaim; muncul di "Yang tidak diceritakan".',
 }
 
 export const STATUS_LABEL: Record<FormStatus, string> = {
