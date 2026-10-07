@@ -7,6 +7,8 @@ export interface ItemKartu {
   card: Card
   judul: string
   kutipan?: string
+  /** Alamat kartu untuk /api/tanya: claim_id untuk klaim, u0, u1, … untuk "Yang tidak diceritakan". */
+  kunciTanya?: string
 }
 
 /** Teks klaim per id, dari hasil pemecahan klaim. */
@@ -17,7 +19,12 @@ export const teksPerKlaim = (klaim: KlaimResponse | null): Record<string, string
 export const teksAtauJudul = (card: Card, teks: Record<string, string>) => (card.claim_id && teks[card.claim_id]) || card.headline
 
 export const itemKlaim = (hasil: CekResponse, teks: Record<string, string>): ItemKartu[] =>
-  hasil.claims.map((card, i) => ({ card, judul: `Klaim ${i + 1}`, kutipan: card.claim_id ? teks[card.claim_id] : undefined }))
+  hasil.claims.map((card, i) => ({
+    card,
+    judul: `Klaim ${i + 1}`,
+    kutipan: card.claim_id ? teks[card.claim_id] : undefined,
+    kunciTanya: card.claim_id ?? undefined,
+  }))
 
 export const itemTakDiceritakan = (hasil: CekResponse): ItemKartu[] =>
-  hasil.untold.map((card) => ({ card, judul: labelCek(card.check ?? '') }))
+  hasil.untold.map((card, i) => ({ card, judul: labelCek(card.check ?? ''), kunciTanya: `u${i}` }))

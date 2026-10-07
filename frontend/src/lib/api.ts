@@ -18,6 +18,15 @@ import { deviceId } from './device'
 export const API_MODE = (import.meta.env.VITE_API_MODE ?? 'mock') as 'mock' | 'api'
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 
+/** Galat HTTP dengan kodenya, supaya layar bisa membedakan mis. 404 (hasil cek sudah hilang dari server). */
+export class GalatHttp extends Error {
+  status: number
+  constructor(path: string, status: number) {
+    super(`${path} → HTTP ${status}`)
+    this.status = status
+  }
+}
+
 const tunggu = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const pilih = <T,>(ticker: string | null | undefined, mglv: unknown, mdka: unknown) =>
   ((ticker ?? '').toUpperCase() === 'MGLV' ? mglv : mdka) as T
@@ -39,13 +48,13 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     const d = await r.json()
     throw new KuotaHabisError(d.detail.quota)
   }
-  if (!r.ok) throw new Error(`${path} → HTTP ${r.status}`)
+  if (!r.ok) throw new GalatHttp(path, r.status)
   return r.json()
 }
 
 async function get<T>(path: string): Promise<T> {
   const r = await fetch(BASE + path)
-  if (!r.ok) throw new Error(`${path} → HTTP ${r.status}`)
+  if (!r.ok) throw new GalatHttp(path, r.status)
   return r.json()
 }
 

@@ -1,20 +1,14 @@
 // Kartu vonis di layar Hasil: cap, kalimat, sumber; "Lihat detail" membuka alasan, aturan, angka, dan grafik.
 import { useState } from 'react'
 import Grafik from '@/components/hasil/Grafik'
+import type { ItemKartu } from '@/components/hasil/kartu'
+import PanelTanya from '@/components/hasil/PanelTanya'
+import Sumber from '@/components/hasil/Sumber'
 import Stamp from '@/components/Stamp'
-import type { Card, Source } from '@/lib/contract'
-import { fmt, tanggal } from '@/lib/format'
+import type { Card } from '@/lib/contract'
+import { fmt } from '@/lib/format'
 import { VERDICT_LABEL } from '@/lib/labels'
 
-/** Selalu tampil: setiap angka di layar wajib punya sumber + tanggal. */
-function Sumber({ sources }: { sources: Source[] }) {
-  if (!sources.length) return null
-  return (
-    <p className="mt-2 mb-0 font-mono text-[11.5px] text-muted-foreground">
-      Sumber: {sources.map((s) => (s.as_of ? `${s.name} (${tanggal(s.as_of)})` : s.name)).join(' · ')}
-    </p>
-  )
-}
 
 function Aturan({ card, className }: { card: Card; className: string }) {
   if (!card.rule_id) return null
@@ -58,14 +52,9 @@ function Detail({ card }: { card: Card }) {
   )
 }
 
-interface Props {
-  card: Card
-  /** Baris kecil di atas: "Klaim 1" untuk klaim, nama kartu untuk "Yang tidak diceritakan". */
-  judul: string
-  kutipan?: string
-}
-
-export default function VerdictCard({ card, judul, kutipan }: Props) {
+/** `item.judul`: baris kecil di atas ("Klaim 1" untuk klaim, nama kartu untuk "Yang tidak diceritakan"). */
+export default function VerdictCard({ item }: { item: ItemKartu }) {
+  const { card, judul, kutipan, kunciTanya } = item
   const [buka, setBuka] = useState(false)
   const adaDetail = Boolean(card.reason || card.rule_id || card.evidence.length || card.chart)
   return (
@@ -79,16 +68,19 @@ export default function VerdictCard({ card, judul, kutipan }: Props) {
       </div>
       <h3 className="mt-2.5 mb-0 max-w-[34ch] text-[17.5px] leading-[1.32] font-bold tracking-[-0.02em]">{card.headline}</h3>
       <Sumber sources={card.sources} />
-      {adaDetail && (
-        <button
-          onClick={() => setBuka(!buka)}
-          aria-expanded={buka}
-          className="mt-2 inline-flex items-center gap-1.5 py-1.5 text-sm font-semibold text-ink-2 hover:text-ink"
-        >
-          {buka ? 'Tutup detail' : 'Lihat detail'}
-          <span aria-hidden="true" className={buka ? 'rotate-180' : ''}>⌄</span>
-        </button>
-      )}
+      <div className="mt-2 flex items-center justify-between gap-2.5">
+        {adaDetail && (
+          <button
+            onClick={() => setBuka(!buka)}
+            aria-expanded={buka}
+            className="inline-flex items-center gap-1.5 py-1.5 text-sm font-semibold text-ink-2 hover:text-ink"
+          >
+            {buka ? 'Tutup detail' : 'Lihat detail'}
+            <span aria-hidden="true" className={buka ? 'rotate-180' : ''}>⌄</span>
+          </button>
+        )}
+        {kunciTanya && <PanelTanya item={item} kunci={kunciTanya} />}
+      </div>
       {buka && <Detail card={card} />}
     </article>
   )
