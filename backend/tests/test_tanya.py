@@ -407,3 +407,99 @@ def test_prediksi_jev_ambang_dan_nilai_rusak():
             raise TimeoutError
 
     assert jev.prediksi_jev(Rusak(), "x") is False
+
+
+# ---------- JEV menyaring kalimat yang BUKAN klaim saham (sapaan/pertanyaan/ngobrol) ----------
+
+class JevKlaim:
+    """Klien JEV palsu untuk .klaim(): peta kalimat -> skor klaim."""
+
+    def __init__(self, skor: dict[str, float]):
+        self._skor = skor
+        self.dipanggil = 0
+
+    def klaim(self, kalimat):
+        self.dipanggil += 1
+        return {jev.KUNCI_KLAIM: {"type": "noul", "noul": self._skor.get(kalimat, 1.0)}}
+
+
+def test_jev_membuang_ngobrol_yang_lolos_heuristik(monkeypatch):
+    """Heuristik lolos ("MGLV gimana nih masih bagus gak"); JEV membuangnya."""
+    kalimat = "MGLV gimana nih masih bagus gak"
+    assert not fallback.bukan_klaim(kalimat)
+    jev_palsu = JevKlaim({kalimat: 0.21})
+    monkeypatch.setattr(provider, "_get_jev_prediksi", lambda: jev_palsu)
+
+    res = provider._normalisasi(
+        KlaimResponse(ticker="MGLV", claims=[Claim(id="c1", text=kalimat, checks=[])]),
+        kalimat, None, used_ai=True, dari_gambar=False)
+
+    assert res.claims == []
+    assert jev_palsu.dipanggil == 1
+
+
+def test_jev_mempertahankan_klaim_asli(monkeypatch):
+    """Kalimat klaim berangka tetap lolos dan pemeriksanya utuh."""
+    kalimat = "laba BBRI naik 20% tahun ini"
+    monkeypatch.setattr(provider, "_get_jev_prediksi", lambda: JevKlaim({kalimat: 0.98}))
+
+    res = provider._normalisasi(
+        KlaimResponse(ticker="BBRI", claims=[Claim(id="c1", text=kalimat, checks=["laba"])]),
+        kalimat, None, used_ai=True, dari_gambar=False)
+
+    assert [c.text for c in res.claims] == [kalimat]
+    assert res.claims[0].checks == ["laba"]
+
+
+def test_jev_mati_mempertahankan_klaim(monkeypatch):
+    """JEV error saat menyaring -> klaim DIPERTAHANKAN (jangan sampai klaim asli hilang)."""
+    monkeypatch.setattr(provider, "get_jev", lambda: (_ for _ in ()).throw(RuntimeError("matii")))
+    kalimat = "laba BBRI naik 20% tahun ini"
+    res = provider._normalisasi(
+        KlaimResponse(ticker="BBRI", claims=[Claim(id="c1", text=kalimat, checks=["laba"])]),
+        kalimat, None, used_ai=False, dari_gambar=False)
+    assert [c.text for c in res.claims] == [kalimat]
+    assert provider._get_jev_prediksi() is None
+
+
+def test_klaim_jev_default_aman_saat_jawaban_aneh():
+    class Aneh:
+        def klaim(self, kalimat):
+            return {}
+
+    assert jev.klaim_jev(Aneh(), "apapun") is True  # tidak bisa dinilai -> pertahankan
+    assert jev.klaim_jev(JevKlaim({"x": jev.AMBANG_KLAIM}), "x") is True
+    assert jev.klaim_jev(JevKlaim({"x": jev.AMBANG_KLAIM - 0.01}), "x") is False
+
+
+def test_heuristik_bukan_klaim_tanpa_jev():
+    """Tanpa JEV pun, sapaan/pertanyaan jelas tidak jadi klaim."""
+    assert fallback.bukan_klaim("makasih infonya bro")
+    assert fallback.bukan_klaim("kapan ya bagi dividennya?")
+    assert fallback.bukan_klaim("oke siap bos")
+    assert not fallback.bukan_klaim("MGLV dari 600 udah 14 ribuan")
+    assert not fallback.bukan_klaim("laba BBRI naik 20% tahun ini")
+
+
+def test_klien_klaim_memuat_satu_noul_tanpa_kartu(monkeypatch):
+    panggilan = {}
+
+    class ResponsePalsu:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"answers": {jev.KUNCI_KLAIM: {"type": "noul", "noul": 0.9}}}
+
+    def post_palsu(url, **kwargs):
+        panggilan.update({"url": url, **kwargs})
+        return ResponsePalsu()
+
+    monkeypatch.setattr("app.ai.jev.httpx.post", post_palsu)
+    hasil = jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").klaim("halo semua")
+
+    body = panggilan["json"]
+    assert set(body["questions"]) == {jev.KUNCI_KLAIM}
+    assert body["questions"][jev.KUNCI_KLAIM]["type"] == "noul"
+    assert json.loads(body["state"]) == {"kalimat": "halo semua"}
+    assert hasil[jev.KUNCI_KLAIM]["noul"] == 0.9

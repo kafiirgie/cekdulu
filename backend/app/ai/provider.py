@@ -17,7 +17,7 @@ from ..catalog import known_ids
 from ..config import settings
 from ..schemas import Card, KlaimResponse
 from . import fallback
-from .jev import get_jev, prediksi_jev
+from .jev import get_jev, klaim_jev, prediksi_jev
 
 
 def _get_jev_prediksi():
@@ -30,6 +30,19 @@ def _get_jev_prediksi():
         return get_jev()
     except Exception:
         return None
+
+
+def _layak_diperiksa(kalimat: str, jev_pred) -> bool:
+    """False = sapaan/pertanyaan/ngobrol, bukan klaim saham.
+
+    Heuristik `fallback.bukan_klaim` selalu jalan; kalau JEV ada, ia yang memutuskan
+    (hasil ukur: non-klaim maks 0,28 vs klaim min 0,55). JEV mati/gagal -> klaim DIPERTAHANKAN.
+    """
+    if fallback.bukan_klaim(kalimat):
+        return False
+    if jev_pred is None:
+        return True
+    return klaim_jev(jev_pred, kalimat)
 
 
 class LLM(Protocol):
@@ -100,6 +113,8 @@ def _normalisasi(res: KlaimResponse, teks: Optional[str], ticker: Optional[str],
         awal = sumber.find(klaim.text)
         if awal < 0:
             continue
+        if not _layak_diperiksa(klaim.text, jev_pred):
+            continue  # sapaan/pertanyaan/ngobrol, bukan klaim saham
         checks = klaim.checks[:2]
         if fallback.prediksi_tanpa_angka(klaim.text) or (jev_pred and prediksi_jev(jev_pred, klaim.text)):
             checks = []
