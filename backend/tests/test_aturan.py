@@ -150,8 +150,41 @@ def test_lonjakan_abaikan_ex_dividen():
 
 
 def test_klaim_dari_ke():
-    assert aturan_h2(600, 14000, terendah=600, terakhir=14650) is True
-    assert aturan_h2(600, 20000, terendah=600, terakhir=14650) is False
+    assert aturan_h2(600, 14000, harga_jendela=[600, 378, 14650], terakhir=14650) is True
+    assert aturan_h2(600, 20000, harga_jendela=[600, 378, 14650], terakhir=14650) is False
+    assert not aturan_h2(600, 20000, [600, 20000, 14650], 14650)  # Harga akhir lama tidak menggantikan yang terbaru.
+
+
+def test_klaim_harga_awal_harus_pernah_tercatat():
+    assert not aturan_h2(600, 14000, [378, 700, 14650], 14650)
+    assert not aturan_h2(600, 14000, [], 14650)
+    assert not aturan_h2(0, 14000, [0, 14650], 14650)
+    assert not aturan_h2(600, 0, [600, 14650], 0)
+
+
+def test_klaim_harga_toleransi_di_kedua_ujung():
+    for awal in (540, 660):
+        for akhir in (12600, 15400):
+            assert aturan_h2(600, 14000, [378, awal, akhir], akhir)
+    assert not aturan_h2(600, 14000, [539, 14650], 14650)
+    assert not aturan_h2(600, 14000, [661, 14650], 14650)
+    assert not aturan_h2(600, 14000, [600, 12599], 12599)
+    assert not aturan_h2(600, 14000, [600, 15401], 15401)
+
+
+def test_keputusan_b3_final_tanpa_mengubah_ambang():
+    from app.catalog import rule
+    for id_aturan, nama, nilai in (("L-1", "toleransi_poin_persen", 5),
+                                  ("H-2", "toleransi_relatif", 0.10),
+                                  ("K-1", "batas_porsi_pendapatan", 0.50)):
+        assert rule(id_aturan)["status"] == "final"
+        assert rule(id_aturan)["params"][nama] == nilai
+    assert rule("A-3")["status"] == "usulan"
+    import json
+    from app.config import settings
+    contoh = json.loads((settings.contract_dir / "examples" / "cek_res_mglv.json").read_text(encoding="utf-8"))
+    kartu = next(c for c in contoh["claims"] if c["rule_id"] == "H-2")
+    assert kartu["rule_text"] == rule("H-2")["text"]
 
 
 # ---------- S, F ----------

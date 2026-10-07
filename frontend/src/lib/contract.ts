@@ -31,6 +31,7 @@ export interface Source { name: string; as_of?: string | null }
 
 export interface Card {
   // A-3: konflik memakai rule_id A-3; periode/keterbatasan di reason, sumber per dataset yang tersedia.
+  // H-2: harga awal yang paling dekat dan harga terakhir di evidence, masing-masing bertanggal di sources.
   claim_id?: string | null
   verdict: Verdict
   check?: string | null

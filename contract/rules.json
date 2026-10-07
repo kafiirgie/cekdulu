@@ -22,7 +22,7 @@
   ],
   "rules": [
     {
-      "id": "L-1", "check": "laba", "status": "usulan",
+      "id": "L-1", "check": "laba", "status": "final",
       "text": "Klaim \"laba naik X%\" dihitung ulang dari laporan kuartalan. Sesuai jika selisih dengan hitungan kami tidak lebih dari toleransi.",
       "params": { "toleransi_poin_persen": 5 }
     },
@@ -73,8 +73,8 @@
       "params": { "batas_perubahan": 0.25, "jendela_hari_bursa": 21 }
     },
     {
-      "id": "H-2", "check": "lonjakan_harga", "status": "usulan",
-      "text": "Klaim \"dari A ke B\" sesuai jika harga terendah tercatat dan harga terakhir masing-masing berada dalam 10% dari angka di klaim.",
+      "id": "H-2", "check": "lonjakan_harga", "status": "final",
+      "text": "Klaim \"dari A ke B\" sesuai jika harga awal A pernah tercatat sebagai harga penutupan harian di mana pun dalam jendela data dengan toleransi ±10%, dan harga penutupan terakhir berada dalam ±10% dari klaim akhir B. Harga awal tidak harus menjadi harga terendah jendela. Tanggal harga awal, tanggal harga terakhir, dan jendela data ditampilkan.",
       "params": { "toleransi_relatif": 0.10 }
     },
     {
@@ -93,7 +93,7 @@
       "params": { "hari_ringan": 20, "hari_berat": 60, "batas_tampil_hari": 1000, "jendela_likuiditas_hari": 60 }
     },
     {
-      "id": "K-1", "check": "m_komoditas", "status": "usulan",
+      "id": "K-1", "check": "m_komoditas", "status": "final",
       "text": "Klaim \"saham X = saham komoditas Y\" menyesatkan jika porsi pendapatan dari Y di bawah 50%.",
       "params": { "batas_porsi_pendapatan": 0.5 }
     },

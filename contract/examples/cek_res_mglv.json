@@ -64,13 +64,13 @@
       "claim_id": "c2",
       "verdict": "sesuai",
       "check": "lonjakan_harga",
-      "headline": "Benar, harga MGLV naik dari Rp600 ke Rp14.650 (sekitar 24 kali).",
-      "reason": "Kenaikan ini tercatat di harga penutupan harian. Sepanjang kenaikan itu saham ini juga beberapa kali disuspensi.",
+      "headline": "Harga Rp600 pernah tercatat; harga terakhir Rp14.650.",
+      "reason": "Harga penutupan terdekat dengan klaim awal Rp600 adalah Rp600 pada 2025-09-26. Harga penutupan terakhir Rp14.650 pada 2026-09-29 dibandingkan klaim akhir Rp14.000. Toleransi masing-masing 10%; jendela data 2025-09-26–2026-09-29.",
       "rule_id": "H-2",
-      "rule_text": "Klaim \"dari A ke B\" sesuai jika harga terendah tercatat dan harga terakhir masing-masing berada dalam 10% dari angka di klaim.",
+      "rule_text": "Klaim \"dari A ke B\" sesuai jika harga awal A pernah tercatat sebagai harga penutupan harian di mana pun dalam jendela data dengan toleransi ±10%, dan harga penutupan terakhir berada dalam ±10% dari klaim akhir B. Harga awal tidak harus menjadi harga terendah jendela. Tanggal harga awal, tanggal harga terakhir, dan jendela data ditampilkan.",
       "evidence": [
         {
-          "label": "Harga awal",
+          "label": "Harga awal terdekat tercatat",
           "value": 600,
           "fmt": "rp"
         },
@@ -78,18 +78,17 @@
           "label": "Harga terakhir",
           "value": 14650,
           "fmt": "rp"
-        },
-        {
-          "label": "Kelipatan",
-          "value": 24.4,
-          "fmt": "x"
         }
       ],
       "chart": null,
       "sources": [
         {
-          "name": "Sectors · harga harian",
-          "as_of": "2026-09-30"
+          "name": "Sectors · harga harian · harga awal",
+          "as_of": "2025-09-26"
+        },
+        {
+          "name": "Sectors · harga harian · harga terakhir",
+          "as_of": "2026-09-29"
         }
       ]
     }
