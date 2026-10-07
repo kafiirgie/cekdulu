@@ -17,7 +17,7 @@ from ..catalog import known_ids
 from ..config import settings
 from ..schemas import Card, KlaimResponse
 from . import fallback
-from .jev import get_jev, klaim_jev, prediksi_jev
+from .jev import get_jev, klaim_jev, prediksi_jev, target_jev
 
 
 def _get_jev_prediksi():
@@ -117,6 +117,10 @@ def _normalisasi(res: KlaimResponse, teks: Optional[str], ticker: Optional[str],
             continue  # sapaan/pertanyaan/ngobrol, bukan klaim saham
         checks = klaim.checks[:2]
         if fallback.prediksi_tanpa_angka(klaim.text) or (jev_pred and prediksi_jev(jev_pred, klaim.text)):
+            checks = []
+        # Target/prediksi harga berangka juga tidak boleh diberi vonis (T-1), walau
+        # angkanya terlihat seperti klaim "dari A ke B".
+        if jev_pred and checks and target_jev(jev_pred, klaim.text):
             checks = []
         klaim_bersih.append(klaim.model_copy(update={
             "id": f"c{len(klaim_bersih) + 1}",

@@ -503,3 +503,91 @@ def test_klien_klaim_memuat_satu_noul_tanpa_kartu(monkeypatch):
     assert body["questions"][jev.KUNCI_KLAIM]["type"] == "noul"
     assert json.loads(body["state"]) == {"kalimat": "halo semua"}
     assert hasil[jev.KUNCI_KLAIM]["noul"] == 0.9
+
+
+# ---------- pemisah ribuan Indonesia tidak boleh memecah kalimat ----------
+
+def test_pemisah_ribuan_tidak_memecah_kalimat():
+    """"naik ke 20.000" adalah satu klaim; titik ribuan bukan akhir kalimat."""
+    k = fallback.pecah_klaim("besok naik ke 20.000")
+    assert [c.text for c in k.claims] == ["besok naik ke 20.000"]
+    # titik yang memang akhir kalimat tetap memotong
+    k2 = fallback.pecah_klaim("harga 14.650. besok naik")
+    assert [c.text for c in k2.claims] == ["harga 14.650", "besok naik"]
+
+
+# ---------- JEV mematikan vonis untuk target/prediksi harga (aturan T-1) ----------
+
+class JevTarget:
+    """Klien JEV palsu: .target() dan .klaim()/.prediksi() mengembalikan nilai tetap."""
+
+    def __init__(self, skor_target: float):
+        self._skor = skor_target
+        self.dipanggil = 0
+
+    def target(self, kalimat):
+        self.dipanggil += 1
+        return {jev.KUNCI_TARGET: {"type": "noul", "noul": self._skor}}
+
+    def klaim(self, kalimat):
+        return {jev.KUNCI_KLAIM: {"type": "noul", "noul": 0.9}}
+
+    def prediksi(self, kalimat):
+        return {jev.KUNCI_PREDIKSI: {"type": "noul", "noul": 0.0}}
+
+
+def test_jev_mematikan_vonis_target_berangka(monkeypatch):
+    """LLM menempelkan lonjakan_harga ke "besok naik ke 20.000"; JEV mematikannya (T-1)."""
+    kalimat = "besok naik ke 20.000"
+    jev_palsu = JevTarget(0.97)
+    monkeypatch.setattr(provider, "_get_jev_prediksi", lambda: jev_palsu)
+
+    res = provider._normalisasi(
+        KlaimResponse(ticker="MGLV", claims=[Claim(id="c1", text=kalimat, checks=["lonjakan_harga"])]),
+        kalimat, None, used_ai=True, dari_gambar=False)
+
+    assert res.claims[0].checks == []
+    assert jev_palsu.dipanggil == 1
+
+
+def test_jev_membiarkan_klaim_data_berangka(monkeypatch):
+    """Klaim data yang benar ("dari 600 ke 14.650") tetap diperiksa."""
+    kalimat = "dari 600 ke 14.650"
+    monkeypatch.setattr(provider, "_get_jev_prediksi", lambda: JevTarget(0.07))
+
+    res = provider._normalisasi(
+        KlaimResponse(ticker="MGLV", claims=[Claim(id="c1", text=kalimat, checks=["lonjakan_harga"])]),
+        kalimat, None, used_ai=True, dari_gambar=False)
+
+    assert res.claims[0].checks == ["lonjakan_harga"]
+
+
+def test_target_jev_default_saat_jev_mati():
+    class Rusak:
+        def target(self, kalimat):
+            raise TimeoutError
+
+    assert jev.target_jev(Rusak(), "besok naik") is False  # JEV mati -> vonis normal
+    assert jev.target_jev(JevTarget(jev.AMBANG_TARGET), "x") is True
+    assert jev.target_jev(JevTarget(jev.AMBANG_TARGET - 0.01), "x") is False
+
+
+def test_klien_target_memuat_satu_noul_tanpa_kartu(monkeypatch):
+    panggilan = {}
+
+    class ResponsePalsu:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"answers": {jev.KUNCI_TARGET: {"type": "noul", "noul": 0.9}}}
+
+    def post_palsu(url, **kwargs):
+        panggilan.update({"url": url, **kwargs})
+        return ResponsePalsu()
+
+    monkeypatch.setattr("app.ai.jev.httpx.post", post_palsu)
+    jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").target("besok naik ke 20.000")
+    body = panggilan["json"]
+    assert set(body["questions"]) == {jev.KUNCI_TARGET}
+    assert json.loads(body["state"]) == {"kalimat": "besok naik ke 20.000"}

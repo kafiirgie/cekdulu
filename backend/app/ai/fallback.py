@@ -70,8 +70,11 @@ def bukan_klaim(kalimat: str) -> bool:
 
 
 def _potong(teks: str) -> list[tuple[str, int, int]]:
+    # Pemisah ribuan Indonesia memakai titik/desimal koma ("20.000", "14.650,5").
+    # Titik dianggap akhir kalimat hanya kalau BUKAN di antara dua digit, supaya
+    # "naik ke 20.000" tidak terpecah jadi "20" + "000".
     hasil, awal = [], 0
-    for m in re.finditer(r"[,.;!?\n]| dan | tapi ", teks):
+    for m in re.finditer(r"[,;!?\n]|\.(?!\d)| dan | tapi ", teks):
         bagian = teks[awal:m.start()]
         if bagian.strip():
             s = awal + len(bagian) - len(bagian.lstrip())
