@@ -33,6 +33,12 @@ export const STATUS_LABEL: Record<FormStatus, string> = {
   gagal: 'Gagal',
 }
 
+/** Arti status yang perlu dijelaskan ke pengguna (alasan spesifiknya ada di FormRow.why). */
+export const ARTI_STATUS: Partial<Record<FormStatus, string>> = {
+  data_kurang: 'Datanya belum lengkap, jadi kami tidak memberi penilaian. Ini bukan berarti aman.',
+  gagal: 'Pemeriksaan ini error saat dijalankan; pemeriksaan lain tetap jalan. Coba cek ulang nanti.',
+}
+
 export const CONTOH_KLAIM = [
   'MGLV masih bakal terbang, dari 600 udah 14 ribuan, buruan!',
   'Kata grup, MDKA saham emas, emas lagi naik pasti ikut naik',

@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Sabuk from '@/components/beranda/Sabuk'
 import type { ContohSabuk } from '@/components/beranda/contoh'
+import KotakDaftar from '@/components/KotakDaftar'
 import StatusIkon from '@/components/StatusIkon'
 import type { CekResponse } from '@/lib/contract'
 import { fmt } from '@/lib/format'
@@ -67,36 +68,32 @@ export default function FormulirBerjalan({ hasil, teksKlaim, onSelesai }: Props)
         </div>
       </div>
       {sabuk.length > 0 && <Sabuk contoh={sabuk} className="-mx-4 mt-2 sm:-mx-5" />}
-      <div className="mt-3 overflow-hidden rounded-xl border border-line bg-surface shadow-lift">
-        <div className="flex items-center justify-between gap-2.5 border-b border-line bg-surface-2 px-4 py-3.5">
-          <b className="text-sm">Formulir inspeksi · {hasil.ticker}</b>
-          <span className="font-mono text-[11.5px] text-muted-foreground">
-            {steps.length - nModul} standar{nModul > 0 && ` + ${nModul} modul`}
-          </span>
-        </div>
-        <ul className="m-0 list-none p-0">
-          {steps.map((s, i) => {
-            const jalan = i === selesai
-            const beres = i < selesai
-            return (
-              <li
-                key={s.check}
-                className={cn(
-                  'grid grid-cols-[22px_1fr_auto] items-center gap-3 border-t border-line px-4 py-2.5 text-[14.5px] font-medium text-muted-foreground first:border-t-0',
-                  beres && 'text-ink',
-                  jalan && 'bg-surface-2 font-bold text-ink',
-                  !isStandar(s.check) && 'bg-hl-soft',
-                )}
-              >
-                {/* Langkah tanpa baris formulir tidak boleh tampil seolah aman. */}
-                <StatusIkon status={beres ? (status.get(s.check) ?? 'antre') : jalan ? 'jalan' : 'antre'} />
-                <span>{s.label}</span>
-                <span className="font-mono text-xs text-muted-foreground">{beres && `${detik(s.ms)} dtk`}</span>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
+      <KotakDaftar
+        judul={`Formulir inspeksi · ${hasil.ticker}`}
+        keterangan={`${steps.length - nModul} standar${nModul > 0 ? ` + ${nModul} modul` : ''}`}
+        className="mt-3 shadow-lift"
+      >
+        {steps.map((s, i) => {
+          const jalan = i === selesai
+          const beres = i < selesai
+          return (
+            <li
+              key={s.check}
+              className={cn(
+                'grid grid-cols-[22px_1fr_auto] items-center gap-3 border-t border-line px-4 py-2.5 text-[14.5px] font-medium text-muted-foreground first:border-t-0',
+                beres && 'text-ink',
+                jalan && 'bg-surface-2 font-bold text-ink',
+                !isStandar(s.check) && 'bg-hl-soft',
+              )}
+            >
+              {/* Langkah tanpa baris formulir tidak boleh tampil seolah aman. */}
+              <StatusIkon status={beres ? (status.get(s.check) ?? 'antre') : jalan ? 'jalan' : 'antre'} />
+              <span>{s.label}</span>
+              <span className="font-mono text-xs text-muted-foreground">{beres && `${detik(s.ms)} dtk`}</span>
+            </li>
+          )
+        })}
+      </KotakDaftar>
       <p className="mt-2 min-h-[30px] text-center text-[19px] font-bold tracking-[-0.02em]">
         {tuntas && `Selesai dalam ${detik(msBerjalan)} detik.`}
       </p>

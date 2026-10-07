@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import FormulirBerjalan from '@/components/hasil/FormulirBerjalan'
 import HasilCek from '@/components/hasil/HasilCek'
+import { teksPerKlaim } from '@/components/hasil/kartu'
 import JudulLayar from '@/components/JudulLayar'
 import TautanKembali from '@/components/TautanKembali'
 import { Button } from '@/components/ui/button'
@@ -16,7 +17,7 @@ export default function Hasil() {
   const galat = useGalatApi()
   const [diterima, setDiterima] = useState<CekResponse | null>(null)
   const [pesan, setPesan] = useState<string | null>(null)
-  const teksKlaim = useMemo(() => Object.fromEntries((klaim?.claims ?? []).map((c) => [c.id, c.text])), [klaim])
+  const teksKlaim = useMemo(() => teksPerKlaim(klaim), [klaim])
   const selesai = useCallback(() => {
     if (diterima) setHasil(diterima)
   }, [diterima, setHasil])

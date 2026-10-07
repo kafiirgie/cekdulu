@@ -29,6 +29,9 @@ export function tanggal(teks: string): string {
   return FORMAT_TANGGAL.format(d)
 }
 
+/** Akhiran " · data per 30 Sep 2026" untuk baris keterangan; kosong kalau tanggal data tidak ada. */
+export const dataPer = (asOf?: string | null) => (asOf ? ` · data per ${tanggal(asOf)}` : '')
+
 /** 14650 → "Rp14.650"; 9.35e12 → "Rp9,35 T" */
 export function rupiah(n: number): string {
   const a = Math.abs(n)

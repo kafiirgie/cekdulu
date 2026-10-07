@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Layout, { KolomSempit } from '@/components/Layout'
 import { CekProvider } from '@/lib/store'
 import Beranda from '@/pages/Beranda'
+import DetailPemeriksa from '@/pages/DetailPemeriksa'
 import Formulir from '@/pages/Formulir'
 import Hasil from '@/pages/Hasil'
 import Input from '@/pages/Input'
@@ -22,6 +23,7 @@ export default function App() {
               <Route path="cek/konfirmasi" element={<Konfirmasi />} />
               <Route path="cek/hasil" element={<Hasil />} />
               <Route path="cek/formulir" element={<Formulir />} />
+              <Route path="cek/formulir/:check" element={<DetailPemeriksa />} />
               <Route path="alat/free-float" element={<RadarFreeFloat />} />
               <Route path="metodologi" element={<Metodologi />} />
               <Route path="kuota-habis" element={<KuotaHabis />} />
