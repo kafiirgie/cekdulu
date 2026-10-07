@@ -2,6 +2,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { labelCek } from '@/lib/labels'
+import { RUTE_MODUL } from '@/lib/modul'
 import JudulBagian, { CatatanSumber } from './Bagian'
 
 function IlustrasiFreeFloat() {
@@ -55,7 +56,7 @@ const MODUL: Modul[] = [
     angka: '242',
     arti: 'emiten dengan free float di bawah 15%',
     ilustrasi: <IlustrasiFreeFloat />,
-    ke: '/alat/free-float',
+    ke: RUTE_MODUL.m_free_float,
   },
   {
     nama: labelCek('m_komoditas'),
@@ -92,6 +93,17 @@ function KartuModul({ m }: { m: Modul }) {
   )
 }
 
+/** Kartu semua modul; dipakai di Beranda dan di indeks Alat analisis. */
+export function DaftarModul() {
+  return (
+    <div className="grid gap-3.5 md:grid-cols-2">
+      {MODUL.map((m) => (
+        <KartuModul key={m.nama} m={m} />
+      ))}
+    </div>
+  )
+}
+
 export default function AlatAnalisis() {
   return (
     <section id="alat" className="scroll-mt-4 py-10">
@@ -100,11 +112,7 @@ export default function AlatAnalisis() {
         judul="Untuk yang ingin menggali lebih dalam."
         sub="Analisis yang dihitung dari data pasar, dengan mesin pemeriksa yang sama. Pilih modul, lalu pilih sahamnya."
       />
-      <div className="grid gap-3.5 md:grid-cols-2">
-        {MODUL.map((m) => (
-          <KartuModul key={m.nama} m={m} />
-        ))}
-      </div>
+      <DaftarModul />
       <CatatanSumber />
     </section>
   )
