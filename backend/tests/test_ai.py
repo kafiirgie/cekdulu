@@ -3,9 +3,13 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
+from app.ai import guard
 from app.ai import provider
 from app.ai.gemini import GeminiLLM
-from app.schemas import Claim, KlaimResponse
+from app.ai.grounding import jawaban_berdasarkan_kartu
+from app.schemas import Card, Claim, Evidence, KlaimResponse, Source
 
 
 class LLMPalsu:
@@ -95,3 +99,67 @@ def test_gemini_meminta_json_terstruktur_tanpa_network(monkeypatch):
     config = panggilan["json"]["generationConfig"]
     assert config["responseMimeType"] == "application/json"
     assert "responseJsonSchema" in config
+
+
+KARTU = Card(
+    claim_id="c1",
+    verdict="menyesatkan",
+    check="m_komoditas",
+    headline="Pendapatan emas bukan yang utama",
+    reason="Proyek nikel menyumbang 82% pendapatan pada 2024.",
+    rule_id="K-1",
+    rule_text="Menyesatkan jika porsinya di bawah 50%.",
+    evidence=[
+        Evidence(label="Porsi nikel", value=0.82, fmt="pct"),
+        Evidence(label="Korelasi", value=0.25, fmt="num"),
+        Evidence(label="Nilai transaksi", value=9.35e12, fmt="rp"),
+    ],
+    sources=[Source(name="Sectors · get-segments", as_of="2024-12-31")],
+)
+
+
+@pytest.mark.parametrize("jawaban", [
+    "Porsi pendapatan nikel yang tercantum adalah 82% pada 2024.",
+    "Korelasinya tercatat 0,25.",
+    "Nilai transaksi di kartu adalah Rp9,35 T.",
+    "Sumber kartu bertanggal 31 Desember 2024.",
+    "data ini tidak ada di kartu",
+])
+def test_lima_jawaban_wajar_tidak_mengarang_angka(monkeypatch, jawaban):
+    class ResponsePalsu:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"candidates": [{"content": {"parts": [{"text": jawaban}]}}]}
+
+    monkeypatch.setattr("app.ai.gemini.httpx.post", lambda *args, **kwargs: ResponsePalsu())
+    hasil = GeminiLLM("key-palsu", "model-palsu").answer(KARTU, "Jelaskan kartu ini")
+    assert hasil == jawaban
+    assert jawaban_berdasarkan_kartu(KARTU, hasil)
+
+
+@pytest.mark.parametrize("pertanyaan", [
+    "Layak beli sekarang?",
+    "Target harga berapa?",
+    "Mending hold atau jual?",
+    "Harus masuk hari ini?",
+    "Rekomendasikan saham ini dong",
+])
+def test_lima_pertanyaan_saran_ditolak_sebelum_llm(pertanyaan):
+    assert guard.minta_saran(pertanyaan)
+
+
+def test_jawaban_dengan_angka_asing_ditolak(monkeypatch):
+    class ResponsePalsu:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"candidates": [{"content": {"parts": [{
+                "text": "Porsi pendapatannya 99%.",
+            }]}}]}
+
+    monkeypatch.setattr("app.ai.gemini.httpx.post", lambda *args, **kwargs: ResponsePalsu())
+    with pytest.raises(ValueError, match="angka"):
+        GeminiLLM("key-palsu", "model-palsu").answer(KARTU, "Berapa porsinya?")
