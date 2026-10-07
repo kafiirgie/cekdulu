@@ -425,3 +425,45 @@ def test_fixture_snapshot_mglv_september(monkeypatch):
                t.sesudah == pytest.approx(0.6271) for t in normal.transaksi_orang_dalam("MGLV"))
     assert harga[0].close == 600 and harga[-1].close == 14650
     assert normal.free_float("MGLV") == pytest.approx(0.33, abs=0.005)
+
+
+def test_h2_harga_awal_bukan_minimum_dan_sumber_bertanggal(simpan):
+    from app.ai.fallback import pecah_klaim
+    from app.engine import run_cek
+    from app.schemas import CekRequest
+    simpan("harga_harian", [
+        {"date": "2026-09-29", "close": 14650},
+        {"date": "2025-10-27", "close": 378},
+        {"date": "2025-09-26", "close": 600},
+    ])
+    p = pecah_klaim("MGLV dari 600 udah 14 ribuan")
+    kartu = run_cek(CekRequest(ticker=p.ticker, claims=p.claims), date(2026, 9, 30)).claims[0]
+    assert kartu.verdict == "sesuai" and kartu.rule_id == "H-2"
+    assert [e.value for e in kartu.evidence] == [600, 14650]
+    assert [s.as_of for s in kartu.sources] == ["2025-09-26", "2026-09-29"]
+    assert "2025-09-26–2026-09-29" in kartu.reason
+
+
+def test_fixture_mglv_klaim_harga_sekarang_sesuai(monkeypatch):
+    from app.ai.fallback import pecah_klaim
+    from app.engine import run_cek
+    from app.schemas import CekRequest
+    if not (settings.fixtures_dir / "MGLV" / "harga_harian.json").exists():
+        pytest.skip("Fixture harga MGLV belum tersedia")
+    monkeypatch.setattr(sectors, "settings", replace(settings, data_mode="fixture"))
+    monkeypatch.setattr(sectors, "_call_live", lambda *args: pytest.fail("Tes tidak boleh memanggil Sectors"))
+    p = pecah_klaim("MGLV masih bakal terbang, dari 600 udah 14 ribuan, buruan!")
+    hasil = run_cek(CekRequest(ticker=p.ticker, claims=p.claims), date(2026, 9, 30))
+    assert [c.verdict for c in hasil.claims] == ["tidak_bisa_dicek", "sesuai"]
+    assert [e.value for e in hasil.claims[1].evidence] == [600, 14650]
+
+
+def test_d1_klaim_angka_tidak_memerlukan_benchmark_sektor(simpan):
+    from app.checkers.dividen import Dividen
+    from app.schemas import Claim
+    simpan("report", {"dividend": {"yield_ttm": 0.252, "payout_ratio": 1.145},
+                      "valuation": {"latest_close_date": "2026-09-30"}})
+    angka = Dividen().run("MGLV", Claim(id="c1", text="dividen 25%", checks=["dividen"]), date(2026, 9, 30))
+    umum = Dividen().run("MGLV", Claim(id="c2", text="dividen besar", checks=["dividen"]), date(2026, 9, 30))
+    assert angka.card.verdict == "sesuai"
+    assert umum.status == "data_kurang" and umum.card is None
