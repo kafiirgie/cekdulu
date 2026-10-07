@@ -13,9 +13,10 @@ from ..catalog import catalog
 from ..schemas import Card, Claim, KlaimResponse
 from .grounding import jawaban_berdasarkan_kartu
 
-# Batas per fase dibuat berjumlah 8 detik agar connect + read tidak masing-masing
-# menunggu 8 detik. Jika salah satu fase gagal, provider.py memakai NoLLM.
-BATAS_WAKTU = httpx.Timeout(connect=2.0, read=5.0, write=1.0, pool=1.0)
+# Model gratis saat ini menjawab dalam 10–14 detik, jadi read diberi 20 detik; write 10 detik
+# untuk unggahan screenshot sampai 4 MB. Turunkan lagi kalau modelnya lebih cepat.
+# Jika salah satu fase gagal, provider.py memakai NoLLM.
+BATAS_WAKTU = httpx.Timeout(connect=3.0, read=20.0, write=10.0, pool=1.0)
 URL_API = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 

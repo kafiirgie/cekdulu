@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from app.ai import guard
+from app.ai import gemini, guard
 from app.ai import provider
 from app.ai.gemini import GeminiLLM
 from app.ai.grounding import jawaban_berdasarkan_kartu
@@ -94,9 +94,7 @@ def test_gemini_meminta_json_terstruktur_tanpa_network(monkeypatch):
 
     assert hasil.ticker == "MDKA"
     assert hasil.claims[0].checks == ["m_komoditas"]
-    assert panggilan["timeout"].connect == 2.0
-    assert panggilan["timeout"].read == 5.0
-    assert panggilan["timeout"].write == 1.0
+    assert panggilan["timeout"] is gemini.BATAS_WAKTU
     config = panggilan["json"]["generationConfig"]
     assert config["responseMimeType"] == "application/json"
     assert "responseJsonSchema" in config
