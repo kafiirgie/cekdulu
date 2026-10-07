@@ -1,6 +1,6 @@
 // Layar 2 — Input: tempel teks dari grup, unggah screenshot, atau ketik kode saham saja.
 import { ImagePlus, X } from 'lucide-react'
-import { useState, type ChangeEvent } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import JudulLayar from '@/components/JudulLayar'
 import { Button } from '@/components/ui/button'
@@ -65,11 +65,26 @@ function UnggahScreenshot({ gambar, onGambar, onGagalBaca }: UnggahProps) {
   )
 }
 
+/** Benar setelah `aktif` bertahan beberapa detik, supaya jeda AI yang lama tidak terlihat seperti macet. */
+function useLama(aktif: boolean, ms = 3000) {
+  const [lama, setLama] = useState(false)
+  useEffect(() => {
+    if (!aktif) return
+    const t = setTimeout(() => setLama(true), ms)
+    return () => {
+      clearTimeout(t)
+      setLama(false)
+    }
+  }, [aktif, ms])
+  return lama
+}
+
 export default function Input() {
   const { text, setText, setKlaim, setHasil, mulaiCek } = useCek()
   const [gambar, setGambar] = useState<Gambar | null>(null)
   const [loading, setLoading] = useState(false)
   const [pesan, setPesan] = useState<string | null>(null)
+  const menungguLama = useLama(loading)
   const nav = useNavigate()
   const galat = useGalatApi()
 
@@ -145,6 +160,11 @@ export default function Input() {
           </Button>
         </div>
       </div>
+      {menungguLama && (
+        <p role="status" className="mt-3 text-sm text-ink-2">
+          AI sedang membaca pesannya. Biasanya 10–20 detik.
+        </p>
+      )}
       {pesan && (
         <p role="alert" className="mt-3 text-sm font-semibold text-destructive">
           {pesan}
