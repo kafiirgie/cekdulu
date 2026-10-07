@@ -28,3 +28,7 @@ data/cache/*
 .idea/
 .DS_Store
 Thumbs.db
+
+# mutation testing (generated)
+backend/mutants/
+backend/.mutmut-cache
