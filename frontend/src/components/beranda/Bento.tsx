@@ -1,6 +1,7 @@
 // "Yang kamu dapat": empat ubin yang memperlihatkan isi hasil cek. Angka dari FINAL_PLAN §6 (data 30 Sep 2026).
 import type { ReactNode } from 'react'
 import { Logo, Wordmark } from '@/components/Logo'
+import StatusIkon from '@/components/StatusIkon'
 import Stamp from '@/components/Stamp'
 import type { Verdict } from '@/lib/contract'
 import { ATURAN, CEK_STANDAR } from '@/lib/labels'
@@ -31,27 +32,21 @@ function VonisMini({ vonis, k, isi, gaya }: { vonis: Verdict; k: string; isi: st
   )
 }
 
-const GAYA_LANGKAH = {
-  ok: { baris: '', ikon: 'border-ink bg-ink text-page' },
-  jalan: { baris: 'bg-surface-2 font-bold', ikon: 'animate-spin border-current border-r-transparent motion-reduce:animate-none' },
-  antre: { baris: 'text-muted-foreground', ikon: 'border-current' },
-}
+const GAYA_BARIS = { aman: '', jalan: 'bg-surface-2 font-bold', antre: 'text-muted-foreground' }
 
 function LangkahMini() {
   const [a, b, c] = CEK_STANDAR
-  const baris: { teks: string; tanda: keyof typeof GAYA_LANGKAH }[] = [
-    { teks: 'Membaca klaim', tanda: 'ok' },
-    { teks: a.step_label, tanda: 'ok' },
+  const baris: { teks: string; tanda: keyof typeof GAYA_BARIS }[] = [
+    { teks: 'Membaca klaim', tanda: 'aman' },
+    { teks: a.step_label, tanda: 'aman' },
     { teks: b.step_label, tanda: 'jalan' },
     { teks: c.step_label, tanda: 'antre' },
   ]
   return (
     <div className={cn(kartuMini, 'grid w-[min(290px,100%)] gap-0.5 p-2')}>
       {baris.map((r) => (
-        <div key={r.teks} className={cn('grid grid-cols-[18px_1fr] items-center gap-2 rounded-lg px-2 py-[7px]', GAYA_LANGKAH[r.tanda].baris)}>
-          <i className={cn('grid size-[15px] place-items-center rounded-full border-[1.5px] text-[9px] not-italic', GAYA_LANGKAH[r.tanda].ikon)}>
-            {r.tanda === 'ok' && '✓'}
-          </i>
+        <div key={r.teks} className={cn('grid grid-cols-[18px_1fr] items-center gap-2 rounded-lg px-2 py-[7px]', GAYA_BARIS[r.tanda])}>
+          <StatusIkon status={r.tanda} className="size-[15px] border-[1.5px] text-[9px]" />
           <span>{r.teks}</span>
         </div>
       ))}

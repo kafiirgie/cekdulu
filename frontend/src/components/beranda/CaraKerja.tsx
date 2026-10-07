@@ -26,7 +26,7 @@ export default function CaraKerja() {
     <section className="py-10">
       <div className="rounded-[28px] border border-line bg-surface-2 px-5 pt-9 pb-7 sm:px-9 sm:pt-12 sm:pb-9">
         <JudulBagian pilKuning pil="Cara kerja" judul={<>Klaim masuk berantakan,<br />keluar sudah diperiksa.</>} />
-        <Sabuk contoh={CONTOH_SABUK} />
+        <Sabuk contoh={CONTOH_SABUK} className="-mx-5 sm:-mx-9" />
         <CatatanSumber />
         <p className="mt-5 mb-3 text-center text-[14.5px] text-ink-2">
           Setiap cek menjalankan <b className="text-ink">{CEK_STANDAR.length} pemeriksaan yang sama</b>, apa pun sahamnya:
