@@ -1,4 +1,4 @@
-// Layar 11 — Metodologi: vonis, pemeriksa + aturan (rules.json lewat api.rules()), peran AI, batas, sumber data.
+// Layar 11 — Metodologi: vonis, pemeriksa + aturan (rules.json lewat api.rules()), peran AI, batas, kartu konteks, sumber data.
 import { useEffect, useState } from 'react'
 import { Pil } from '@/components/beranda/Bagian'
 import DaftarAturan from '@/components/DaftarAturan'
@@ -10,7 +10,7 @@ import Stamp from '@/components/Stamp'
 import { api } from '@/lib/api'
 import type { Catalog, Verdict } from '@/lib/contract'
 import { ISTILAH_CEK } from '@/lib/istilah'
-import { VERDICT_ARTI } from '@/lib/labels'
+import { ATURAN_TIDAK_BISA_DICEK, VERDICT_ARTI } from '@/lib/labels'
 
 // Peran AI (FINAL_PLAN §5).
 const KOLOM_AI = [
@@ -157,7 +157,14 @@ export default function Metodologi() {
           Pos sekali jadi belum dibedakan: kalau <Istilah k="laba" /> naik karena kejadian satu kali, misalnya penjualan
           aset atau keuntungan selisih kurs, cek laba tetap membacanya sebagai kenaikan laba biasa.
         </p>
-        {cat && <DaftarAturan aturan={cat.rules.filter((r) => r.check === null)} />}
+        {cat && <DaftarAturan aturan={cat.rules.filter((r) => r.id === ATURAN_TIDAK_BISA_DICEK)} />}
+      </Seksi>
+      <Seksi judul="Yang tidak diceritakan" sub="konteks, bukan vonis">
+        <p className="m-0 mb-2.5 text-sm text-ink-2">
+          Selain memeriksa klaim, kami menambahkan kartu konteks yang sering tidak disebut di grup. Kartu ini tidak
+          menilai klaim, hanya mencatat hal yang perlu diketahui.
+        </p>
+        {cat && <DaftarAturan aturan={cat.rules.filter((r) => r.check === null && r.id !== ATURAN_TIDAK_BISA_DICEK)} />}
       </Seksi>
       <Seksi judul="Sumber data">
         <SumberData />
