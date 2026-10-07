@@ -17,8 +17,9 @@ from .config import settings
 from .data import sectors
 from .engine import run_cek
 from .modul import free_float as m_ff
+from .modul import komoditas as m_k
 from .schemas import (CekRequest, CekResponse, FreeFloatList, KlaimRequest, KlaimResponse, TanyaRequest,
-                      TanyaResponse)
+                      TanyaResponse, KomoditasList, KomoditasDetail)
 
 app = FastAPI(title="cek dulu. API", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), allow_methods=["*"],
@@ -137,11 +138,26 @@ def modul_free_float_detail(ticker: str):
     raise HTTPException(404, f"{ticker.upper()} tidak ada di Radar Free Float")
 
 
-@app.get("/api/modul/komoditas")
+@app.get("/api/modul/komoditas", response_model=KomoditasList)
 def modul_komoditas(jenis: str = "batubara"):
-    raise HTTPException(501, "TODO(D2): daftar emiten per komoditas")
+    if jenis not in m_k.NAMA_SERI:
+        raise HTTPException(422, "Komoditas belum didukung")
+    if settings.data_mode == "mock":
+        contoh = KomoditasDetail.model_validate(_contoh("modul_komoditas_detail_mdka.json"))
+        return KomoditasList(as_of=contoh.as_of, jenis=jenis, items=[i for i in contoh.items if i.komoditas == jenis])
+    try:
+        return m_k.daftar(jenis)
+    except sectors.DataUnavailable as e:
+        raise HTTPException(503, str(e))
 
 
-@app.get("/api/modul/komoditas/{ticker}")
+@app.get("/api/modul/komoditas/{ticker}", response_model=KomoditasDetail)
 def modul_komoditas_detail(ticker: str):
-    raise HTTPException(501, "TODO(D2): detail saham vs komoditas")
+    if settings.data_mode == "mock":
+        if ticker.upper() != "MDKA":
+            raise HTTPException(404, "Contoh modul hanya tersedia untuk MDKA")
+        return _contoh("modul_komoditas_detail_mdka.json")
+    try:
+        return m_k.detail(ticker)
+    except sectors.DataUnavailable as e:
+        raise HTTPException(404, str(e))

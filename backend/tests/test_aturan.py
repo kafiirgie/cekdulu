@@ -2,16 +2,16 @@
 Setiap aturan di contract/rules.json idealnya punya minimal satu tes di sini."""
 from datetime import date, timedelta
 
-from app.checkers.asing import aturan_a1
+from app.checkers.asing import arah_a2, aturan_a1, aturan_a2, aturan_a3
 from app.checkers.base import angka_persen, angka_rupiah, rp
 from app.checkers.dividen import aturan_d1, aturan_d1_periode, aturan_d2
 from app.checkers.free_float import aturan_f1
 from app.checkers.laba import arah_tren, aturan_l1, aturan_l2, pertumbuhan_yoy
 from app.checkers.lonjakan_harga import aturan_h1, aturan_h2
-from app.checkers.orang_dalam import aturan_o1
+from app.checkers.orang_dalam import OrangDalam, aturan_o1
 from app.checkers.suspensi import aturan_s1
 from app.checkers.valuasi import aturan_v1
-from app.data.normal import AliranAsing, HargaHarian, Kuartal, Suspensi, TransaksiOrangDalam
+from app.data.normal import AliranAsing, HargaHarian, KomposisiBulanan, Kuartal, Suspensi, TransaksiOrangDalam
 from app.modul import free_float as ff
 from app.modul.komoditas import aturan_k1, aturan_k2, komoditas_disebut
 
@@ -65,6 +65,18 @@ def test_orang_dalam_jendela_dan_batas():
     assert aturan_o1([], HARI) == []  # tidak ada transaksi = aman
 
 
+def test_orang_dalam_tidak_menggabungkan_pemegang_berbeda(monkeypatch):
+    from app.data import normal
+    transaksi = [TransaksiOrangDalam(HARI - timedelta(days=10), "Nextier", "jual", 2e9, 0.70, 0.6271),
+                 TransaksiOrangDalam(HARI - timedelta(days=100), "Pemegang lain", "jual", 3e9, 0.04, 0.0),
+                 TransaksiOrangDalam(HARI - timedelta(days=40), "Nextier", "jual", 3e9, 0.7874, 0.70)]
+    monkeypatch.setattr(normal, "transaksi_orang_dalam", lambda t: transaksi)
+    kartu = OrangDalam().run("MGLV", None, HARI).card
+    assert [e.value for e in kartu.evidence if e.label.startswith("Nextier:")] == [0.7874, 0.6271]
+    assert [e.value for e in kartu.evidence if e.label.startswith("Pemegang lain:")] == [0.04, 0.0]
+    assert kartu.sources[0].as_of == str(HARI - timedelta(days=10))
+
+
 # ---------- A ----------
 def test_asing_borong():
     masuk = [AliranAsing(HARI - timedelta(days=i), 1e9 if i % 3 else -5e8) for i in range(20)]
@@ -72,6 +84,55 @@ def test_asing_borong():
     assert borong and total > 0 and porsi >= 0.6
     keluar = [AliranAsing(HARI - timedelta(days=i), -1e9) for i in range(20)]
     assert aturan_a1(keluar)[0] is False
+
+
+def test_asing_tren_bulanan_memakai_enam_bulan_terakhir():
+    import pytest
+    rows = [KomposisiBulanan(date(2026, i, 1), 0.8 - i / 100, i / 100, None) for i in range(1, 9)]
+    asing, ritel = aturan_a2(list(reversed(rows)))
+    assert asing == pytest.approx(-0.05)
+    assert ritel == pytest.approx(0.05)
+    assert aturan_a2(rows[-3:])[0] == pytest.approx(-0.02)
+
+
+def test_asing_tren_bulanan_tidak_mengarang_data():
+    import pytest
+    from app.data.sectors import DataUnavailable
+    rows = [KomposisiBulanan(date(2026, i, 1), 0.4, 0.2, None) for i in range(1, 4)]
+    assert aturan_a2(rows) == (0, 0)
+    for kurang in ([], rows[:2], [rows[0]] * 3):
+        with pytest.raises(DataUnavailable):
+            aturan_a2(kurang)
+
+
+def test_asing_konflik_hanya_tanpa_periode():
+    assert aturan_a3(1, -0.05, False)
+    assert aturan_a3(-1, 0.05, False)
+    assert not aturan_a3(1, -0.05, True)
+    assert not aturan_a3(1, 0.05, False)
+    assert not aturan_a3(0, -0.05, False)
+    assert not aturan_a3(1, 0, False)
+
+
+def test_asing_ambang_satu_poin_persen_dan_batas_float():
+    for perubahan in (0, 0.009, -0.009, 0.009999, -0.009999):
+        assert arah_a2(perubahan) == 0
+        assert not aturan_a3(1, perubahan, False)
+        assert not aturan_a3(-1, perubahan, False)
+    for perubahan in (0.01, 0.011, 0.3 - 0.29):
+        assert arah_a2(perubahan) == 1
+        assert aturan_a3(-1, perubahan, False)
+    for perubahan in (-0.01, -0.011, 0.29 - 0.3):
+        assert arah_a2(perubahan) == -1
+        assert aturan_a3(1, perubahan, False)
+
+
+def test_asing_bulan_hilang_tidak_dianggap_periode_lengkap():
+    import pytest
+    from app.data.sectors import DataUnavailable
+    rows = [KomposisiBulanan(date(2026, i, 1), 0.4, 0.2, None) for i in (1, 3, 4)]
+    with pytest.raises(DataUnavailable, match="tidak lengkap"):
+        aturan_a2(rows)
 
 
 # ---------- H ----------
@@ -89,8 +150,41 @@ def test_lonjakan_abaikan_ex_dividen():
 
 
 def test_klaim_dari_ke():
-    assert aturan_h2(600, 14000, terendah=600, terakhir=14650) is True
-    assert aturan_h2(600, 20000, terendah=600, terakhir=14650) is False
+    assert aturan_h2(600, 14000, harga_jendela=[600, 378, 14650], terakhir=14650) is True
+    assert aturan_h2(600, 20000, harga_jendela=[600, 378, 14650], terakhir=14650) is False
+    assert not aturan_h2(600, 20000, [600, 20000, 14650], 14650)  # Harga akhir lama tidak menggantikan yang terbaru.
+
+
+def test_klaim_harga_awal_harus_pernah_tercatat():
+    assert not aturan_h2(600, 14000, [378, 700, 14650], 14650)
+    assert not aturan_h2(600, 14000, [], 14650)
+    assert not aturan_h2(0, 14000, [0, 14650], 14650)
+    assert not aturan_h2(600, 0, [600, 14650], 0)
+
+
+def test_klaim_harga_toleransi_di_kedua_ujung():
+    for awal in (540, 660):
+        for akhir in (12600, 15400):
+            assert aturan_h2(600, 14000, [378, awal, akhir], akhir)
+    assert not aturan_h2(600, 14000, [539, 14650], 14650)
+    assert not aturan_h2(600, 14000, [661, 14650], 14650)
+    assert not aturan_h2(600, 14000, [600, 12599], 12599)
+    assert not aturan_h2(600, 14000, [600, 15401], 15401)
+
+
+def test_keputusan_b3_final_tanpa_mengubah_ambang():
+    from app.catalog import rule
+    for id_aturan, nama, nilai in (("L-1", "toleransi_poin_persen", 5),
+                                  ("H-2", "toleransi_relatif", 0.10),
+                                  ("K-1", "batas_porsi_pendapatan", 0.50)):
+        assert rule(id_aturan)["status"] == "final"
+        assert rule(id_aturan)["params"][nama] == nilai
+    assert rule("A-3")["status"] == "usulan"
+    import json
+    from app.config import settings
+    contoh = json.loads((settings.contract_dir / "examples" / "cek_res_mglv.json").read_text(encoding="utf-8"))
+    kartu = next(c for c in contoh["claims"] if c["rule_id"] == "H-2")
+    assert kartu["rule_text"] == rule("H-2")["text"]
 
 
 # ---------- S, F ----------
@@ -126,6 +220,42 @@ def test_komoditas():
     assert komoditas_disebut("ADRO batu bara") == "batubara"
     assert aturan_k1(0.12) is True and aturan_k1(0.82) is False
     assert aturan_k2(0.11) == "lemah" and aturan_k2(0.46) == "sedang" and aturan_k2(0.63) == "cukup kuat"
+
+
+def test_n1_semua_berbeda_dari_mayoritas():
+    from app.checkers.analis import aturan_n1
+    assert not aturan_n1(68 / 70, True)
+    assert aturan_n1(68 / 70, False)
+    assert aturan_n1(1, True)
+    assert aturan_n1(0.9, False)
+    assert not aturan_n1(0.899, False)
+
+
+def test_p1_kedua_indikator_dan_ambang():
+    from app.checkers.pemegang import aturan_p1
+    assert aturan_p1(0.01, 100) == "sesuai"
+    assert aturan_p1(0.009, 100) == "menyesatkan"
+    assert aturan_p1(0.02, -100) == "menyesatkan"
+    assert aturan_p1(0, 0) == "tidak_sesuai"
+    assert aturan_p1(-0.01, -100) == "tidak_sesuai"
+
+
+def test_q1_batas_dan_observasi_lengkap():
+    import pytest
+    from app.untold.providers import aturan_q1
+    from app.data.sectors import DataUnavailable
+    assert aturan_q1([1e9] * 60) == (False, 1e9)
+    assert aturan_q1([5e8] * 60) == (True, 5e8)
+    with pytest.raises(DataUnavailable):
+        aturan_q1([5e8] * 59)
+
+
+def test_c1_batas_jendela_kalender():
+    from app.untold.providers import aturan_c1
+    assert aturan_c1(HARI, HARI)
+    assert aturan_c1(HARI + timedelta(days=90), HARI)
+    assert not aturan_c1(HARI + timedelta(days=91), HARI)
+    assert not aturan_c1(HARI - timedelta(days=1), HARI)
 
 
 def test_radar_cocok_dengan_csv_lab_data():

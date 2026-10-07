@@ -1,10 +1,12 @@
 // Layar 7 — Detail pemeriksa ("Lihat aturannya"): aturan yang berlaku + kartu terkait dari hasil cek.
-import type { ReactNode } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import BarisMeta from '@/components/BarisMeta'
+import DaftarAturan from '@/components/DaftarAturan'
 import DaftarKartu from '@/components/hasil/DaftarKartu'
 import { itemKlaim, itemTakDiceritakan, teksPerKlaim } from '@/components/hasil/kartu'
+import TautanModul from '@/components/hasil/TautanModul'
 import JudulLayar from '@/components/JudulLayar'
+import Panel from '@/components/Panel'
 import StatusIkon, { TagStatus } from '@/components/StatusIkon'
 import TautanKembali from '@/components/TautanKembali'
 import type { FormRow } from '@/lib/contract'
@@ -12,14 +14,6 @@ import { dataPer } from '@/lib/format'
 import { ARTI_STATUS, ATURAN, isStandar, labelCek, STATUS_LABEL } from '@/lib/labels'
 import { useCek } from '@/lib/store'
 
-function Panel({ judul, children }: { judul: string; children: ReactNode }) {
-  return (
-    <div className="mb-3.5 rounded-xl border border-line bg-surface p-[18px] shadow-soft">
-      <h2 className="m-0 mb-2.5 text-sm font-bold text-muted-foreground">{judul}</h2>
-      {children}
-    </div>
-  )
-}
 
 /** Pemeriksaan yang gagal atau kekurangan data perlu dijelaskan, bukan disembunyikan. */
 function Pemberitahuan({ f }: { f: FormRow }) {
@@ -36,21 +30,6 @@ function Pemberitahuan({ f }: { f: FormRow }) {
   )
 }
 
-function DaftarAturan({ check }: { check: string }) {
-  const aturan = ATURAN.filter((r) => r.check === check)
-  if (!aturan.length) return <p className="m-0 text-sm text-ink-2">Belum ada aturan tertulis untuk pemeriksaan ini.</p>
-  return (
-    <ul className="m-0 grid list-none gap-2 p-0">
-      {aturan.map((r) => (
-        <li key={r.id} className="rounded-[10px] border border-dashed border-line-2 bg-surface-2 px-3.5 py-3 font-mono text-[13px] leading-relaxed">
-          <b>{r.id}</b>
-          {r.status === 'usulan' && <span className="ml-2 text-[11px] font-semibold text-menyesatkan">usulan</span>}
-          <span className="mt-1 block text-ink">{r.text}</span>
-        </li>
-      ))}
-    </ul>
-  )
-}
 
 export default function DetailPemeriksa() {
   const { check = '' } = useParams()
@@ -68,6 +47,9 @@ export default function DetailPemeriksa() {
         {dataPer(hasil.data_as_of)}
       </BarisMeta>
       <JudulLayar judul={labelCek(check)}>{f.why}</JudulLayar>
+      <div className="-mt-3 mb-3.5">
+        <TautanModul check={check} />
+      </div>
       <Pemberitahuan f={f} />
       {kartu.length > 0 && (
         <Panel judul="Temuan dari cek ini">
@@ -75,7 +57,7 @@ export default function DetailPemeriksa() {
         </Panel>
       )}
       <Panel judul="Aturan yang dipakai">
-        <DaftarAturan check={check} />
+        <DaftarAturan aturan={ATURAN.filter((r) => r.check === check)} />
       </Panel>
       <TautanKembali ke="/cek/formulir">← Kembali ke formulir</TautanKembali>
     </section>

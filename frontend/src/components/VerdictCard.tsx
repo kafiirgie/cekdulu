@@ -4,6 +4,7 @@ import Grafik from '@/components/hasil/Grafik'
 import type { ItemKartu } from '@/components/hasil/kartu'
 import PanelTanya from '@/components/hasil/PanelTanya'
 import Sumber from '@/components/hasil/Sumber'
+import TautanModul from '@/components/hasil/TautanModul'
 import Stamp from '@/components/Stamp'
 import type { Card } from '@/lib/contract'
 import { fmt } from '@/lib/format'
@@ -68,6 +69,7 @@ export default function VerdictCard({ item }: { item: ItemKartu }) {
       </div>
       <h3 className="mt-2.5 mb-0 max-w-[34ch] text-[17.5px] leading-[1.32] font-bold tracking-[-0.02em]">{card.headline}</h3>
       <Sumber sources={card.sources} />
+      <TautanModul check={card.check} />
       <div className="mt-2 flex items-center justify-between gap-2.5">
         {adaDetail && (
           <button

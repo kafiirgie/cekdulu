@@ -1,0 +1,197 @@
+{
+  "as_of": "2026-09-30",
+  "jenis": "emas",
+  "items": [
+    {
+      "ticker": "AMMN",
+      "komoditas": "emas",
+      "porsi_pendapatan": 0.5501,
+      "komoditas_terbesar": "emas",
+      "porsi_terbesar": 0.5501,
+      "tahun_buku": 2024,
+      "korelasi": -0.04,
+      "kategori": "lemah",
+      "periode": "2023-01..2026-08",
+      "n_bulan": 37,
+      "total_return_saham": null,
+      "perubahan_komoditas": 1.324,
+      "arah_tahunan": [
+        "2024: saham +40% vs +31% searah",
+        "2025: saham -29% vs +63% BERLAWANAN",
+        "2026 s.d. 08: saham -32% vs +2% BERLAWANAN"
+      ],
+      "sources": [
+        {
+          "name": "Sectors · total return saham · 2023-01..2026-08",
+          "as_of": "2026-09-30"
+        },
+        {
+          "name": "World Bank Pink Sheet · 2023-01..2026-08",
+          "as_of": "2026-09-02"
+        },
+        {
+          "name": "Sectors · get-segments · tahun buku 2024",
+          "as_of": "2024-12-31"
+        }
+      ]
+    },
+    {
+      "ticker": "ANTM",
+      "komoditas": "emas",
+      "porsi_pendapatan": 0.8319,
+      "komoditas_terbesar": "emas",
+      "porsi_terbesar": 0.8319,
+      "tahun_buku": 2024,
+      "korelasi": 0.49,
+      "kategori": "sedang",
+      "periode": "2023-01..2026-08",
+      "n_bulan": 43,
+      "total_return_saham": 0.7985,
+      "perubahan_komoditas": 1.324,
+      "arah_tahunan": [
+        "2023: saham -20% vs +7% BERLAWANAN",
+        "2024: saham -3% vs +31% BERLAWANAN",
+        "2025: saham +111% vs +63% searah",
+        "2026 s.d. 08: saham +9% vs +2% searah"
+      ],
+      "sources": [
+        {
+          "name": "Sectors · total return saham · 2023-01..2026-08",
+          "as_of": "2026-09-30"
+        },
+        {
+          "name": "World Bank Pink Sheet · 2023-01..2026-08",
+          "as_of": "2026-09-02"
+        },
+        {
+          "name": "Sectors · get-segments · tahun buku 2024",
+          "as_of": "2024-12-31"
+        }
+      ]
+    },
+    {
+      "ticker": "ARCI",
+      "komoditas": "emas",
+      "porsi_pendapatan": null,
+      "komoditas_terbesar": null,
+      "porsi_terbesar": null,
+      "tahun_buku": null,
+      "korelasi": 0.56,
+      "kategori": "sedang",
+      "periode": "2023-01..2026-08",
+      "n_bulan": 43,
+      "total_return_saham": 2.7916,
+      "perubahan_komoditas": 1.324,
+      "arah_tahunan": [
+        "2023: saham +19% vs +7% searah",
+        "2024: saham -38% vs +31% BERLAWANAN",
+        "2025: saham +492% vs +63% searah",
+        "2026 s.d. 08: saham -14% vs +2% BERLAWANAN"
+      ],
+      "sources": [
+        {
+          "name": "Sectors · total return saham · 2023-01..2026-08",
+          "as_of": "2026-09-30"
+        },
+        {
+          "name": "World Bank Pink Sheet · 2023-01..2026-08",
+          "as_of": "2026-09-02"
+        }
+      ]
+    },
+    {
+      "ticker": "BRMS",
+      "komoditas": "emas",
+      "porsi_pendapatan": null,
+      "komoditas_terbesar": null,
+      "porsi_terbesar": null,
+      "tahun_buku": null,
+      "korelasi": 0.43,
+      "kategori": "sedang",
+      "periode": "2023-01..2026-08",
+      "n_bulan": 43,
+      "total_return_saham": 2.7873,
+      "perubahan_komoditas": 1.324,
+      "arah_tahunan": [
+        "2023: saham +5% vs +7% searah",
+        "2024: saham +115% vs +31% searah",
+        "2025: saham +174% vs +63% searah",
+        "2026 s.d. 08: saham -39% vs +2% BERLAWANAN"
+      ],
+      "sources": [
+        {
+          "name": "Sectors · total return saham · 2023-01..2026-08",
+          "as_of": "2026-09-30"
+        },
+        {
+          "name": "World Bank Pink Sheet · 2023-01..2026-08",
+          "as_of": "2026-09-02"
+        }
+      ]
+    },
+    {
+      "ticker": "MDKA",
+      "komoditas": "emas",
+      "porsi_pendapatan": 0.0,
+      "komoditas_terbesar": "nikel",
+      "porsi_terbesar": 0.8239,
+      "tahun_buku": 2024,
+      "korelasi": 0.4,
+      "kategori": "sedang",
+      "periode": "2023-01..2026-08",
+      "n_bulan": 43,
+      "total_return_saham": -0.3579,
+      "perubahan_komoditas": 1.324,
+      "arah_tahunan": [
+        "2023: saham -45% vs +7% BERLAWANAN",
+        "2024: saham -28% vs +31% BERLAWANAN",
+        "2025: saham +25% vs +63% searah",
+        "2026 s.d. 08: saham +30% vs +2% searah"
+      ],
+      "sources": [
+        {
+          "name": "Sectors · total return saham · 2023-01..2026-08",
+          "as_of": "2026-09-30"
+        },
+        {
+          "name": "World Bank Pink Sheet · 2023-01..2026-08",
+          "as_of": "2026-09-02"
+        },
+        {
+          "name": "Sectors · get-segments · tahun buku 2024",
+          "as_of": "2024-12-31"
+        }
+      ]
+    },
+    {
+      "ticker": "PSAB",
+      "komoditas": "emas",
+      "porsi_pendapatan": null,
+      "komoditas_terbesar": null,
+      "porsi_terbesar": null,
+      "tahun_buku": null,
+      "korelasi": 0.26,
+      "kategori": "lemah",
+      "periode": "2023-01..2026-08",
+      "n_bulan": 43,
+      "total_return_saham": 4.2166,
+      "perubahan_komoditas": 1.324,
+      "arah_tahunan": [
+        "2023: saham -30% vs +7% BERLAWANAN",
+        "2024: saham +222% vs +31% searah",
+        "2025: saham +95% vs +63% searah",
+        "2026 s.d. 08: saham +18% vs +2% searah"
+      ],
+      "sources": [
+        {
+          "name": "Sectors · total return saham · 2023-01..2026-08",
+          "as_of": "2026-09-30"
+        },
+        {
+          "name": "World Bank Pink Sheet · 2023-01..2026-08",
+          "as_of": "2026-09-02"
+        }
+      ]
+    }
+  ]
+}

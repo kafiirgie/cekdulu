@@ -4,12 +4,14 @@ from __future__ import annotations
 import base64
 import binascii
 import json
+import re
 from typing import Optional
 
 import httpx
 
 from ..catalog import catalog
 from ..schemas import Card, Claim, KlaimResponse
+from .grounding import jawaban_berdasarkan_kartu
 
 # Batas per fase dibuat berjumlah 8 detik agar connect + read tidak masing-masing
 # menunggu 8 detik. Jika salah satu fase gagal, provider.py memakai NoLLM.
@@ -163,4 +165,39 @@ Pesan:
         return KlaimResponse(ticker=mentah.get("ticker"), claims=claims, used_ai=True)
 
     def answer(self, card: Card, question: str) -> str:
-        raise NotImplementedError("Tanya dengan Gemini dikerjakan di C3")
+        isi_kartu = {
+            "headline": card.headline,
+            "reason": card.reason,
+            "evidence": [e.model_dump() for e in card.evidence],
+            "rule_text": card.rule_text,
+            "sources": [s.model_dump() for s in card.sources],
+        }
+        prompt = f"""
+Jawab pertanyaan pengguna dalam maksimal 3 kalimat bahasa Indonesia yang mudah.
+Gunakan HANYA informasi dalam kartu di bawah. Jangan menghitung angka baru,
+membuat prediksi, atau memberi saran investasi. Jika jawabannya tidak tersedia,
+katakan persis: "data ini tidak ada di kartu".
+
+Kartu:
+{json.dumps(isi_kartu, ensure_ascii=False)}
+
+Pertanyaan:
+{question}
+""".strip()
+        response = httpx.post(
+            URL_API.format(model=self.model),
+            headers={"x-goog-api-key": self.api_key},
+            json={
+                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0, "maxOutputTokens": 256},
+            },
+            timeout=BATAS_WAKTU,
+        )
+        response.raise_for_status()
+        jawaban = self._teks_response(response.json()).strip()
+        jumlah_kalimat = len([x for x in re.split(r"(?<=[.!?])\s+", jawaban) if x.strip()])
+        if jumlah_kalimat > 3:
+            raise ValueError("Jawaban Gemini lebih dari 3 kalimat")
+        if not jawaban_berdasarkan_kartu(card, jawaban):
+            raise ValueError("Jawaban Gemini memuat angka yang tidak ada di kartu")
+        return jawaban
