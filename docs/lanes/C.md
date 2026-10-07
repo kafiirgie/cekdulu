@@ -48,15 +48,29 @@ Starting point: `/api/klaim` already works with the **keyword fallback** (`NoLLM
 
 ---
 
-## C3 — Ask with an LLM · P1
+## C3 — Tanya (Ask) · P1 — deterministic answers + TypeSafe/JEV classification
 
-**File:** `answer(card, question)` in the provider class.
-- `guard.minta_saran` is already checked in `main.py` before the LLM is called. Don't move it.
-- The prompt contains only the card's `headline`, `reason`, `evidence`, `rule_text`, `sources`. Instructions: answer in ≤ 3 sentences of plain language, only from this data, and say "data ini tidak ada di kartu" (this data isn't on the card) when it doesn't know.
-- **Check in code:** every number in the answer must appear on the card (compare regex-extracted numbers with evidence values in several formats). If there's a foreign number → use the `NoLLM` answer.
-- `_CEK` in `main.py` is kept in memory: after a server restart, an old `cek_id` → 404. Its error message must be friendly (the FE shows it).
+**Replaces** the old plan of asking an LLM for free text. Free-text answers were the
+brittle part: a model could invent a number or drift off the card. Now:
 
-**Done when:** 10 test questions (5 reasonable, 5 asking for advice) → 5 answered without invented numbers, 5 refused.
+- **The model only classifies.** TypeSafe `/systemone` picks which part of the card
+  answers the question (angka / aturan / sumber / istilah / tidak ada), from a closed
+  set of labels. It never writes the answer text.
+- **Code writes every answer.** `backend/app/ai/tanya.py` assembles the sentence from
+  the card's own fields (`headline`, `reason`, `evidence`, `rule_text`, `sources`) and
+  the contract glossary. So no number can be invented and no phrasing can leak advice.
+- **Files:** `backend/app/ai/jev.py` (classifier client), `backend/app/ai/tanya.py`
+  (answer assembler + `jawab_tanya`), `backend/app/ai/openai_compat.py` (an
+  OpenAI-compatible provider, e.g. ollama-cloud, for claim splitting).
+- **Guard order is unchanged:** `guard.minta_saran` runs first in `/api/tanya`.
+- **Never 500:** if JEV is off (`TANYA_MODE=off`), unset, or errors, `jawab_tanya` falls
+  back to a code-only `ringkasan` answer built from the same fields.
+- Env: `TANYA_MODE` (`auto`/`off`), `JEV_BASE_URL`, `JEV_API_KEY`, `JEV_MODEL`.
+  With `auto` and no `JEV_API_KEY`, no model call happens — code answers only.
+
+**Done when:** `pytest -q` stays green with **no network** (fake `httpx.post`, same
+pattern as `tests/test_ai.py`), and a real `/api/tanya` call through curl answers from
+the card (numbers, rule, sources, glossary) without inventing anything.
 
 ---
 

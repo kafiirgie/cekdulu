@@ -20,10 +20,12 @@ from . import fallback
 
 
 class LLM(Protocol):
+    """Antarmuka AI. Sejak panel Tanya memakai penyusun jawaban deterministik, satu-satunya
+    tugas LLM yang tersisa di antarmuka ini adalah memecah klaim (extract_claims).
+    """
+
     def extract_claims(self, text: Optional[str], image_base64: Optional[str],
                        ticker: Optional[str]) -> KlaimResponse: ...
-
-    def answer(self, card: Card, question: str) -> str: ...
 
 
 class NoLLM:
@@ -34,11 +36,6 @@ class NoLLM:
             return KlaimResponse(ticker=ticker.upper(), claims=[], used_ai=False)  # cek umum
         return fallback.pecah_klaim(text or "", ticker)
 
-    def answer(self, card: Card, question: str) -> str:
-        bukti = "; ".join(f"{e.label}: {e.value}" for e in card.evidence) or "tidak ada angka tambahan"
-        sumber = ", ".join(s.name for s in card.sources) or "-"
-        return f"{card.headline} Angka di kartu ini: {bukti}. Sumber: {sumber}."
-
 
 def get_llm() -> LLM:
     p = settings.llm_provider.lower()
@@ -47,6 +44,9 @@ def get_llm() -> LLM:
     if p == "gemini":
         from .gemini import GeminiLLM
         return GeminiLLM(settings.llm_api_key, settings.llm_model)
+    if p in ("openai_compat", "openai", "ollama_cloud"):
+        from .openai_compat import OpenAICompatLLM
+        return OpenAICompatLLM(settings.llm_base_url, settings.llm_api_key, settings.llm_model)
     raise ValueError(f"LLM_PROVIDER '{p}' belum dibuat")
 
 

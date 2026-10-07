@@ -25,9 +25,15 @@ class Settings:
     sectors_base_url: str = os.getenv("SECTORS_BASE_URL", "https://api.sectors.app")
     # Batas kredit untuk mode live di satu proses server. 0 = tanpa panggilan live.
     sectors_credit_budget: int = int(os.getenv("SECTORS_CREDIT_BUDGET", "100"))
-    llm_provider: str = os.getenv("LLM_PROVIDER", "none")  # none | gemini | ... (keputusan terbuka #1)
+    llm_provider: str = os.getenv("LLM_PROVIDER", "none")  # none | gemini | openai_compat | ... (keputusan terbuka #1)
     llm_api_key: str = os.getenv("LLM_API_KEY", "")
     llm_model: str = os.getenv("LLM_MODEL", "")
+    llm_base_url: str = os.getenv("LLM_BASE_URL", "")  # hanya untuk penyedia kompatibel OpenAI
+    # Panel Tanya: klasifikasi TypeSafe/JEV, jawaban tetap disusun kode.
+    tanya_mode: str = os.getenv("TANYA_MODE", "auto")  # auto = pakai JEV kalau kunci ada; off = selalu template kode
+    jev_base_url: str = os.getenv("JEV_BASE_URL", "https://api.typesafe.ai/v1")
+    jev_api_key: str = os.getenv("JEV_API_KEY", "")
+    jev_model: str = os.getenv("JEV_MODEL", "jev-latest")
     cors_origins: tuple[str, ...] = tuple(
         o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",") if o.strip()
     )

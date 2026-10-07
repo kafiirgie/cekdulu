@@ -128,22 +128,69 @@ def test_tanya_hasil_lama_memberi_pesan_ramah(client_mock):
     assert "server mungkin restart" in r.json()["detail"]
 
 
-def test_tanya_jatuh_ke_nollm_saat_jawaban_ai_ditolak(client_mock, monkeypatch):
-    class LLMDitolak:
-        def answer(self, card, question):
-            raise ValueError("angka asing")
+def test_tanya_kode_menjawab_tanpa_jev(client_mock, monkeypatch):
+    """JEV mati/gagal → kode tetap menjawab dari field kartu (tidak pernah 500)."""
+    class JevError:
+        def klasifikasi(self, card, question):
+            raise TimeoutError("jev lambat")
 
+    monkeypatch.setattr(main, "get_jev", lambda: JevError())
     cek = client_mock.post(
         "/api/cek",
         json={"ticker": "MDKA"},
         headers={"X-Device-Id": "tanya-fallback"},
     ).json()
-    monkeypatch.setattr(main, "get_llm", lambda: LLMDitolak())
     r = client_mock.post("/api/tanya", json={
         "cek_id": cek["id"],
         "card": "u0",
         "question": "Jelaskan angka di kartu ini",
     })
     assert r.status_code == 200
-    assert r.json()["refused"] is False
-    assert "Angka di kartu ini" in r.json()["answer"]
+    body = r.json()
+    assert body["refused"] is False and body["used_ai"] is False
+    assert body["answer_kind"] == "ringkasan"
+    assert "Angka di kartu ini" in body["answer"] and "Sumber kartu ini" in body["answer"]
+
+
+def test_tanya_jev_memilih_bagian_dan_kode_merakit(client_mock, monkeypatch):
+    """JEV memilih bagian; kalimat & angka tetap dirakit kode."""
+    class JevPalsu:
+        def klasifikasi(self, card, question):
+            return {"bagian": {"type": "choice", "choice": "sumber_tanggal", "confidence": 0.9},
+                    "istilah_key": {"type": "choice", "choice": "papan_pemantauan", "confidence": 0.9},
+                    "tahu": {"type": "noul", "noul": 0.9}}
+
+    monkeypatch.setattr(main, "get_jev", lambda: JevPalsu())
+    cek = client_mock.post(
+        "/api/cek",
+        json={"ticker": "MDKA"},
+        headers={"X-Device-Id": "tanya-jev"},
+    ).json()
+    body = client_mock.post("/api/tanya", json={
+        "cek_id": cek["id"], "card": "u0", "question": "Sumbernya dari mana?",
+    }).json()
+    assert body["used_ai"] is True
+    assert body["answer_kind"] == "sumber"
+    assert body["bagian"] == "sumber_tanggal"
+    assert "Sumber kartu ini" in body["answer"]
+
+
+def test_tanya_jev_di_luar_kartu_jawab_jujur(client_mock, monkeypatch):
+    """`bagian == di_luar_kartu` → kode menjawab jujur 'tidak ada di kartu'."""
+    class JevLuar:
+        def klasifikasi(self, card, question):
+            return {"bagian": {"type": "choice", "choice": "di_luar_kartu", "confidence": 0.9},
+                    "istilah_key": {"type": "choice", "choice": "laba", "confidence": 0.9},
+                    "tahu": {"type": "noul", "noul": 0.9}}
+
+    monkeypatch.setattr(main, "get_jev", lambda: JevLuar())
+    cek = client_mock.post(
+        "/api/cek",
+        json={"ticker": "MDKA"},
+        headers={"X-Device-Id": "tanya-ragu"},
+    ).json()
+    body = client_mock.post("/api/tanya", json={
+        "cek_id": cek["id"], "card": "u0", "question": "besok naik nggak?",
+    }).json()
+    assert body["answer_kind"] == "tidak_ada"
+    assert "tidak ada di kartu" in body["answer"]

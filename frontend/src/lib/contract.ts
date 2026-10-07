@@ -67,7 +67,19 @@ export interface CekResponse {
 
 export interface TanyaRequest { cek_id: string; card: string; question: string }
 
-export interface TanyaResponse { answer: string; refused: boolean }
+/** Nilai `bagian` ditentukan kode (JEV), bukan teks bebas LLM. */
+export type BagianJawaban = 'angka_bukti' | 'alasan_aturan' | 'sumber_tanggal' | 'istilah' | 'di_luar_kartu'
+/** Bagian internal yang dipakai kode untuk merakit jawaban. */
+export type AnswerKind = 'angka' | 'aturan' | 'sumber' | 'istilah' | 'saran' | 'ringkasan' | 'tidak_ada'
+
+export interface TanyaResponse {
+  answer: string
+  refused: boolean
+  /** true = jawaban lewat klasifikasi JEV; false = dirakit kode penuh. */
+  used_ai?: boolean
+  answer_kind?: AnswerKind | null
+  bagian?: BagianJawaban | null
+}
 
 export interface FreeFloatItem {
   ticker: string
