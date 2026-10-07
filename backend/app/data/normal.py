@@ -130,6 +130,9 @@ def laba_kuartalan(ticker: str) -> list[Kuartal]:
 
 def _bagian_laporan(ticker: str, bagian: str) -> dict:
     data = _ambil(ticker, "report").get(bagian)
+    if not isinstance(data, dict) and bagian in ("valuation", "dividend"):
+        # Laporan tambahan tidak menimpa snapshot overview/ownership yang dibagikan tim.
+        data = _ambil(ticker, "report_keuangan").get(bagian)
     if not isinstance(data, dict):
         raise DataUnavailable(f"Bagian {bagian} tidak tersedia")
     return data
@@ -150,15 +153,11 @@ def valuasi(ticker: str) -> Valuasi:
 
 
 def dividen(ticker: str) -> Dividen:
-    report = _ambil(ticker, "report")
-    data = report.get("dividend")
-    if not isinstance(data, dict):
-        raise DataUnavailable("Bagian dividend tidak tersedia")
+    data = _bagian_laporan(ticker, "dividend")
     if "yield_ttm" not in data:
         raise DataUnavailable("yield_ttm tidak tersedia")
-    valuation = report.get("valuation")
-    tanggal = valuation.get("latest_close_date") if isinstance(valuation, dict) else None
     yield_ttm = _angka(data["yield_ttm"], "yield_ttm", opsional=True)
+    tanggal = _bagian_laporan(ticker, "valuation").get("latest_close_date") if yield_ttm else None
     return Dividen(
         yield_ttm=yield_ttm,
         payout_ratio=_angka(data.get("payout_ratio"), "payout_ratio", opsional=True),

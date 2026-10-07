@@ -71,3 +71,36 @@ def test_report_memakai_bagian_sah_dan_batas_kredit(monkeypatch):
     with pytest.raises(sectors.DataUnavailable, match="Batas kredit"):
         sectors._call_live("MGLV", "report")
     assert len(calls) == 1
+
+
+def test_laporan_tambahan_hanya_dua_bagian(monkeypatch):
+    import httpx
+    monkeypatch.setattr(sectors, "settings", replace(settings, sectors_api_key="kunci-uji", sectors_credit_budget=2))
+    monkeypatch.setattr(sectors, "_credits_used", 0)
+    def http_palsu(url, *, params, headers, timeout):
+        assert params == {"sections": "valuation,dividend"}
+        return httpx.Response(200, json={"valuation": {}, "dividend": {}}, request=httpx.Request("GET", url))
+    monkeypatch.setattr(sectors.httpx, "get", http_palsu)
+    sectors._call_live("MGLV", "report_keuangan")
+    assert sectors.credits_used() == 2
+
+
+def test_live_disimpan_di_cache_dan_fixture_tanpa_menimpa_report(lokasi, monkeypatch):
+    fixture = lokasi.fixtures_dir / "MGLV"
+    fixture.mkdir(parents=True)
+    lama = '{"company_name": "Snapshot lama", "ownership": {}}'
+    (fixture / "report.json").write_text(lama, encoding="utf-8")
+    baru = {"valuation": {"latest_close_date": "2026-10-06"}, "dividend": {"yield_ttm": None}}
+    panggilan = []
+    def live_palsu(ticker, kunci):
+        panggilan.append((ticker, kunci))
+        return baru
+    monkeypatch.setattr(sectors, "_call_live", live_palsu)
+    monkeypatch.setattr(sys, "argv", ["buat_fixture.py", "MGLV", "--kunci", "report_keuangan", "--live"])
+    buat_fixture.main()
+    assert panggilan == [("MGLV", "report_keuangan")]
+    assert (fixture / "report.json").read_text(encoding="utf-8") == lama
+    assert json.loads((fixture / "report_keuangan.json").read_text(encoding="utf-8")) == baru
+    assert json.loads((lokasi.cache_dir / "MGLV" / "report_keuangan.json").read_text(encoding="utf-8")) == baru
+    buat_fixture.main()
+    assert len(panggilan) == 1
