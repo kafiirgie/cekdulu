@@ -98,6 +98,11 @@ def _normalisasi(res: KlaimResponse, teks: Optional[str], ticker: Optional[str],
 
 
 def extract_with_fallback(text, image_base64, ticker) -> KlaimResponse:
+    # C2 core sudah dapat membaca gambar, tetapi jangan habiskan request Gemini
+    # sebelum kontrak `source_text` disetujui. Tanpa field itu, normalisasi pusat
+    # tidak dapat memverifikasi span terhadap teks OCR dan FE tidak bisa menyorotnya.
+    if image_base64:
+        return sanitize(NoLLM().extract_claims(text, image_base64, ticker))
     try:
         llm = get_llm()
         hasil = sanitize(llm.extract_claims(text, image_base64, ticker))

@@ -105,6 +105,19 @@ def test_api_klaim_kosong_ditolak(client_mock):
     assert client_mock.post("/api/klaim", json={}).status_code == 422
 
 
+def test_api_screenshot_base64_rusak_ditolak(client_mock):
+    r = client_mock.post("/api/klaim", json={"image_base64": "bukan-base64"})
+    assert r.status_code == 422
+    assert r.json()["detail"] == "Screenshot bukan base64 yang valid."
+
+
+def test_api_screenshot_lebih_dari_4mb_ditolak(client_mock):
+    terlalu_besar = "A" * (4 * ((main.BATAS_GAMBAR + 2) // 3) + 1)
+    r = client_mock.post("/api/klaim", json={"image_base64": terlalu_besar})
+    assert r.status_code == 413
+    assert r.json()["detail"] == "Ukuran screenshot maksimal 4 MB."
+
+
 def test_tanya_hasil_lama_memberi_pesan_ramah(client_mock):
     r = client_mock.post("/api/tanya", json={
         "cek_id": "cek_yang_hilang",

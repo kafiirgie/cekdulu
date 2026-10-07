@@ -1,6 +1,7 @@
 """Tes pengaman AI. Tidak ada tes yang memanggil network atau API sungguhan."""
 from __future__ import annotations
 
+import base64
 import json
 
 import pytest
@@ -75,7 +76,7 @@ def test_gemini_meminta_json_terstruktur_tanpa_network(monkeypatch):
             return None
 
         def json(self):
-            isi = {"ticker": "MDKA", "claims": [
+            isi = {"source_text": "MDKA saham emas", "ticker": "MDKA", "claims": [
                 {"text": "MDKA saham emas", "checks": ["m_komoditas"]},
             ]}
             return {"candidates": [{"content": {"parts": [{"text": json.dumps(isi)}]}}]}
@@ -99,6 +100,52 @@ def test_gemini_meminta_json_terstruktur_tanpa_network(monkeypatch):
     config = panggilan["json"]["generationConfig"]
     assert config["responseMimeType"] == "application/json"
     assert "responseJsonSchema" in config
+
+
+def test_gemini_screenshot_satu_request_dan_span_dari_ocr(monkeypatch):
+    class ResponsePalsu:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            isi = {
+                "source_text": "MGLV dari 600 udah 14 ribuan, buruan!",
+                "ticker": "MGLV",
+                "claims": [
+                    {"text": "dari 600 udah 14 ribuan", "checks": ["lonjakan_harga"]},
+                    {"text": "teks halusinasi", "checks": ["laba"]},
+                ],
+            }
+            return {"candidates": [{"content": {"parts": [{"text": json.dumps(isi)}]}}]}
+
+    panggilan = []
+
+    def post_palsu(url, **kwargs):
+        panggilan.append({"url": url, **kwargs})
+        return ResponsePalsu()
+
+    monkeypatch.setattr("app.ai.gemini.httpx.post", post_palsu)
+    jpeg = base64.b64encode(b"\xff\xd8\xffgambar-palsu").decode()
+    hasil = GeminiLLM("key-palsu", "model-palsu").extract_claims(None, jpeg, None)
+
+    assert len(panggilan) == 1
+    parts = panggilan[0]["json"]["contents"][0]["parts"]
+    assert parts[1] == {"inlineData": {"mimeType": "image/jpeg", "data": jpeg}}
+    assert hasil.ticker == "MGLV"
+    assert [c.text for c in hasil.claims] == ["dari 600 udah 14 ribuan"]
+    assert hasil.claims[0].span == (5, 28)
+
+
+def test_screenshot_tidak_memanggil_llm_sebelum_kontrak_source_text(monkeypatch):
+    class JanganDipanggil:
+        def extract_claims(self, text, image_base64, ticker):
+            raise AssertionError("LLM tidak boleh dipanggil sebelum kontrak siap")
+
+    monkeypatch.setattr(provider, "get_llm", lambda: JanganDipanggil())
+    hasil = provider.extract_with_fallback(None, "base64-belum-divalidasi", None)
+
+    assert hasil.used_ai is False
+    assert hasil.claims == []
 
 
 KARTU = Card(
