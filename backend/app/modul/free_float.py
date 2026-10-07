@@ -58,11 +58,12 @@ def hitung(ticker: str, company: Optional[str], ff: float, market_cap: float,
 def daftar() -> FreeFloatList:
     """Dari bahan_produk/radar_free_float.csv. Hari serap dihitung ULANG di sini dengan aturan R-1
     (supaya ambang di rules.json yang berlaku), lalu dibandingkan dengan kolom CSV di tes.
-    TODO(D1): tandai papan_pemantauan dari papan_pemantauan_khusus.csv (aktif = 'ya')."""
+    Status papan berasal dari snapshot BEI yang sama, bukan pembaruan langsung."""
     rows = bahan.baca("radar_free_float")
+    aktif = {r["symbol"] for r in bahan.baca("papan_pemantauan_khusus") if r["aktif"] == "ya"}
     items = [
         hitung(r["symbol"], r.get("nama"), float(r["free_float"]), float(r["market_cap"]),
-               bahan.angka(r.get("rata2_nilai_transaksi_60h")))
+               bahan.angka(r.get("rata2_nilai_transaksi_60h")), papan=r["symbol"] in aktif)
         for r in rows
     ]
     items.sort(key=lambda i: (i.tenggat, -(i.hari_serap or 0)))
