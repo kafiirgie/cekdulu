@@ -311,15 +311,19 @@ def test_openai_compat_tidak_menebak_tanpa_teks():
 # ---------- JEV sebagai pengaman kedua saat memecah klaim (prediksi tanpa angka) ----------
 
 class JevPrediksi:
-    """Klien JEV palsu untuk .prediksi(): peta kalimat -> skor."""
+    """Klien JEV palsu: .saring() mengembalikan prediksi sesuai peta skor."""
 
     def __init__(self, skor: dict[str, float]):
         self._skor = skor
         self.dipanggil = 0
 
-    def prediksi(self, kalimat):
+    def saring(self, kalimat):
         self.dipanggil += 1
-        return {jev.KUNCI_PREDIKSI: {"type": "noul", "noul": self._skor.get(kalimat, 0.0)}}
+        return {
+            "klaim_saham": {"type": "noul", "noul": 0.9},
+            "prediksi": {"type": "noul", "noul": self._skor.get(kalimat, 0.0)},
+            "target_harga": {"type": "noul", "noul": 0.0},
+        }
 
 
 def test_jev_menghapus_pemeriksa_dari_prediksi_yang_lolos_heuristik(monkeypatch):
@@ -398,29 +402,86 @@ def test_klien_prediksi_memuat_satu_noul_tanpa_kartu(monkeypatch):
     assert hasil[jev.KUNCI_PREDIKSI]["noul"] == 0.8
 
 
-def test_prediksi_jev_ambang_dan_nilai_rusak():
-    assert jev.prediksi_jev(JevPrediksi({"x": jev.AMBANG_PREDIKSI}), "x") is True
-    assert jev.prediksi_jev(JevPrediksi({"x": jev.AMBANG_PREDIKSI - 0.01}), "x") is False
+def test_saring_jev_ambang_dan_default_aman():
+    """Satu panggilan -> tiga keputusan; JEV mati/jawaban aneh -> default aman."""
+    assert jev.saring_jev(JevPrediksi({"x": jev.AMBANG_PREDIKSI}), "x")["prediksi"] is True
+    assert jev.saring_jev(JevPrediksi({"x": jev.AMBANG_PREDIKSI - 0.01}), "x")["prediksi"] is False
+    assert jev.saring_jev(JevKlaim({"x": jev.AMBANG_KLAIM - 0.01}), "x")["klaim"] is False
+    assert jev.saring_jev(JevTarget(jev.AMBANG_TARGET), "x")["target"] is True
 
     class Rusak:
-        def prediksi(self, kalimat):
+        def saring(self, kalimat):
             raise TimeoutError
 
-    assert jev.prediksi_jev(Rusak(), "x") is False
+    class Aneh:
+        def saring(self, kalimat):
+            return {}
+
+    for klien in (Rusak(), Aneh()):
+        d = jev.saring_jev(klien, "x")
+        assert d == {"klaim": True, "prediksi": False, "target": False}  # default aman
+
+
+def test_satu_panggilan_jev_untuk_satu_kalimat(monkeypatch):
+    """Penghematan: satu kalimat -> SATU request JEV berisi tiga pertanyaan."""
+    panggilan = []
+
+    class ResponsePalsu:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"answers": {"klaim_saham": {"choice": None, "noul": 0.9},
+                                "prediksi": {"noul": 0.0}, "target_harga": {"noul": 0.0}}}
+
+    monkeypatch.setattr("app.ai.jev.httpx.post",
+                        lambda url, **k: panggilan.append(k["json"]) or ResponsePalsu())
+    kalimat = "MGLV dari 600 udah 14 ribuan"
+
+    jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").saring(kalimat)
+    assert len(panggilan) == 1, "harus satu request, bukan tiga"
+    assert set(panggilan[0]["questions"]) == {"klaim_saham", "prediksi", "target_harga"}
+
+
+def test_normalisasi_hanya_satu_panggilan_jev_per_klaim(monkeypatch):
+    """Bukti hemat: tiga klaim -> tiga request (dulu sampai sembilan)."""
+    hitung = {"n": 0}
+
+    class ResponsePalsu:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            hitung["n"] += 1
+            return {"answers": {"klaim_saham": {"noul": 0.9}, "prediksi": {"noul": 0.0},
+                                "target_harga": {"noul": 0.0}}}
+
+    monkeypatch.setattr("app.ai.jev.httpx.post", lambda url, **k: ResponsePalsu())
+    kalimat = "laba BBRI naik 20% tahun ini"
+    klien_jev = jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest")
+    monkeypatch.setattr(provider, "_get_jev_prediksi", lambda: klien_jev)
+    provider._normalisasi(
+        KlaimResponse(ticker="BBRI", claims=[Claim(id="c1", text=kalimat, checks=["laba"])]),
+        kalimat, None, used_ai=True, dari_gambar=False)
+    assert hitung["n"] == 1
 
 
 # ---------- JEV menyaring kalimat yang BUKAN klaim saham (sapaan/pertanyaan/ngobrol) ----------
 
 class JevKlaim:
-    """Klien JEV palsu untuk .klaim(): peta kalimat -> skor klaim."""
+    """Klien JEV palsu: .saring() mengembalikan skor klaim sesuai peta."""
 
     def __init__(self, skor: dict[str, float]):
         self._skor = skor
         self.dipanggil = 0
 
-    def klaim(self, kalimat):
+    def saring(self, kalimat):
         self.dipanggil += 1
-        return {jev.KUNCI_KLAIM: {"type": "noul", "noul": self._skor.get(kalimat, 1.0)}}
+        return {
+            "klaim_saham": {"type": "noul", "noul": self._skor.get(kalimat, 1.0)},
+            "prediksi": {"type": "noul", "noul": 0.0},
+            "target_harga": {"type": "noul", "noul": 0.0},
+        }
 
 
 def test_jev_membuang_ngobrol_yang_lolos_heuristik(monkeypatch):
@@ -462,14 +523,15 @@ def test_jev_mati_mempertahankan_klaim(monkeypatch):
     assert provider._get_jev_prediksi() is None
 
 
-def test_klaim_jev_default_aman_saat_jawaban_aneh():
+def test_klaim_jev_ambang_dan_default_aman():
+    """Ambang klaim lewat saring_jev; jawaban aneh -> klaim DIPERTAHANKAN."""
     class Aneh:
-        def klaim(self, kalimat):
+        def saring(self, kalimat):
             return {}
 
-    assert jev.klaim_jev(Aneh(), "apapun") is True  # tidak bisa dinilai -> pertahankan
-    assert jev.klaim_jev(JevKlaim({"x": jev.AMBANG_KLAIM}), "x") is True
-    assert jev.klaim_jev(JevKlaim({"x": jev.AMBANG_KLAIM - 0.01}), "x") is False
+    assert jev.saring_jev(Aneh(), "apapun")["klaim"] is True  # tak bisa dinilai -> pertahankan
+    assert jev.saring_jev(JevKlaim({"x": jev.AMBANG_KLAIM}), "x")["klaim"] is True
+    assert jev.saring_jev(JevKlaim({"x": jev.AMBANG_KLAIM - 0.01}), "x")["klaim"] is False
 
 
 def test_heuristik_bukan_klaim_tanpa_jev():
@@ -519,21 +581,19 @@ def test_pemisah_ribuan_tidak_memecah_kalimat():
 # ---------- JEV mematikan vonis untuk target/prediksi harga (aturan T-1) ----------
 
 class JevTarget:
-    """Klien JEV palsu: .target() dan .klaim()/.prediksi() mengembalikan nilai tetap."""
+    """Klien JEV palsu: .saring() mengembalikan skor target tetap."""
 
     def __init__(self, skor_target: float):
         self._skor = skor_target
         self.dipanggil = 0
 
-    def target(self, kalimat):
+    def saring(self, kalimat):
         self.dipanggil += 1
-        return {jev.KUNCI_TARGET: {"type": "noul", "noul": self._skor}}
-
-    def klaim(self, kalimat):
-        return {jev.KUNCI_KLAIM: {"type": "noul", "noul": 0.9}}
-
-    def prediksi(self, kalimat):
-        return {jev.KUNCI_PREDIKSI: {"type": "noul", "noul": 0.0}}
+        return {
+            "klaim_saham": {"type": "noul", "noul": 0.9},
+            "prediksi": {"type": "noul", "noul": 0.0},
+            "target_harga": {"type": "noul", "noul": self._skor},
+        }
 
 
 def test_jev_mematikan_vonis_target_berangka(monkeypatch):
@@ -562,14 +622,15 @@ def test_jev_membiarkan_klaim_data_berangka(monkeypatch):
     assert res.claims[0].checks == ["lonjakan_harga"]
 
 
-def test_target_jev_default_saat_jev_mati():
+def test_target_jev_ambang_lewat_saring():
+    """Ambang target lewat saring_jev; JEV mati -> target False (vonis normal)."""
     class Rusak:
-        def target(self, kalimat):
+        def saring(self, kalimat):
             raise TimeoutError
 
-    assert jev.target_jev(Rusak(), "besok naik") is False  # JEV mati -> vonis normal
-    assert jev.target_jev(JevTarget(jev.AMBANG_TARGET), "x") is True
-    assert jev.target_jev(JevTarget(jev.AMBANG_TARGET - 0.01), "x") is False
+    assert jev.saring_jev(Rusak(), "besok naik")["target"] is False
+    assert jev.saring_jev(JevTarget(jev.AMBANG_TARGET), "x")["target"] is True
+    assert jev.saring_jev(JevTarget(jev.AMBANG_TARGET - 0.01), "x")["target"] is False
 
 
 def test_klien_target_memuat_satu_noul_tanpa_kartu(monkeypatch):

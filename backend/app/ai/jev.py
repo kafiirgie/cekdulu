@@ -265,6 +265,86 @@ class Jev:
         response.raise_for_status()
         return response.json().get("answers", {})
 
+    def saring(self, kalimat: str) -> dict[str, Any]:
+        """Satu panggilan untuk tiga pertanyaan sekaligus: klaim? prediksi? target harga?
+
+        JEV bisa menjawab beberapa pertanyaan dalam satu request. Dulu pemanggil
+        mengirim tiga request terpisah (klaim_jev + prediksi_jev + target_jev per
+        klaim); digabung supaya hemat ~3x. Hasil ukur sama keputusannya.
+        """
+        body = {
+            "state": json.dumps({"kalimat": kalimat}, ensure_ascii=False),
+            "model": self.model,
+            "questions": {
+                KUNCI_KLAIM: {
+                    "type": "noul",
+                    "instructions": ("Apakah kalimat ini berisi klaim, kabar, atau pendapat tentang "
+                                     "saham yang bisa diperiksa? Jawab tidak kalau hanya sapaan, ucapan "
+                                     "terima kasih, pertanyaan, rencana pribadi, atau ajakan ngobrol."),
+                    "criteria": {
+                        "true": "Klaim/kabar/pendapat tentang saham yang bisa diperiksa.",
+                        "false": "Sapaan, terima kasih, pertanyaan, rencana pribadi, atau ngobrol.",
+                    },
+                },
+                KUNCI_PREDIKSI: {
+                    "type": "noul",
+                    "instructions": ("Apakah kalimat ini berisi prediksi, opini, atau rumor tentang "
+                                     "harga/nasib saham di masa depan TANPA angka atau fakta terukur "
+                                     "yang bisa diperiksa?"),
+                    "criteria": {
+                        "true": "Prediksi/opini/rumor tanpa angka atau fakta terukur.",
+                        "false": "Berisi angka atau fakta yang bisa diperiksa.",
+                    },
+                },
+                KUNCI_TARGET: {
+                    "type": "noul",
+                    "instructions": ("Apakah kalimat ini berisi target harga atau prediksi arah harga "
+                                     "ke depan (mis. \"naik ke 20.000\", \"target 20rb\")? Jawab tidak "
+                                     "kalau kalimatnya melaporkan data atau harga yang sudah terjadi."),
+                    "criteria": {
+                        "true": "Target harga atau prediksi arah harga ke depan.",
+                        "false": "Melaporkan data atau harga yang sudah terjadi.",
+                    },
+                },
+            },
+        }
+        response = httpx.post(
+            f"{self.base_url}/systemone",
+            headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+            json=body,
+            timeout=BATAS_WAKTU,
+        )
+        response.raise_for_status()
+        return response.json().get("answers", {})
+
+
+def _skor(answers: dict[str, Any], kunci: str) -> Optional[float]:
+    jawab = answers.get(kunci)
+    nilai = jawab.get("noul") if isinstance(jawab, dict) else None
+    return float(nilai) if isinstance(nilai, (int, float)) else None
+
+
+def saring_jev(jev: Any, kalimat: str) -> dict[str, bool]:
+    """Tiga keputusan untuk satu kalimat dari SATU panggilan JEV.
+
+    Bentuk: {"klaim": bool, "prediksi": bool, "target": bool}. Default aman kalau JEV
+    mati/gagal: klaim=TRUE (jangan buang klaim asli), prediksi/target=FALSE (jangan
+    matikan vonis tanpa alasan).
+    """
+    aman = {"klaim": True, "prediksi": False, "target": False}
+    try:
+        a = jev.saring(kalimat)
+    except Exception:
+        return aman
+    klaim = _skor(a, KUNCI_KLAIM)
+    prediksi = _skor(a, KUNCI_PREDIKSI)
+    target = _skor(a, KUNCI_TARGET)
+    return {
+        "klaim": True if klaim is None else klaim >= AMBANG_KLAIM,
+        "prediksi": False if prediksi is None else prediksi >= AMBANG_PREDIKSI,
+        "target": False if target is None else target >= AMBANG_TARGET,
+    }
+
 
 def minta_saran_jev(jev: Any, pertanyaan: str) -> bool:
     """JEV sebagai pengaman kedua penolakan saran. True = minta saran.
@@ -288,31 +368,6 @@ def get_jev() -> Optional[Jev]:
     return Jev(settings.jev_base_url, settings.jev_api_key, settings.jev_model)
 
 
-def prediksi_jev(jev: Any, kalimat: str) -> bool:
-    """True = kalimat itu prediksi/opini tanpa angka. JEV mati/gagal -> False (pakai heuristik)."""
-    try:
-        jawab = jev.prediksi(kalimat).get(KUNCI_PREDIKSI)
-    except Exception:
-        return False
-    nilai = jawab.get("noul") if isinstance(jawab, dict) else None
-    return isinstance(nilai, (int, float)) and nilai >= AMBANG_PREDIKSI
-
-
-def klaim_jev(jev: Any, kalimat: str) -> bool:
-    """True = kalimat ini klaim/kabar tentang saham yang layak diperiksa.
-
-    JEV mati/gagal -> True (JANGAN buang klaim): melewatkan klaim asli lebih berbahaya
-    daripada memeriksa satu kalimat yang sebenarnya tak perlu.
-    """
-    try:
-        jawab = jev.klaim(kalimat).get(KUNCI_KLAIM)
-    except Exception:
-        return True
-    nilai = jawab.get("noul") if isinstance(jawab, dict) else None
-    if not isinstance(nilai, (int, float)):
-        return True
-    return nilai >= AMBANG_KLAIM
-
 
 def pilih_bagian(answers: dict[str, Any]) -> Optional[str]:
     jawab = answers.get(KUNCI_BAGIAN)
@@ -325,19 +380,6 @@ def pilih_istilah(answers: dict[str, Any]) -> Optional[str]:
     pilihan = jawab.get("choice") if isinstance(jawab, dict) else None
     return pilihan if pilihan in {i["key"] for i in glosarium()["istilah"]} else None
 
-
-def target_jev(jev: Any, kalimat: str) -> bool:
-    """True = target/prediksi harga (walau berangka) -> jangan diberi vonis (T-1).
-
-    JEV mati/gagal -> False: pemeriksa berangka tetap boleh jalan (mis. H-2 yang memang
-    benar-benar memeriksa klaim "dari A ke B"). Hanya JEV yang boleh mematikan vonis.
-    """
-    try:
-        jawab = jev.target(kalimat).get(KUNCI_TARGET)
-    except Exception:
-        return False
-    nilai = jawab.get("noul") if isinstance(jawab, dict) else None
-    return isinstance(nilai, (int, float)) and nilai >= AMBANG_TARGET
 
 
 def yakin(answers: dict[str, Any]) -> float:
