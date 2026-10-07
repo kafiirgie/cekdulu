@@ -45,8 +45,7 @@ interface Modul {
   angka: string
   arti: string
   ilustrasi: ReactNode
-  /** Kosong = modul belum punya halaman (menunggu kontrak D4). */
-  ke?: string
+  ke: string
 }
 
 const MODUL: Modul[] = [
@@ -64,6 +63,7 @@ const MODUL: Modul[] = [
     angka: '82%',
     arti: 'pendapatan MDKA dari nikel, bukan emas',
     ilustrasi: <IlustrasiKomoditas />,
+    ke: RUTE_MODUL.m_komoditas,
   },
 ]
 
@@ -79,15 +79,16 @@ function KartuModul({ m }: { m: Modul }) {
         <div className="mt-auto flex items-baseline gap-2 border-t border-line pt-3">
           <span className="font-mono text-lg font-semibold">{m.angka}</span>
           <span className="flex-1 text-[13px] text-ink-2">{m.arti}</span>
-          <span className="text-sm font-semibold whitespace-nowrap">{m.ke ? 'Buka →' : 'Segera'}</span>
+          <span className="text-sm font-semibold whitespace-nowrap">Buka →</span>
         </div>
       </div>
     </>
   )
-  const gaya = 'flex flex-col overflow-hidden rounded-xl border border-line bg-surface text-left shadow-soft'
-  if (!m.ke) return <div className={gaya} aria-disabled="true">{isi}</div>
   return (
-    <Link to={m.ke} className={`${gaya} transition hover:-translate-y-0.5 hover:shadow-lift`}>
+    <Link
+      to={m.ke}
+      className="flex flex-col overflow-hidden rounded-xl border border-line bg-surface text-left shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift"
+    >
       {isi}
     </Link>
   )

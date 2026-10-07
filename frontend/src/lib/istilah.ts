@@ -14,6 +14,10 @@ export const ISTILAH = {
     nama: 'Hari serap',
     arti: 'Perkiraan berapa hari bursa yang dibutuhkan pasar untuk menyerap saham yang wajib dilepas, kalau seluruh transaksi normal sehari dipakai untuk itu.',
   },
+  korelasi: {
+    nama: 'Korelasi',
+    arti: 'Ukuran seberapa sering dua harga bergerak bersama, dari -1 sampai 1; mendekati 0 berarti hampir tidak ada hubungan.',
+  },
   kapitalisasi: { nama: 'Kapitalisasi pasar', arti: 'Harga saham dikali jumlah seluruh sahamnya; ukuran nilai pasar perusahaan.' },
   papan_pemantauan: { nama: 'Papan Pemantauan Khusus', arti: 'Papan perdagangan BEI untuk saham yang perlu diawasi, misalnya karena harganya bergerak tidak wajar.' },
 } as const
@@ -30,4 +34,5 @@ export const ISTILAH_CEK: Partial<Record<string, KunciIstilah>> = {
   suspensi: 'suspensi',
   free_float: 'free_float',
   m_free_float: 'hari_serap',
+  m_komoditas: 'korelasi',
 }

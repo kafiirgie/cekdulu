@@ -1,5 +1,6 @@
 // Layar 10 — detail Radar Free Float satu emiten, lalu jembatan ke cek klaim saham itu.
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import Jembatan from '@/components/alat/Jembatan'
 import Remah from '@/components/alat/Remah'
 import TagTekanan from '@/components/alat/TagTekanan'
 import { ATURAN_RADAR, SUMBER_RADAR, teksHariSerap, tidakDiRadar, useRadar } from '@/components/alat/radar'
@@ -8,11 +9,9 @@ import Istilah from '@/components/Istilah'
 import JudulLayar from '@/components/JudulLayar'
 import Panel from '@/components/Panel'
 import TautanKembali from '@/components/TautanKembali'
-import { Button } from '@/components/ui/button'
 import type { FreeFloatItem } from '@/lib/contract'
 import { dataPer, fmt, rupiah, tanggal } from '@/lib/format'
 import { KELOMPOK_FF } from '@/lib/labels'
-import { useCek } from '@/lib/store'
 
 const hariLagi = (iso: string) => Math.max(0, Math.ceil((new Date(`${iso}T00:00:00`).getTime() - Date.now()) / 86_400_000))
 
@@ -66,25 +65,6 @@ function Angka({ i }: { i: FreeFloatItem }) {
         ))}
       </tbody>
     </table>
-  )
-}
-
-function Jembatan({ kode }: { kode: string }) {
-  const { setText } = useCek()
-  const nav = useNavigate()
-  const cekKlaim = () => {
-    setText(kode)
-    nav('/cek')
-  }
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line-2 bg-surface-2 p-[18px]">
-      <p className="m-0 text-sm text-ink-2">
-        Dengar klaim soal <b className="text-ink">{kode}</b> di grup? Periksa dengan aturan yang sama.
-      </p>
-      <Button onClick={cekKlaim}>
-        Cek klaim saham ini <span aria-hidden="true">→</span>
-      </Button>
-    </div>
   )
 }
 
