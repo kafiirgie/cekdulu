@@ -11,7 +11,7 @@ export default function DaftarKartu({ item, mulai = 0 }: { item: ItemKartu[]; mu
     <ul className="m-0 grid list-none gap-3 p-0">
       {item.map((k, i) => (
         <li key={i} style={{ '--tunda': `${350 + (mulai + i) * 260}ms` } as CSSProperties}>
-          <VerdictCard {...k} />
+          <VerdictCard item={k} />
         </li>
       ))}
     </ul>
