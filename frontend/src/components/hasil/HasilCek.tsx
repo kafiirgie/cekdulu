@@ -1,6 +1,7 @@
 // Layar 5 — Hasil: ringkasan, kartu per klaim, "Yang tidak diceritakan", ajakan ke formulir lengkap.
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import Seksi from '@/components/Seksi'
 import StatusIkon from '@/components/StatusIkon'
 import Stamp from '@/components/Stamp'
 import { Button } from '@/components/ui/button'
@@ -46,17 +47,6 @@ function Ringkasan({ hasil, teksAsli }: { hasil: CekResponse; teksAsli: string }
   )
 }
 
-function Bagian({ judul, sub, children }: { judul: string; sub: string; children: ReactNode }) {
-  return (
-    <>
-      <div className="mt-[34px] mb-3 flex items-baseline justify-between gap-3">
-        <h2 className="m-0 text-[19px] font-bold tracking-[-0.025em]">{judul}</h2>
-        <span className="text-[13px] text-muted-foreground">{sub}</span>
-      </div>
-      {children}
-    </>
-  )
-}
 
 
 function RingkasanFormulir({ form }: { form: FormRow[] }) {
@@ -99,17 +89,17 @@ export default function HasilCek({ hasil, teksAsli, teksKlaim }: Props) {
     <section className="pb-6">
       <Ringkasan hasil={hasil} teksAsli={teksAsli} />
       {hasil.claims.length > 0 && (
-        <Bagian judul="Klaim yang diperiksa" sub="Ketuk untuk lihat alasannya">
+        <Seksi judul="Klaim yang diperiksa" sub="Ketuk untuk lihat alasannya">
           <DaftarKartu item={itemKlaim(hasil, teksKlaim)} mulai={1} />
 
-        </Bagian>
+        </Seksi>
       )}
       {hasil.untold.length > 0 && (
         // Bagian ini nilai jual utama ketika banyak klaim tidak bisa dicek, jadi diberi bingkai sendiri.
         <div className="mt-[34px] rounded-[22px] border border-hl-edge/40 bg-surface-2 px-3 pb-3 [&>div:first-child]:mt-4">
-          <Bagian judul="Yang tidak diceritakan" sub="Penting, tapi tidak disebut">
+          <Seksi judul="Yang tidak diceritakan" sub="Penting, tapi tidak disebut">
             <DaftarKartu item={itemTakDiceritakan(hasil)} mulai={1 + hasil.claims.length} />
-          </Bagian>
+          </Seksi>
         </div>
       )}
       <RingkasanFormulir form={hasil.form} />

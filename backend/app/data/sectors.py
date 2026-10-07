@@ -32,7 +32,9 @@ class DataUnavailable(Exception):
 # Tanggal relatif ({start}, {end}) diisi otomatis oleh _call_live (start = hari ini − hari).
 ENDPOINTS: dict[str, dict[str, Any]] = {
     # kunci               path                                              params                                                   kredit
-    "report":             {"path": "/v2/company/report/{ticker}/", "params": {"sections": "all"}, "kredit": 1},
+    # Bagian laporan untuk B1/B2. Kredit dihitung per bagian, bukan per request.
+    "report":             {"path": "/v2/company/report/{ticker}/", "params": {"sections": "overview,ownership,valuation,dividend"}, "kredit": 4},
+    "report_keuangan":    {"path": "/v2/company/report/{ticker}/", "params": {"sections": "valuation,dividend"}, "kredit": 2},
     "keuangan_kuartalan": {"path": "/v2/financials/quarterly/{ticker}/", "params": {"n_quarters": 5}, "kredit": 5},
     "harga_harian":       {"path": "/v2/daily/{ticker}/", "params": {"start": "-90", "end": "0"}, "kredit": 1},
     "aliran_asing":       {"path": "/v2/foreign-flow/{ticker}/", "params": {"start": "-90", "end": "0"}, "kredit": 1},
@@ -71,6 +73,8 @@ def get(ticker: str, kunci: str) -> Any:
     if cache.exists():
         return json.loads(cache.read_text(encoding="utf-8"))
 
+    if mode != "live":
+        raise DataUnavailable(f"Mode {mode} tidak mengizinkan panggilan live Sectors")
     data = _call_live(ticker, kunci)
     cache.parent.mkdir(parents=True, exist_ok=True)
     cache.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")

@@ -1,6 +1,6 @@
 // Cap vonis bergaya stempel. Gaya + warna per vonis ada di index.css (.stamp[data-verdict]);
 // filter tinta #ink dipasang sekali di Layout.
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type { Verdict } from '@/lib/contract'
 import { VERDICT_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
@@ -10,12 +10,14 @@ interface Props {
   /** Kemiringan dalam derajat. */
   miring?: number
   className?: string
+  /** Teks pengganti label vonis, mis. "Kuota harian". */
+  children?: ReactNode
 }
 
-export default function Stamp({ verdict, miring = -6, className }: Props) {
+export default function Stamp({ verdict, miring = -6, className, children }: Props) {
   return (
     <span className={cn('stamp', className)} data-verdict={verdict} style={{ '--r': `${miring}deg` } as CSSProperties}>
-      {VERDICT_LABEL[verdict]}
+      {children ?? VERDICT_LABEL[verdict]}
     </span>
   )
 }

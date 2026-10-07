@@ -5,7 +5,7 @@ import pytest
 
 from app.catalog import catalog, known_ids
 from app.config import settings
-from app.schemas import CekResponse, FreeFloatList, KlaimRequest, KlaimResponse, TanyaRequest, TanyaResponse
+from app.schemas import CekResponse, FreeFloatList, KlaimRequest, KlaimResponse, TanyaRequest, TanyaResponse, KomoditasList, KomoditasDetail
 
 EX = settings.contract_dir / "examples"
 RULE_IDS = {r["id"] for r in catalog()["rules"]}
@@ -38,6 +38,8 @@ def test_contoh_lain_valid():
     TanyaResponse.model_validate(t["res_tolak"])
     TanyaResponse.model_validate(t["res_jawab"])
     FreeFloatList.model_validate(load("modul_free_float_list.json"))
+    KomoditasList.model_validate(load("modul_komoditas_list_emas.json"))
+    KomoditasDetail.model_validate(load("modul_komoditas_detail_mdka.json"))
 
 
 def test_katalog_konsisten():

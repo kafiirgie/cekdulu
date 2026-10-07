@@ -30,6 +30,8 @@ export interface Chart { type: 'line' | 'bar'; series: { name: string; points: [
 export interface Source { name: string; as_of?: string | null }
 
 export interface Card {
+  // A-3: konflik memakai rule_id A-3; periode/keterbatasan di reason, sumber per dataset yang tersedia.
+  // H-2: harga awal yang paling dekat dan harga terakhir di evidence, masing-masing bertanggal di sources.
   claim_id?: string | null
   verdict: Verdict
   check?: string | null
@@ -78,6 +80,25 @@ export interface FreeFloatItem {
   papan_pemantauan: boolean
 }
 export interface FreeFloatList { as_of?: string | null; items: FreeFloatItem[] }
+
+export interface KomoditasItem {
+  ticker: string
+  komoditas: string
+  porsi_pendapatan: number | null
+  komoditas_terbesar: string | null
+  porsi_terbesar: number | null
+  tahun_buku: number | null
+  korelasi: number
+  kategori: 'lemah' | 'sedang' | 'cukup kuat'
+  periode: string
+  n_bulan: number
+  total_return_saham: number | null
+  perubahan_komoditas: number | null
+  arah_tahunan: string[]
+  sources: Source[]
+}
+export interface KomoditasList { as_of: string; jenis: string; items: KomoditasItem[] }
+export interface KomoditasDetail { ticker: string; as_of: string; items: KomoditasItem[] }
 
 export interface Rule { id: string; check: string | null; status: 'final' | 'usulan'; text: string; params: Record<string, number>; catatan?: string }
 export interface Catalog {

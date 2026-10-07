@@ -1,0 +1,74 @@
+{
+  "ticker": "MDKA",
+  "as_of": "2026-09-30",
+  "items": [
+    {
+      "ticker": "MDKA",
+      "komoditas": "emas",
+      "porsi_pendapatan": 0.0,
+      "komoditas_terbesar": "nikel",
+      "porsi_terbesar": 0.8239,
+      "tahun_buku": 2024,
+      "korelasi": 0.4,
+      "kategori": "sedang",
+      "periode": "2023-01..2026-08",
+      "n_bulan": 43,
+      "total_return_saham": -0.3579,
+      "perubahan_komoditas": 1.324,
+      "arah_tahunan": [
+        "2023: saham -45% vs +7% BERLAWANAN",
+        "2024: saham -28% vs +31% BERLAWANAN",
+        "2025: saham +25% vs +63% searah",
+        "2026 s.d. 08: saham +30% vs +2% searah"
+      ],
+      "sources": [
+        {
+          "name": "Sectors · total return saham · 2023-01..2026-08",
+          "as_of": "2026-09-30"
+        },
+        {
+          "name": "World Bank Pink Sheet · 2023-01..2026-08",
+          "as_of": "2026-09-02"
+        },
+        {
+          "name": "Sectors · get-segments · tahun buku 2024",
+          "as_of": "2024-12-31"
+        }
+      ]
+    },
+    {
+      "ticker": "MDKA",
+      "komoditas": "tembaga",
+      "porsi_pendapatan": 0.0593,
+      "komoditas_terbesar": "nikel",
+      "porsi_terbesar": 0.8239,
+      "tahun_buku": 2024,
+      "korelasi": 0.46,
+      "kategori": "sedang",
+      "periode": "2023-01..2026-08",
+      "n_bulan": 43,
+      "total_return_saham": -0.3579,
+      "perubahan_komoditas": 0.5851,
+      "arah_tahunan": [
+        "2023: saham -45% vs -7% searah",
+        "2024: saham -28% vs +6% BERLAWANAN",
+        "2025: saham +25% vs +32% searah",
+        "2026 s.d. 08: saham +30% vs +22% searah"
+      ],
+      "sources": [
+        {
+          "name": "Sectors · total return saham · 2023-01..2026-08",
+          "as_of": "2026-09-30"
+        },
+        {
+          "name": "World Bank Pink Sheet · 2023-01..2026-08",
+          "as_of": "2026-09-02"
+        },
+        {
+          "name": "Sectors · get-segments · tahun buku 2024",
+          "as_of": "2024-12-31"
+        }
+      ]
+    }
+  ]
+}

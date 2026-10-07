@@ -32,9 +32,9 @@ class Dividen(Checker):
 
     def run(self, ticker: str, claim: Optional[Claim], today: date) -> Outcome:
         d = normal.dividen(ticker)
-        if d.yield_ttm is None:
+        if d.yield_ttm is None or d.yield_ttm == 0:
             return Outcome("tidak_relevan", "Tidak ada dividen dalam 12 bulan terakhir.")
-        src = [Source(name="Sectors · report dividend", as_of=str(today))]
+        src = [Source(name="Sectors · report dividend", as_of=str(d.as_of) if d.as_of else None)]
         ev = [Evidence(label="Yield 12 bulan", value=d.yield_ttm, fmt="pct")]
         if d.payout_ratio is not None:
             ev.append(Evidence(label="Payout ratio", value=d.payout_ratio, fmt="pct"))

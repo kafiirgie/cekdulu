@@ -1,0 +1,43 @@
+symbol,segmen,komoditas
+AADI,Coal sales,batubara
+AADI,Logistic,lainnya
+AADI,Others,lainnya
+ADMR,Mining,batubara
+ADMR,Others,lainnya
+ADRO,Sales of Coal,batubara
+ADRO,Mining services,lainnya
+ADRO,Others,lainnya
+AMMN,Gold,emas
+AMMN,Copper,tembaga
+ANTM,Gold,emas
+ANTM,Nickel ore,nikel
+ANTM,Ferronickel,nikel
+ANTM,Alumina,aluminium
+ANTM,Bauxite ore,aluminium
+ANTM,Purification of precious metals and other services,lainnya
+ANTM,Silver,perak
+BUMI,Coal,batubara
+BUMI,Gold,emas
+BUMI,Silver,perak
+BYAN,Coal,batubara
+BYAN,Non-Coal,lainnya
+DSSA,Coal mining and trading,batubara
+DSSA,"Cable TV, internet and technology",lainnya
+DSSA,Trading,lainnya
+DSSA,Steam and electricity processing fee,lainnya
+DSSA,Others,lainnya
+DSSA,Renewable energy,lainnya
+GEMS,Coal mining,batubara
+GEMS,Coal trading,batubara
+INCO,Nickel mining and processing,nikel
+ITMG,Coal,batubara
+ITMG,Gain on coal swap,batubara
+ITMG,Services,lainnya
+MBMA,Manufacturing,nikel
+MBMA,Mining,nikel
+MDKA,Nickel Project,nikel
+MDKA,Tujuh Bukit Project,campuran:emas+tembaga
+MDKA,Wetar Project,tembaga
+MDKA,Others,lainnya
+NCKL,Nickel processing,nikel
+NCKL,Nickel mining,nikel
