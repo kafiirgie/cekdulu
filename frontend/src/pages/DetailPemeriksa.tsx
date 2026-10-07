@@ -59,7 +59,7 @@ export default function DetailPemeriksa() {
       <Panel judul="Aturan yang dipakai">
         <DaftarAturan aturan={ATURAN.filter((r) => r.check === check)} />
       </Panel>
-      <TautanKembali ke="/cek/formulir">← Kembali ke formulir</TautanKembali>
+      <TautanKembali ke="/cek/formulir">Kembali ke formulir</TautanKembali>
     </section>
   )
 }

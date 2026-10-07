@@ -80,7 +80,7 @@ export default function Formulir() {
           Lihat semua aturan
         </Link>
       </p>
-      <TautanKembali ke="/cek/hasil">← Hasil</TautanKembali>
+      <TautanKembali ke="/cek/hasil">Hasil</TautanKembali>
     </section>
   )
 }

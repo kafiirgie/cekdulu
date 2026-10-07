@@ -139,7 +139,7 @@ export default function DetailKomoditas() {
       <p className="mt-0 mb-3.5 text-[12.5px] text-muted-foreground">Hubungan masa lalu, bukan ramalan dan bukan saran investasi.</p>
       <Jembatan kode={kode} />
       <div className="mt-4">
-        <TautanKembali ke="/alat/komoditas">← Kembali ke daftar komoditas</TautanKembali>
+        <TautanKembali ke="/alat/komoditas">Kembali ke daftar komoditas</TautanKembali>
       </div>
     </section>
   )

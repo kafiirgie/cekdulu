@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { labelCek } from '@/lib/labels'
 import { RUTE_MODUL } from '@/lib/modul'
 import JudulBagian, { CatatanSumber } from './Bagian'
+import Panah from '@/components/Panah'
 
 function IlustrasiFreeFloat() {
   return (
@@ -79,7 +80,9 @@ function KartuModul({ m }: { m: Modul }) {
         <div className="mt-auto flex items-baseline gap-2 border-t border-line pt-3">
           <span className="font-mono text-lg font-semibold">{m.angka}</span>
           <span className="flex-1 text-[13px] text-ink-2">{m.arti}</span>
-          <span className="text-sm font-semibold whitespace-nowrap">Buka →</span>
+          <span className="inline-flex items-center gap-1 text-sm font-semibold whitespace-nowrap">
+            Buka <Panah />
+          </span>
         </div>
       </div>
     </>

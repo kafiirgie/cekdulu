@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
+import Panah from '@/components/Panah'
 import Stamp from '@/components/Stamp'
 import { Button } from '@/components/ui/button'
 import { CONTOH_KLAIM } from '@/lib/labels'
@@ -67,7 +68,7 @@ export default function Hero() {
       <div className="mt-7 flex flex-wrap justify-center gap-2.5">
         <Button asChild>
           <Link to="/cek">
-            Cek klaim sekarang <span aria-hidden="true">→</span>
+            Cek klaim sekarang <Panah />
           </Link>
         </Button>
         <Button variant="outline" onClick={cobaContoh}>

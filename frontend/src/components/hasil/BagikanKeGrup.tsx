@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } 
 import { bagikanBerkas, bisaBagikanBerkas, gambarKartu, ringkasanTeks, unduhBerkas } from '@/lib/bagikan'
 import type { CekResponse } from '@/lib/contract'
 import KartuBagikan from './KartuBagikan'
+import Panah from '@/components/Panah'
 
 // Dukungan berbagi berkas tidak berubah selama sesi.
 const BISA_BAGIKAN = bisaBagikanBerkas()
@@ -78,7 +79,7 @@ export default function BagikanKeGrup({ hasil, teksKlaim }: Props) {
       <div className="sticky bottom-0 z-20 -mx-4 mt-6 flex justify-center bg-gradient-to-t from-page from-45% to-transparent px-4 pt-3.5 pb-[calc(14px+env(safe-area-inset-bottom))]">
         <DialogTrigger asChild>
           <Button className="shadow-lift">
-            Bagikan ke grup <span aria-hidden="true">↗</span>
+            Bagikan ke grup <Panah arah="keluar" />
           </Button>
         </DialogTrigger>
       </div>

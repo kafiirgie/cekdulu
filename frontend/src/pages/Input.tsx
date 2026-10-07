@@ -10,6 +10,7 @@ import { kecilkanGambar } from '@/lib/gambar'
 import { useGalatApi } from '@/lib/galat'
 import { CONTOH_KLAIM } from '@/lib/labels'
 import { useCek } from '@/lib/store'
+import Panah from '@/components/Panah'
 
 const KODE_SAJA = /^\s*[A-Za-z]{4}\s*$/
 
@@ -156,7 +157,7 @@ export default function Input() {
             onGagalBaca={() => setPesan('Gambar ini tidak bisa dibuka. Coba screenshot lain.')}
           />
           <Button disabled={!(text.trim() || gambar) || loading} onClick={lanjut}>
-            {loading ? 'Membaca klaim…' : <>Pecah jadi klaim <span aria-hidden="true">→</span></>}
+            {loading ? 'Membaca klaim…' : <>Pecah jadi klaim <Panah /></>}
           </Button>
         </div>
         <p className="mt-2.5 mb-0 text-[12.5px] text-muted-foreground">
