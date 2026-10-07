@@ -66,6 +66,7 @@ export interface CekResponse {
 }
 
 export interface TanyaRequest { cek_id: string; card: string; question: string }
+
 export interface TanyaResponse { answer: string; refused: boolean }
 
 export interface FreeFloatItem {
@@ -109,7 +110,19 @@ export interface Catalog {
   rules: Rule[]
   quota: { cek_per_hari: number }
   tanya_tolak_regex: string
+  /** Glosarium ikut kontrak: FE memakai teksnya, BE memakai kuncinya untuk menjawab Tanya. */
+  glosarium: Glosarium
 }
+
+export interface GlosariumItem { key: string; nama: string; arti: string }
+export interface GlosariumPemetaan { checks: Record<string, string>; untold: Record<string, string> }
+/** Glosarium ikut kontrak: FE memakai teksnya (ikon info), BE memakai kuncinya untuk menjawab Tanya. */
+export interface Glosarium { versi: string; pemetaan: GlosariumPemetaan; istilah: GlosariumItem[] }
+
+/** Harus sama dengan backend/app/schemas.py → GlosariumKey dan kunci di contract/glosarium.json. */
+export type KunciGlosarium =
+  | 'laba' | 'per' | 'pbv' | 'dividen' | 'yield' | 'payout' | 'orang_dalam' | 'asing' | 'suspensi'
+  | 'free_float' | 'hari_serap' | 'korelasi' | 'kapitalisasi' | 'papan_pemantauan'
 
 export class KuotaHabisError extends Error {
   quota: Quota

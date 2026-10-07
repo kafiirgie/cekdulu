@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from . import quota
 from .ai import guard
 from .ai.provider import extract_with_fallback, get_llm
-from .catalog import catalog
+from .catalog import catalog, kamus
 from .config import settings
 from .data import sectors
 from .engine import run_cek
@@ -69,7 +69,7 @@ def health():
 
 @app.get("/api/rules")
 def rules():
-    return catalog()
+    return kamus()
 
 
 @app.post("/api/klaim", response_model=KlaimResponse)

@@ -1,5 +1,7 @@
 {
   "_catatan": "Katalog aturan = satu sumber kebenaran. Backend memuat ambang dari sini, halaman Metodologi menampilkannya. Ubah ambang HANYA di file ini, lalu jalankan tes. 'status': 'final' = disepakati di FINAL_PLAN; 'usulan' = angka sementara, perlu disepakati tim.",
+  "versi": "0.3",
+  "glosarium": "glosarium.json",
   "checks": [
     { "id": "laba", "label": "Laba", "step_label": "Laba 4 kuartal terakhir", "standar": true },
     { "id": "valuasi", "label": "Valuasi", "step_label": "PER & PBV", "standar": true },

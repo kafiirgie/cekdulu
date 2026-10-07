@@ -1,0 +1,37 @@
+{
+  "_catatan": "Glosarium = bagian kontrak. Teks istilah dipakai bersama oleh FE (ikon \u24d8) dan BE (penjawab Tanya). `pemetaan` menghubungkan id pemeriksa / kartu \"Yang tidak diceritakan\" ke satu istilah. Tambah istilah di sini, lalu perbarui GlosariumKey di backend/app/schemas.py dan KunciGlosarium di frontend/src/lib/contract.ts; tests/test_contract.py gagal kalau ketiganya tidak sama.",
+  "versi": "1.0",
+  "pemetaan": {
+    "checks": {
+      "laba": "laba",
+      "valuasi": "per",
+      "dividen": "dividen",
+      "orang_dalam": "orang_dalam",
+      "asing": "asing",
+      "suspensi": "suspensi",
+      "free_float": "free_float",
+      "m_free_float": "hari_serap",
+      "m_komoditas": "korelasi"
+    },
+    "untold": {
+      "papan_pemantauan": "papan_pemantauan",
+      "segmen": "korelasi"
+    }
+  },
+  "istilah": [
+    { "key": "laba", "nama": "Laba bersih", "arti": "Keuntungan perusahaan setelah semua biaya dan pajak dibayar." },
+    { "key": "per", "nama": "PER", "arti": "Harga saham dibagi laba per saham setahun; PER 8 artinya harga saham setara 8 tahun laba." },
+    { "key": "pbv", "nama": "PBV", "arti": "Harga saham dibagi nilai buku per saham, yaitu aset perusahaan dikurangi utangnya." },
+    { "key": "dividen", "nama": "Dividen", "arti": "Bagian keuntungan perusahaan yang dibagikan ke pemegang saham, mirip bagi hasil." },
+    { "key": "yield", "nama": "Imbal dividen", "arti": "Dividen setahun dibanding harga saham; 6% artinya tiap Rp100 harga saham dapat dividen Rp6 setahun." },
+    { "key": "payout", "nama": "Payout ratio", "arti": "Bagian laba yang dibagikan sebagai dividen; di atas 100% berarti dividen lebih besar dari laba." },
+    { "key": "orang_dalam", "nama": "Orang dalam", "arti": "Direksi, komisaris, atau pemegang saham besar yang wajib melaporkan setiap jual-beli saham perusahaannya." },
+    { "key": "asing", "nama": "Investor asing", "arti": "Investor dari luar negeri, biasanya lembaga besar; gerakannya sering jadi patokan walau tidak selalu tepat." },
+    { "key": "suspensi", "nama": "Suspensi", "arti": "Penghentian sementara perdagangan saham oleh bursa, misalnya karena harganya naik terlalu cepat." },
+    { "key": "free_float", "nama": "Free float", "arti": "Porsi saham yang dipegang publik dan bebas diperjualbelikan, di luar pemilik besar." },
+    { "key": "hari_serap", "nama": "Hari serap", "arti": "Perkiraan berapa hari bursa yang dibutuhkan pasar untuk menyerap saham yang wajib dilepas, kalau seluruh transaksi normal sehari dipakai untuk itu." },
+    { "key": "korelasi", "nama": "Korelasi", "arti": "Ukuran seberapa sering dua harga bergerak bersama, dari -1 sampai 1; mendekati 0 berarti hampir tidak ada hubungan." },
+    { "key": "kapitalisasi", "nama": "Kapitalisasi pasar", "arti": "Harga saham dikali jumlah seluruh sahamnya; ukuran nilai pasar perusahaan." },
+    { "key": "papan_pemantauan", "nama": "Papan Pemantauan Khusus", "arti": "Papan perdagangan BEI untuk saham yang perlu diawasi, misalnya karena harganya bergerak tidak wajar." }
+  ]
+}

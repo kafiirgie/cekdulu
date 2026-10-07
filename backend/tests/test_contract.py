@@ -3,9 +3,9 @@ import json
 
 import pytest
 
-from app.catalog import catalog, known_ids
+from app.catalog import catalog, glosarium, known_ids
 from app.config import settings
-from app.schemas import CekResponse, FreeFloatList, KlaimRequest, KlaimResponse, TanyaRequest, TanyaResponse, KomoditasList, KomoditasDetail
+from app.schemas import CekResponse, FreeFloatList, Glosarium, GlosariumKey, KlaimRequest, KlaimResponse, TanyaRequest, TanyaResponse, KomoditasList, KomoditasDetail
 
 EX = settings.contract_dir / "examples"
 RULE_IDS = {r["id"] for r in catalog()["rules"]}
@@ -48,3 +48,18 @@ def test_katalog_konsisten():
         assert r["check"] is None or r["check"] in checks, r["id"]
         assert r["status"] in ("final", "usulan")
     assert len([c for c in catalog()["checks"] if c["standar"]]) == 8
+
+
+def test_glosarium_valid_dan_sinkron():
+    """Glosarium = kontrak: kunci di JSON harus sama dengan Literal di schemas.py."""
+    g = Glosarium.model_validate(glosarium())
+    keys = [i.key for i in g.istilah]
+    assert len(keys) == len(set(keys)), "kunci glosarium kembar"
+    literal = set(getattr(GlosariumKey, "__args__", ()))
+    assert set(keys) == literal, f"schemas.py tidak sinkron: {set(keys) ^ literal}"
+    # Pemetaan hanya boleh menunjuk kunci glosarium dan id yang benar-benar ada.
+    for k in list(g.pemetaan.checks.values()) + list(g.pemetaan.untold.values()):
+        assert k in literal, k
+    for cid in list(g.pemetaan.checks) + list(g.pemetaan.untold):
+        assert cid in known_ids(), cid
+    assert catalog().get("glosarium"), "rules.json harus menunjuk glosarium"

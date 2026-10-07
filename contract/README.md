@@ -4,7 +4,8 @@ This folder is the **promise** between frontend and backend. As long as both sid
 
 | File | Contents | Used by |
 |---|---|---|
-| `rules.json` | Checker catalogue, "Yang tidak diceritakan" (what they didn't tell you) cards, **all rules + their thresholds**, quota, Tanya (Ask) refusal regex | BE (rule thresholds), FE (Methodology page, labels) |
+| `rules.json` | Checker catalogue, "Yang tidak diceritakan" (what they didn't tell you) cards, **all rules + their thresholds**, quota, Tanya (Ask) refusal regex, a pointer to the glossary | BE (rule thresholds), FE (Methodology page, labels) |
+| `glosarium.json` | **Beginner glossary** (shared, part of the contract): every term's `key`, `nama`, `arti`, plus `pemetaan` (checker id → term key). One source for both the FE ⓘ icons and the BE Tanya answers | BE (`catalog.glosarium()`), FE (`lib/istilah.ts` imports it directly) |
 | `examples/*.json` | Example request/response per endpoint (MGLV, MDKA, Tanya, Radar) | FE mock mode, BE mock mode, tests |
 | `../frontend/src/lib/contract.ts` | TypeScript types for the shapes below | FE |
 | `../backend/app/schemas.py` | Pydantic models for the same shapes | BE |
@@ -18,6 +19,7 @@ The test `backend/tests/test_contract.py` validates every example against the Py
 3. Raw numbers as decimals / full Rupiah (`0.25` = 25%, `14650` = Rp14,650). **The FE does the formatting**, using `fmt`: `pct` · `rp` · `int` · `num` · `x`.
 4. Every card must have `sources[]` (name + date). A "tidak bisa dicek" (can't be checked) card may leave it empty.
 5. Rule IDs (`rule_id`) must exist in `rules.json`. Tests fail otherwise.
+6. **Glossary terms live in `glosarium.json` only.** Add a term there, then add its key to `schemas.py → GlosariumKey` and `contract.ts → KunciGlosarium`. `tests/test_contract.py` (BE) and `frontend/src/lib/glosarium.test.mjs` (FE) fail if the three drift apart. The FE never keeps its own copy of the text; `lib/istilah.ts` imports the JSON.
 
 ## Endpoints
 
