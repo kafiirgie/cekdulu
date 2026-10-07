@@ -4,12 +4,13 @@ import { Link } from 'react-router-dom'
 import StatusIkon from '@/components/StatusIkon'
 import Stamp from '@/components/Stamp'
 import { Button } from '@/components/ui/button'
-import VerdictCard from '@/components/VerdictCard'
-import type { Card, CekResponse, FormRow } from '@/lib/contract'
-import { tanggal } from '@/lib/format'
-import { isStandar, labelCek, STATUS_LABEL } from '@/lib/labels'
+import type { CekResponse, FormRow } from '@/lib/contract'
+import { dataPer } from '@/lib/format'
+import { isStandar, STATUS_LABEL } from '@/lib/labels'
+import DaftarKartu from './DaftarKartu'
+import { itemKlaim, itemTakDiceritakan } from './kartu'
 
-// Kartu dicap satu per satu setelah halaman tampil.
+// Cap ringkasan dicap satu per satu setelah halaman tampil, sebelum cap kartu (DaftarKartu mulai dari 1).
 const tunda = (i: number) => ({ '--tunda': `${350 + i * 260}ms` }) as CSSProperties
 
 function Ringkasan({ hasil, teksAsli }: { hasil: CekResponse; teksAsli: string }) {
@@ -28,7 +29,7 @@ function Ringkasan({ hasil, teksAsli }: { hasil: CekResponse; teksAsli: string }
       </p>
       <p className="m-0 mb-2.5 text-[13.5px] text-muted-foreground">
         {hasil.company ?? hasil.ticker}
-        {hasil.data_as_of && ` · data per ${tanggal(hasil.data_as_of)}`}
+        {dataPer(hasil.data_as_of)}
       </p>
       <h1 className="m-0 text-[clamp(22px,3.4vw,28px)] leading-[1.22] font-bold tracking-[-0.03em] text-balance">{hasil.summary}</h1>
       {vonis.length > 0 && (
@@ -56,24 +57,6 @@ function Bagian({ judul, sub, children }: { judul: string; sub: string; children
   )
 }
 
-interface ItemKartu {
-  card: Card
-  judul: string
-  kutipan?: string
-}
-
-/** `mulai` = urutan cap kartu pertama, supaya cap di beberapa daftar tetap berurutan. */
-function DaftarKartu({ item, mulai }: { item: ItemKartu[]; mulai: number }) {
-  return (
-    <ul className="m-0 grid list-none gap-3 p-0">
-      {item.map((k, i) => (
-        <li key={i} style={tunda(mulai + i)}>
-          <VerdictCard {...k} />
-        </li>
-      ))}
-    </ul>
-  )
-}
 
 function RingkasanFormulir({ form }: { form: FormRow[] }) {
   const standar = form.filter((f) => isStandar(f.check)).length
@@ -116,17 +99,15 @@ export default function HasilCek({ hasil, teksAsli, teksKlaim }: Props) {
       <Ringkasan hasil={hasil} teksAsli={teksAsli} />
       {hasil.claims.length > 0 && (
         <Bagian judul="Klaim yang diperiksa" sub="Ketuk untuk lihat alasannya">
-          <DaftarKartu
-            item={hasil.claims.map((card, i) => ({ card, judul: `Klaim ${i + 1}`, kutipan: card.claim_id ? teksKlaim[card.claim_id] : undefined }))}
-            mulai={1}
-          />
+          <DaftarKartu item={itemKlaim(hasil, teksKlaim)} mulai={1} />
+
         </Bagian>
       )}
       {hasil.untold.length > 0 && (
         // Bagian ini nilai jual utama ketika banyak klaim tidak bisa dicek, jadi diberi bingkai sendiri.
         <div className="mt-[34px] rounded-[22px] border border-hl-edge/40 bg-surface-2 px-3 pb-3 [&>div:first-child]:mt-4">
           <Bagian judul="Yang tidak diceritakan" sub="Penting, tapi tidak disebut">
-            <DaftarKartu item={hasil.untold.map((card) => ({ card, judul: labelCek(card.check ?? '') }))} mulai={1 + hasil.claims.length} />
+            <DaftarKartu item={itemTakDiceritakan(hasil)} mulai={1 + hasil.claims.length} />
           </Bagian>
         </div>
       )}
