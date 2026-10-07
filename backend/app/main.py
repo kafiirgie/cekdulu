@@ -1,6 +1,8 @@
 """API cek dulu. Jalankan dari folder backend/:  uvicorn app.main:app --reload --port 8000"""
 from __future__ import annotations
 
+import base64
+import binascii
 import json
 from typing import Optional
 
@@ -25,6 +27,7 @@ app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), al
 # Hasil cek disimpan di memori supaya /api/tanya bisa merujuk kartu. Hilang kalau server restart.
 _CEK: dict[str, CekResponse] = {}
 EX = settings.contract_dir / "examples"
+BATAS_GAMBAR = 4 * 1024 * 1024
 
 
 def _contoh(nama: str) -> dict:
@@ -37,6 +40,24 @@ def _contoh_ticker(prefix: str, ticker: Optional[str]) -> dict:
     t = (ticker or "mdka").lower()
     f = EX / f"{prefix}_{t}.json"
     return _contoh(f.name if f.exists() else f"{prefix}_mdka.json")
+
+
+def _validasi_gambar(image_base64: Optional[str]) -> None:
+    """Tolak payload rusak/besar sebelum menyentuh penyedia AI."""
+    if image_base64 is None:
+        return
+    # Empat byte base64 mewakili paling banyak tiga byte gambar. Pemeriksaan
+    # murah ini mencegah decode payload yang sudah pasti melewati batas.
+    if len(image_base64) > 4 * ((BATAS_GAMBAR + 2) // 3):
+        raise HTTPException(413, "Ukuran screenshot maksimal 4 MB.")
+    try:
+        data = base64.b64decode(image_base64, validate=True)
+    except (binascii.Error, ValueError) as exc:
+        raise HTTPException(422, "Screenshot bukan base64 yang valid.") from exc
+    if len(data) > BATAS_GAMBAR:
+        raise HTTPException(413, "Ukuran screenshot maksimal 4 MB.")
+    if not data:
+        raise HTTPException(422, "Screenshot kosong.")
 
 
 @app.get("/api/health")
@@ -54,6 +75,7 @@ def rules():
 def klaim(req: KlaimRequest):
     if not (req.text or req.image_base64 or req.ticker):
         raise HTTPException(422, "Isi teks, screenshot, atau kode saham.")
+    _validasi_gambar(req.image_base64)
     if settings.data_mode == "mock":
         from .ai.fallback import cari_ticker
         return _contoh_ticker("klaim_res", req.ticker or cari_ticker(req.text or ""))
