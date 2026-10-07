@@ -11,6 +11,8 @@ const ID_STANDAR = new Set(CEK_STANDAR.map((c) => c.id))
 /** Selain 8 pemeriksa standar, sisanya modul khusus (mis. m_komoditas). */
 export const isStandar = (check: string) => ID_STANDAR.has(check)
 export const ATURAN = KATALOG.rules
+/** Satu-satunya aturan tanpa pemeriksa yang menentukan vonis; aturan tanpa pemeriksa lainnya milik kartu "Yang tidak diceritakan". */
+export const ATURAN_TIDAK_BISA_DICEK = 'T-1'
 export const KUOTA_PER_HARI = KATALOG.quota.cek_per_hari
 
 // Pemecah klaim bisa memilih pemeriksa maupun kartu "Yang tidak diceritakan" (mis. analis, pemegang).
