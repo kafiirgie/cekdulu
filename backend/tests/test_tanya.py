@@ -9,9 +9,9 @@ import json
 
 import pytest
 
-from app.ai import jev, tanya
+from app.ai import fallback, jev, provider, tanya
 from app.ai.openai_compat import OpenAICompatLLM
-from app.schemas import Card, Evidence, Source
+from app.schemas import Card, Claim, Evidence, KlaimResponse, Source
 
 KARTU = Card(
     claim_id="c1", verdict="menyesatkan", check="m_komoditas",
@@ -306,3 +306,104 @@ def test_openai_compat_meminta_json_dan_token_besar(monkeypatch):
 def test_openai_compat_tidak_menebak_tanpa_teks():
     hasil = OpenAICompatLLM("https://ollama.com/v1", "key", "m").extract_claims(None, None, "bbri")
     assert hasil.ticker == "BBRI" and hasil.claims == [] and hasil.used_ai is False
+
+
+# ---------- JEV sebagai pengaman kedua saat memecah klaim (prediksi tanpa angka) ----------
+
+class JevPrediksi:
+    """Klien JEV palsu untuk .prediksi(): peta kalimat -> skor."""
+
+    def __init__(self, skor: dict[str, float]):
+        self._skor = skor
+        self.dipanggil = 0
+
+    def prediksi(self, kalimat):
+        self.dipanggil += 1
+        return {jev.KUNCI_PREDIKSI: {"type": "noul", "noul": self._skor.get(kalimat, 0.0)}}
+
+
+def test_jev_menghapus_pemeriksa_dari_prediksi_yang_lolos_heuristik(monkeypatch):
+    """Heuristik melewatkan "momen bagus buat masuk, gaskeun"; JEV menghapus pemeriksanya."""
+    kalimat = "momen bagus buat masuk, gaskeun"
+    assert not fallback.prediksi_tanpa_angka(kalimat)  # heuristik memang lolos
+    jev_palsu = JevPrediksi({kalimat: 0.91})
+    monkeypatch.setattr(provider, "_get_jev_prediksi", lambda: jev_palsu)
+
+    res = provider._normalisasi(
+        KlaimResponse(ticker="MGLV", claims=[Claim(id="c1", text=kalimat, checks=["lonjakan_harga"])]),
+        kalimat, None, used_ai=False, dari_gambar=False)
+
+    assert res.claims[0].checks == []
+    assert jev_palsu.dipanggil == 1
+
+
+def test_jev_tidak_menambah_pemeriksa_dan_menghormati_angka(monkeypatch):
+    """JEV hanya boleh MENGHAPUS. Kalimat berangka tetap punya pemeriksanya."""
+    kalimat = "laba naik 20% tahun ini"
+    jev_palsu = JevPrediksi({kalimat: 0.02})
+    monkeypatch.setattr(provider, "_get_jev_prediksi", lambda: jev_palsu)
+
+    res = provider._normalisasi(
+        KlaimResponse(ticker="BBRI", claims=[Claim(id="c1", text=kalimat, checks=["laba"])]),
+        kalimat, None, used_ai=False, dari_gambar=False)
+
+    assert res.claims[0].checks == ["laba"]
+
+
+def test_jev_mati_saat_pecah_klaim_pakai_heuristik(monkeypatch):
+    """JEV error -> heuristik saja, tidak menjatuhkan /api/klaim."""
+    def rusak():
+        raise RuntimeError("jev mati")
+
+    monkeypatch.setattr(provider, "get_jev", rusak)
+    kalimat = "besok pasti ARA"
+    res = provider._normalisasi(
+        KlaimResponse(ticker="MGLV", claims=[Claim(id="c1", text=kalimat, checks=["lonjakan_harga"])]),
+        kalimat, None, used_ai=False, dari_gambar=False)
+    assert res.claims[0].checks == []  # heuristik tetap menghapusnya
+    assert provider._get_jev_prediksi() is None
+
+
+def test_tanpa_jev_hasil_sama_seperti_sebelumnya(monkeypatch):
+    """Mode kode (tanpa kunci): perilaku identik dengan sebelum ada pengaman JEV."""
+    monkeypatch.setattr(provider, "_get_jev_prediksi", lambda: None)
+    teks = "MGLV masih bakal terbang, dari 600 udah 14 ribuan"
+    hasil = provider.extract_with_fallback(teks, None, None)
+    checks = {c.text: c.checks for c in hasil.claims}
+    assert checks["MGLV masih bakal terbang"] == []
+    assert checks["dari 600 udah 14 ribuan"] == ["lonjakan_harga"]
+
+
+def test_klien_prediksi_memuat_satu_noul_tanpa_kartu(monkeypatch):
+    panggilan = {}
+
+    class ResponsePalsu:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"answers": {jev.KUNCI_PREDIKSI: {"type": "noul", "noul": 0.8}}}
+
+    def post_palsu(url, **kwargs):
+        panggilan.update({"url": url, **kwargs})
+        return ResponsePalsu()
+
+    monkeypatch.setattr("app.ai.jev.httpx.post", post_palsu)
+    hasil = jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").prediksi("besok pasti ARA")
+
+    body = panggilan["json"]
+    assert set(body["questions"]) == {jev.KUNCI_PREDIKSI}
+    assert body["questions"][jev.KUNCI_PREDIKSI]["type"] == "noul"
+    assert json.loads(body["state"]) == {"kalimat": "besok pasti ARA"}
+    assert hasil[jev.KUNCI_PREDIKSI]["noul"] == 0.8
+
+
+def test_prediksi_jev_ambang_dan_nilai_rusak():
+    assert jev.prediksi_jev(JevPrediksi({"x": jev.AMBANG_PREDIKSI}), "x") is True
+    assert jev.prediksi_jev(JevPrediksi({"x": jev.AMBANG_PREDIKSI - 0.01}), "x") is False
+
+    class Rusak:
+        def prediksi(self, kalimat):
+            raise TimeoutError
+
+    assert jev.prediksi_jev(Rusak(), "x") is False
