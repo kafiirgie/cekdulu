@@ -1,0 +1,97 @@
+"""Tes pengaman AI. Tidak ada tes yang memanggil network atau API sungguhan."""
+from __future__ import annotations
+
+import json
+
+from app.ai import provider
+from app.ai.gemini import GeminiLLM
+from app.schemas import Claim, KlaimResponse
+
+
+class LLMPalsu:
+    def extract_claims(self, text, image_base64, ticker):
+        return KlaimResponse(
+            ticker="HALU",
+            claims=[
+                Claim(id="buatan-ai", text="BBRI asing net buy", span=(99, 123),
+                      checks=["asing", "cek_rekaan"]),
+                Claim(id="x", text="klaim yang tidak ada", checks=["laba"]),
+                Claim(id="y", text="besok pasti ARA", checks=["lonjakan_harga"]),
+            ],
+        )
+
+    def answer(self, card, question):
+        return "tidak dipakai"
+
+
+class LLMError:
+    def extract_claims(self, text, image_base64, ticker):
+        raise TimeoutError("lebih dari 8 detik")
+
+    def answer(self, card, question):
+        raise TimeoutError
+
+
+def test_span_dihitung_ulang_dan_hasil_ai_disaring(monkeypatch):
+    teks = "BBRI asing net buy, besok pasti ARA"
+    monkeypatch.setattr(provider, "get_llm", lambda: LLMPalsu())
+
+    hasil = provider.extract_with_fallback(teks, None, None)
+
+    assert hasil.ticker == "BBRI"  # ticker halusinasi diganti dari teks asli
+    assert hasil.used_ai is True
+    assert [c.id for c in hasil.claims] == ["c1", "c2"]
+    assert hasil.claims[0].span == (0, 18)
+    assert hasil.claims[0].checks == ["asing"]  # ID rekaan dibuang
+    assert hasil.claims[1].checks == []  # prediksi tidak boleh memilih pemeriksa
+    assert all("tidak ada" not in c.text for c in hasil.claims)
+
+
+def test_error_llm_kembali_ke_fallback(monkeypatch):
+    monkeypatch.setattr(provider, "get_llm", lambda: LLMError())
+    hasil = provider.extract_with_fallback(
+        "MDKA saham emas, pasti ikut naik", None, None,
+    )
+    assert hasil.ticker == "MDKA"
+    assert hasil.used_ai is False
+    assert any(c.checks == ["m_komoditas"] for c in hasil.claims)
+    assert any(c.checks == [] and "pasti" in c.text for c in hasil.claims)
+
+
+def test_ticker_input_dipertahankan_tanpa_teks(monkeypatch):
+    monkeypatch.setattr(provider, "get_llm", lambda: LLMPalsu())
+    hasil = provider.extract_with_fallback(None, None, "bbri")
+    assert hasil.ticker == "BBRI" and hasil.claims == []
+    assert hasil.used_ai is False
+
+
+def test_gemini_meminta_json_terstruktur_tanpa_network(monkeypatch):
+    class ResponsePalsu:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            isi = {"ticker": "MDKA", "claims": [
+                {"text": "MDKA saham emas", "checks": ["m_komoditas"]},
+            ]}
+            return {"candidates": [{"content": {"parts": [{"text": json.dumps(isi)}]}}]}
+
+    panggilan = {}
+
+    def post_palsu(url, **kwargs):
+        panggilan.update({"url": url, **kwargs})
+        return ResponsePalsu()
+
+    monkeypatch.setattr("app.ai.gemini.httpx.post", post_palsu)
+    hasil = GeminiLLM("key-palsu", "model-palsu").extract_claims(
+        "MDKA saham emas", None, None,
+    )
+
+    assert hasil.ticker == "MDKA"
+    assert hasil.claims[0].checks == ["m_komoditas"]
+    assert panggilan["timeout"].connect == 2.0
+    assert panggilan["timeout"].read == 5.0
+    assert panggilan["timeout"].write == 1.0
+    config = panggilan["json"]["generationConfig"]
+    assert config["responseMimeType"] == "application/json"
+    assert "responseJsonSchema" in config
