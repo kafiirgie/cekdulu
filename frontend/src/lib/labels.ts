@@ -5,7 +5,13 @@ const KATALOG = rules as unknown as Catalog
 
 /** Semua pemeriksa + modul dari rules.json, urutannya sama dengan formulir inspeksi. */
 export const CEK = KATALOG.checks
+/** 8 pemeriksa yang selalu jalan untuk setiap saham. */
+export const CEK_STANDAR = CEK.filter((c) => c.standar)
 export const ATURAN = KATALOG.rules
+
+// Pemecah klaim bisa memilih pemeriksa maupun kartu "Yang tidak diceritakan" (mis. analis, pemegang).
+const LABEL_CEK = new Map([...KATALOG.checks, ...KATALOG.untold].map((c) => [c.id, c.label]))
+export const labelCek = (id: string) => LABEL_CEK.get(id) ?? id
 
 export const VERDICT_LABEL: Record<Verdict, string> = {
   sesuai: 'Sesuai data',

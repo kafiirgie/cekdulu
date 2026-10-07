@@ -1,5 +1,5 @@
 import { Activity, Coins, Globe, PauseCircle, PieChart, Scale, TrendingUp, UserRound, type LucideIcon } from 'lucide-react'
-import { CEK } from '@/lib/labels'
+import { CEK_STANDAR } from '@/lib/labels'
 import JudulBagian, { CatatanSumber } from './Bagian'
 import { CONTOH_SABUK } from './contoh'
 import Sabuk from './Sabuk'
@@ -22,7 +22,6 @@ const LANGKAH = [
 ]
 
 export default function CaraKerja() {
-  const standar = CEK.filter((c) => c.standar)
   return (
     <section className="py-10">
       <div className="rounded-[28px] border border-line bg-surface-2 px-5 pt-9 pb-7 sm:px-9 sm:pt-12 sm:pb-9">
@@ -30,10 +29,10 @@ export default function CaraKerja() {
         <Sabuk contoh={CONTOH_SABUK} />
         <CatatanSumber />
         <p className="mt-5 mb-3 text-center text-[14.5px] text-ink-2">
-          Setiap cek menjalankan <b className="text-ink">{standar.length} pemeriksaan yang sama</b>, apa pun sahamnya:
+          Setiap cek menjalankan <b className="text-ink">{CEK_STANDAR.length} pemeriksaan yang sama</b>, apa pun sahamnya:
         </p>
         <ul className="flex flex-wrap justify-center gap-2">
-          {standar.map((c) => {
+          {CEK_STANDAR.map((c) => {
             const Ikon = IKON[c.id] ?? Activity
             return (
               <li key={c.id} className="inline-flex items-center gap-1.5 rounded-full border border-line-2 bg-surface px-3 py-1.5 text-[13px] font-semibold">

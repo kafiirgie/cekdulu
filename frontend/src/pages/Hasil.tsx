@@ -1,17 +1,17 @@
 // Layar 4 + 5 — Formulir berjalan (loading) lalu Hasil.
 // [A2] port tampilan kartu, grafik, "Bagikan ke grup" (kartu 4:5), panel Tanya.
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import VerdictCard from '@/components/VerdictCard'
 import { api } from '@/lib/api'
-import { KuotaHabisError } from '@/lib/contract'
+import { useGalatApi } from '@/lib/galat'
 import { useCek } from '@/lib/store'
 
 export default function Hasil() {
   const { klaim, hasil, setHasil } = useCek()
   const [langkah, setLangkah] = useState(0)
   const [err, setErr] = useState<string | null>(null)
-  const nav = useNavigate()
+  const galat = useGalatApi()
 
   useEffect(() => {
     if (!klaim?.ticker || hasil) return
@@ -27,13 +27,13 @@ export default function Hasil() {
         if (!batal) setHasil(res)
       })
       .catch((e) => {
-        if (e instanceof KuotaHabisError) nav('/kuota-habis')
-        else setErr(String(e))
+        const pesan = galat(e)
+        if (pesan) setErr(pesan)
       })
     return () => {
       batal = true
     }
-  }, [klaim, hasil, setHasil, nav])
+  }, [klaim, hasil, setHasil, galat])
 
   if (!klaim?.ticker) return <Navigate to="/cek" replace />
   if (err) return <p className="text-destructive">{err}</p>

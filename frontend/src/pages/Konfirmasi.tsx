@@ -1,38 +1,103 @@
-// Layar 3 — Konfirmasi klaim. [A1] stabilo di teks asli (pakai claim.span), edit teks klaim.
-import { Navigate, useNavigate } from 'react-router-dom'
+// Layar 3 — Konfirmasi klaim: teks asli dengan stabilo per klaim (claim.span), klaim bisa diubah atau dihapus.
+import { X } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
+import JudulLayar from '@/components/JudulLayar'
 import { Button } from '@/components/ui/button'
+import type { Claim } from '@/lib/contract'
+import { CEK_STANDAR, labelCek } from '@/lib/labels'
 import { useCek } from '@/lib/store'
 
-export default function Konfirmasi() {
-  const { klaim, setKlaim } = useCek()
-  const nav = useNavigate()
-  if (!klaim) return <Navigate to="/cek" replace />
+/** Potong teks jadi bagian biasa dan bagian berstabilo. Span yang tumpang tindih dilewati. */
+function TeksDistabilo({ teks, claims }: { teks: string; claims: Claim[] }) {
+  const rentang = claims
+    .flatMap((c) => (c.span ? [c.span] : []))
+    .sort((a, b) => a[0] - b[0])
+  const bagian: ReactNode[] = []
+  let pos = 0
+  let ke = 0
+  for (const [s, e] of rentang) {
+    if (s < pos) continue
+    bagian.push(teks.slice(pos, s))
+    // Stabilo muncul satu per satu, seperti dicoret berurutan.
+    bagian.push(
+      <mark key={s} className="stabilo bg-transparent text-ink" style={{ animationDelay: `${300 + ke++ * 380}ms` }}>
+        {teks.slice(s, e)}
+      </mark>,
+    )
+    pos = e
+  }
+  bagian.push(teks.slice(pos))
+  return <p className="m-0 text-[19px] leading-[1.65] font-medium">{bagian}</p>
+}
 
-  const hapus = (id: string) => setKlaim({ ...klaim, claims: klaim.claims.filter((c) => c.id !== id) })
-
+function BarisKlaim({ klaim, nomor, onUbah }: { klaim: Claim; nomor: number; onUbah: (k: Claim | null) => void }) {
   return (
-    <section>
-      <h2 className="text-lg font-semibold">
-        Kami menemukan {klaim.claims.length} klaim soal {klaim.ticker ?? 'saham'}
-      </h2>
-      <ul className="mt-3 space-y-2">
-        {klaim.claims.map((c) => (
-          <li key={c.id} className="flex items-start justify-between gap-2 rounded-lg bg-surface p-3 shadow-soft">
-            <div>
-              <mark className="bg-hl-mark text-ink">{c.text}</mark>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {c.checks.length ? `Diperiksa: ${c.checks.join(', ')}` : 'Prediksi/opini — tidak bisa dicek'}
-              </p>
-            </div>
-            <button onClick={() => hapus(c.id)} className="text-xs text-muted-foreground">hapus</button>
-          </li>
+    <li className="rounded-md border border-line-2 bg-surface py-1.5 pr-1.5 pl-3.5 shadow-soft focus-within:border-ink-2">
+      <div className="flex items-center gap-2.5">
+        <span className="font-mono text-[11px] whitespace-nowrap text-muted-foreground">KLAIM {nomor}</span>
+        <input
+          value={klaim.text}
+          onChange={(e) => onUbah({ ...klaim, text: e.target.value })}
+          aria-label={`Klaim ${nomor}`}
+          className="min-w-0 flex-1 border-0 bg-transparent py-1.5 text-[15px] font-semibold text-ink outline-none"
+        />
+        <Button variant="ghost" size="icon-sm" onClick={() => onUbah(null)} aria-label={`Hapus klaim ${nomor}`} className="bg-surface-3 text-ink-2 hover:text-ink">
+          <X />
+        </Button>
+      </div>
+      <p className="m-0 pb-1.5 text-[12.5px] text-muted-foreground">
+        {klaim.checks.length ? `Diperiksa: ${klaim.checks.map(labelCek).join(', ')}` : 'Prediksi/opini — tidak bisa dicek'}
+      </p>
+    </li>
+  )
+}
+
+export default function Konfirmasi() {
+  const { text, klaim, setKlaim, setHasil } = useCek()
+  const nav = useNavigate()
+  if (!klaim?.ticker) return <Navigate to="/cek" replace />
+
+  const ubah = (id: string, baru: Claim | null) =>
+    setKlaim({
+      ...klaim,
+      claims: baru ? klaim.claims.map((c) => (c.id === id ? baru : c)) : klaim.claims.filter((c) => c.id !== id),
+    })
+
+  const periksa = () => {
+    // Klaim yang dikosongkan saat diubah dianggap dihapus.
+    const claims = klaim.claims.map((c) => ({ ...c, text: c.text.trim() })).filter((c) => c.text)
+    setKlaim({ ...klaim, claims })
+    setHasil(null)
+    nav('/cek/hasil')
+  }
+
+  const n = klaim.claims.length
+  return (
+    <section className="pb-6">
+      <JudulLayar judul={n ? `Kami menemukan ${n} klaim soal ${klaim.ticker}.` : 'Semua klaim dihapus.'}>
+        {n
+          ? 'Bagian yang distabilo yang akan diperiksa. Ubah atau hapus kalau ada yang keliru.'
+          : `Kami tetap menjalankan ${CEK_STANDAR.length} pemeriksaan standar untuk ${klaim.ticker}.`}
+      </JudulLayar>
+      {text.trim() && (
+        <div className="rounded-xl border border-line-2 bg-surface p-[18px] shadow-lift">
+          <TeksDistabilo teks={text} claims={klaim.claims} />
+        </div>
+      )}
+      <ul className="mt-4 grid gap-2">
+        {klaim.claims.map((c, i) => (
+          <BarisKlaim key={c.id} klaim={c} nomor={i + 1} onUbah={(baru) => ubah(c.id, baru)} />
         ))}
       </ul>
-      <Button size="lg"
-        onClick={() => nav('/cek/hasil')}
-        className="mt-4 w-full">
-        Periksa {klaim.claims.length} klaim
-      </Button>
+      <div className="mt-5 flex items-center justify-between">
+        <Link to="/cek" className="px-2 py-1.5 font-semibold text-ink-2 hover:text-ink">
+          Kembali
+        </Link>
+        <Button onClick={periksa}>
+          Cek sekarang <span aria-hidden="true">→</span>
+        </Button>
+      </div>
     </section>
   )
 }

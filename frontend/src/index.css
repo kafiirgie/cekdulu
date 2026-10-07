@@ -218,6 +218,14 @@
     animation: stabilo-masuk 0.75s cubic-bezier(0.6, 0.1, 0.2, 1) 0.45s both;
   }
 
+  /* Kotak tempel di layar Input: garis kertas ikut bergulir bersama teks. */
+  .kertas-bergaris {
+    font-size: 17.5px;
+    line-height: 28px;
+    background: repeating-linear-gradient(transparent 0 27px, var(--cd-line-2) 27px 28px);
+    background-attachment: local;
+  }
+
   .tulisan-tangan {
     font-family: var(--font-hand);
     line-height: 1.25;
