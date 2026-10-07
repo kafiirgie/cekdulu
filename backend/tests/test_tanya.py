@@ -1109,7 +1109,12 @@ def test_teks_jawaban_deterministik_terkunci():
     assert tanya._angka(KARTU) == ("Angka di kartu ini — Porsi nikel: 82%; "
                                    "Nilai transaksi: Rp9,35 T; Korelasi emas: 0,4.")
     assert tanya._tak_ada().startswith("Maaf, data ini tidak ada di kartu.")
-    assert tanya.jawab(KARTU, "istilah") or True
+    # `or True` di sini dulu membuat assert-nya selalu lolos; sekarang diuji sungguhan.
+    glos = {"nama": "Korelasi emas", "arti": "Seberapa erat harga saham mengikuti emas."}
+    assert tanya.jawab(KARTU, "istilah", glos) == \
+        "Korelasi emas: Seberapa erat harga saham mengikuti emas."
+    assert tanya.jawab(KARTU, "istilah") == tanya._tak_ada()   # tanpa glosarium -> jujur
+    assert tanya.jawab(KARTU, "tidak_ada") == tanya._tak_ada()
 
 
 def test_get_jev_none_saat_mode_off_atau_tanpa_kunci(monkeypatch):
