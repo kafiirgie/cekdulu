@@ -8,7 +8,7 @@ from app.checkers.dividen import aturan_d1, aturan_d1_periode, aturan_d2
 from app.checkers.free_float import aturan_f1
 from app.checkers.laba import arah_tren, aturan_l1, aturan_l2, pertumbuhan_yoy
 from app.checkers.lonjakan_harga import aturan_h1, aturan_h2
-from app.checkers.orang_dalam import aturan_o1
+from app.checkers.orang_dalam import OrangDalam, aturan_o1
 from app.checkers.suspensi import aturan_s1
 from app.checkers.valuasi import aturan_v1
 from app.data.normal import AliranAsing, HargaHarian, Kuartal, Suspensi, TransaksiOrangDalam
@@ -63,6 +63,18 @@ def test_orang_dalam_jendela_dan_batas():
          TransaksiOrangDalam(HARI - timedelta(days=400), "C", "jual", 9e9, None, None)]  # > 12 bulan
     assert [x.nama for x in aturan_o1(t, HARI)] == ["A"]
     assert aturan_o1([], HARI) == []  # tidak ada transaksi = aman
+
+
+def test_orang_dalam_tidak_menggabungkan_pemegang_berbeda(monkeypatch):
+    from app.data import normal
+    transaksi = [TransaksiOrangDalam(HARI - timedelta(days=10), "Nextier", "jual", 2e9, 0.70, 0.6271),
+                 TransaksiOrangDalam(HARI - timedelta(days=100), "Pemegang lain", "jual", 3e9, 0.04, 0.0),
+                 TransaksiOrangDalam(HARI - timedelta(days=40), "Nextier", "jual", 3e9, 0.7874, 0.70)]
+    monkeypatch.setattr(normal, "transaksi_orang_dalam", lambda t: transaksi)
+    kartu = OrangDalam().run("MGLV", None, HARI).card
+    assert [e.value for e in kartu.evidence if e.label.startswith("Nextier:")] == [0.7874, 0.6271]
+    assert [e.value for e in kartu.evidence if e.label.startswith("Pemegang lain:")] == [0.04, 0.0]
+    assert kartu.sources[0].as_of == str(HARI - timedelta(days=10))
 
 
 # ---------- A ----------

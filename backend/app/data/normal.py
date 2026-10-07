@@ -4,16 +4,18 @@ Pemeriksa TIDAK membaca JSON mentah Sectors. Mereka memanggil fungsi di sini,
 yang mengubah JSON mentah (dari sectors.get) jadi bentuk sederhana di bawah.
 Keuntungannya: aturan di checkers/ bisa dites dengan data buatan tanpa API.
 
-Setiap fungsi masih TODO. Isi dengan parser setelah fixture ditarik (tugas B0/B1).
+Parser B1 memakai bentuk JSON yang dicatat di docs/DATA_NOTES.md.
+Parser laporan keuangan dan aliran asing menyusul di tugas B2.
 Kalau field yang dibutuhkan kosong, `raise DataUnavailable(...)` — jangan isi 0.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
+from math import isfinite
 from typing import Optional
 
-from .sectors import DataUnavailable, get  # noqa: F401  (dipakai saat TODO diisi)
+from .sectors import DataUnavailable, get
 
 
 @dataclass
@@ -65,8 +67,46 @@ class Suspensi:
     alasan: str
 
 
+def _ambil(ticker: str, kunci: str):
+    data = get(ticker.strip().upper().removesuffix(".JK"), kunci)
+    if kunci != "harga_harian" and not isinstance(data, dict):
+        raise DataUnavailable(f"Bentuk data {kunci} tidak sesuai")
+    return data
+
+
+def _daftar(data, nama: str) -> list[dict]:
+    if not isinstance(data, list) or any(not isinstance(r, dict) for r in data):
+        raise DataUnavailable(f"Daftar {nama} tidak tersedia atau tidak sesuai")
+    return data
+
+
+def _teks(nilai, nama: str) -> str:
+    if not isinstance(nilai, str) or not nilai.strip():
+        raise DataUnavailable(f"{nama} tidak tersedia")
+    return nilai.strip()
+
+
+def _tanggal(nilai, nama: str) -> date:
+    try:
+        return date.fromisoformat(_teks(nilai, nama)[:10])
+    except ValueError as e:
+        raise DataUnavailable(f"Tanggal {nama} tidak sesuai") from e
+
+
+def _angka(nilai, nama: str, opsional: bool = False) -> Optional[float]:
+    if opsional and (nilai is None or nilai == ""):
+        return None
+    try:
+        angka = float(nilai)
+    except (TypeError, ValueError, OverflowError) as e:
+        raise DataUnavailable(f"Angka {nama} tidak tersedia atau tidak sesuai") from e
+    if isinstance(nilai, bool) or not isfinite(angka):
+        raise DataUnavailable(f"Angka {nama} tidak sesuai")
+    return angka
+
+
 def nama_emiten(ticker: str) -> Optional[str]:
-    raise DataUnavailable("TODO(B1): ambil nama perusahaan dari report")
+    return _teks(_ambil(ticker, "report").get("company_name"), "company_name")
 
 
 def laba_kuartalan(ticker: str) -> list[Kuartal]:
@@ -82,7 +122,23 @@ def dividen(ticker: str) -> Dividen:
 
 
 def transaksi_orang_dalam(ticker: str) -> list[TransaksiOrangDalam]:
-    raise DataUnavailable("TODO(B1): parser filings")
+    rows = _daftar(_ambil(ticker, "filings").get("results"), "filings.results")
+    hasil = []
+    for r in rows:
+        jenis = _teks(r.get("transaction_type"), "transaction_type").lower()
+        if jenis not in ("buy", "sell"):
+            raise DataUnavailable(f"Jenis transaksi {jenis} tidak dikenal")
+        sebelum = _angka(r.get("share_percentage_before"), "share_percentage_before", opsional=True)
+        sesudah = _angka(r.get("share_percentage_after"), "share_percentage_after", opsional=True)
+        hasil.append(TransaksiOrangDalam(
+            tanggal=_tanggal(r.get("timestamp"), "timestamp"),
+            nama=_teks(r.get("holder_name"), "holder_name"),
+            jenis="beli" if jenis == "buy" else "jual",
+            nilai_rp=_angka(r.get("transaction_value"), "transaction_value"),
+            sebelum=sebelum / 100 if sebelum is not None else None,
+            sesudah=sesudah / 100 if sesudah is not None else None,
+        ))
+    return sorted(hasil, key=lambda r: r.tanggal)
 
 
 def aliran_asing(ticker: str) -> list[AliranAsing]:
@@ -90,18 +146,62 @@ def aliran_asing(ticker: str) -> list[AliranAsing]:
 
 
 def harga_harian(ticker: str) -> list[HargaHarian]:
-    raise DataUnavailable("TODO(B1): parser harga_harian")
+    rows = _daftar(_ambil(ticker, "harga_harian"), "harga_harian")
+    if not rows:
+        raise DataUnavailable("Harga harian kosong")
+    hasil = []
+    for r in rows:
+        close = _angka(r.get("close"), "close")
+        volume = _angka(r.get("volume"), "volume", opsional=True)
+        if close <= 0 or (volume is not None and volume < 0):
+            raise DataUnavailable("Harga atau volume harian tidak sesuai")
+        hasil.append(HargaHarian(
+            tanggal=_tanggal(r.get("date"), "date"), close=close,
+            nilai_transaksi_rp=close * volume if volume is not None else None,
+        ))
+    return sorted(hasil, key=lambda r: r.tanggal)
 
 
 def tanggal_aksi_korporasi(ticker: str) -> set[date]:
     """Tanggal ex-dividen / split / right issue. Dipakai aturan H-1."""
-    raise DataUnavailable("TODO(B1): parser aksi_korporasi")
+    data = _ambil(ticker, "aksi_korporasi")
+    if "corporate_actions" not in data:
+        raise DataUnavailable("corporate_actions tidak tersedia")
+    aksi = data["corporate_actions"]
+    if aksi is None:
+        return set()
+    if not isinstance(aksi, dict):
+        raise DataUnavailable("Bentuk corporate_actions tidak sesuai")
+    hasil = set()
+    for jenis in ("dividend", "right_issue", "stock_split", "bonus", "upcoming_dividend"):
+        rows = aksi.get(jenis)
+        if rows is None:
+            continue
+        for r in _daftar(rows, jenis):
+            # Sectors menamai tanggal stock split 'date'; jenis lain memakai 'ex_date'.
+            tanggal = r.get("ex_date") or (r.get("date") if jenis == "stock_split" else None)
+            if tanggal:
+                hasil.add(_tanggal(tanggal, f"{jenis}.tanggal_ex"))
+    return hasil
 
 
 def riwayat_suspensi(ticker: str) -> list[Suspensi]:
-    raise DataUnavailable("TODO(B1): parser suspensi")
+    rows = _daftar(_ambil(ticker, "suspensi").get("results"), "suspensi.results")
+    return sorted((Suspensi(
+        tanggal=_tanggal(r.get("suspension_date"), "suspension_date"),
+        alasan=_teks(r.get("reason"), "reason"),
+    ) for r in rows), key=lambda r: r.tanggal)
 
 
 def free_float(ticker: str) -> float:
     """Porsi entri 'Public' di major_shareholders (desimal)."""
-    raise DataUnavailable("TODO(B1): parser report major_shareholders")
+    ownership = _ambil(ticker, "report").get("ownership")
+    if not isinstance(ownership, dict):
+        raise DataUnavailable("ownership tidak tersedia")
+    for r in _daftar(ownership.get("major_shareholders"), "major_shareholders"):
+        if r.get("name") == "Public":
+            porsi = _angka(r.get("share_percentage"), "Public.share_percentage")
+            if not 0 <= porsi <= 1:
+                raise DataUnavailable("Porsi Public harus berupa desimal 0 sampai 1")
+            return porsi
+    raise DataUnavailable("Entri Public tidak tersedia")

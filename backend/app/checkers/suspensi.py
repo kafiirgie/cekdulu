@@ -29,5 +29,5 @@ class Suspensi(Checker):
             card(verdict="info", check=self.id, rule_id="S-1", headline=teks,
                  reason=f"Alasan terakhir: {dalam[0].alasan}",
                  evidence=[Evidence(label="Jumlah suspensi", value=len(dalam), fmt="int")],
-                 sources=[Source(name="Sectors · suspensi", as_of=str(today))], claim=claim),
+                 sources=[Source(name="Sectors · suspensi", as_of=str(dalam[0].tanggal))], claim=claim),
         )

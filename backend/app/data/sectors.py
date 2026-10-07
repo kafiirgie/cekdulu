@@ -32,7 +32,8 @@ class DataUnavailable(Exception):
 # Tanggal relatif ({start}, {end}) diisi otomatis oleh _call_live (start = hari ini − hari).
 ENDPOINTS: dict[str, dict[str, Any]] = {
     # kunci               path                                              params                                                   kredit
-    "report":             {"path": "/v2/company/report/{ticker}/", "params": {"sections": "all"}, "kredit": 1},
+    # B1 memerlukan overview + ownership. Kredit report dihitung per bagian, bukan per request.
+    "report":             {"path": "/v2/company/report/{ticker}/", "params": {"sections": "overview,ownership"}, "kredit": 2},
     "keuangan_kuartalan": {"path": "/v2/financials/quarterly/{ticker}/", "params": {"n_quarters": 5}, "kredit": 5},
     "harga_harian":       {"path": "/v2/daily/{ticker}/", "params": {"start": "-90", "end": "0"}, "kredit": 1},
     "aliran_asing":       {"path": "/v2/foreign-flow/{ticker}/", "params": {"start": "-90", "end": "0"}, "kredit": 1},

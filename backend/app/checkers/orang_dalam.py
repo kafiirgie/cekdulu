@@ -27,11 +27,17 @@ class OrangDalam(Checker):
         jual = sorted((t for t in besar if t.jenis == "jual"), key=lambda t: t.tanggal)
         teks = f"{len(besar)} transaksi orang dalam di atas Rp1 miliar dalam 12 bulan ({len(jual)} penjualan)."
         ev = []
-        if jual and jual[0].sebelum is not None and jual[-1].sesudah is not None:
-            ev = [Evidence(label="Kepemilikan sebelum penjualan pertama", value=jual[0].sebelum, fmt="pct"),
-                  Evidence(label="Kepemilikan setelah penjualan terakhir", value=jual[-1].sesudah, fmt="pct")]
+        per_pemegang = {}
+        for t in jual:
+            per_pemegang.setdefault(t.nama, []).append(t)
+        for nama, penjualan in per_pemegang.items():
+            if penjualan[0].sebelum is not None and penjualan[-1].sesudah is not None:
+                ev.extend([
+                    Evidence(label=f"{nama}: kepemilikan sebelum penjualan pertama", value=penjualan[0].sebelum, fmt="pct"),
+                    Evidence(label=f"{nama}: kepemilikan setelah penjualan terakhir", value=penjualan[-1].sesudah, fmt="pct"),
+                ])
         return Outcome(
             "temuan", teks,
             card(verdict="info", check=self.id, rule_id="O-1", headline=teks, evidence=ev,
-                 sources=[Source(name="Sectors · filings", as_of=str(today))], claim=claim),
+                 sources=[Source(name="Sectors · filings", as_of=str(max(t.tanggal for t in besar)))], claim=claim),
         )
