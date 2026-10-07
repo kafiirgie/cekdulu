@@ -1,8 +1,9 @@
 """Klasifikasi TypeSafe (JEV) untuk panel Tanya.  [Lane C]
 
 Peran model di sini HANYA memilih label dari daftar tertutup (bagian kartu mana yang
-menjawab pertanyaan). Angka, kalimat, dan pilihan data tetap disusun kode di
-tanya.py. Jadi vonis tetap ditentukan kode, bukan AI (AGENTS.md aturan 1).
+menjawab pertanyaan, dan apakah pengguna minta saran investasi). Angka, kalimat, dan
+pilihan data tetap disusun kode di tanya.py. Jadi vonis tetap ditentukan kode, bukan
+AI (AGENTS.md aturan 1).
 
 Respons JEV terstruktur; kunci pertanyaan selalu ada walau model gagal, dan kalau
 jawabannya tidak ada di kartu (`yakin` < ambang) kode menjawab jujur "tidak ada".
@@ -24,6 +25,7 @@ BATAS_WAKTU = httpx.Timeout(connect=5.0, read=30.0, write=10.0, pool=2.0)
 KUNCI_BAGIAN = "bagian"
 KUNCI_ISTILAH = "istilah_key"
 KUNCI_TAHU = "tahu"
+KUNCI_SARAN = "minta_saran"
 
 # Ambang "sanity" untuk `noul`. Hasil pengukuran ke model sungguhan: `noul` bukan
 # skor ketersediaan yang andal (pertanyaan yang jawabannya ADA pun bisa bernilai 0,15,
@@ -31,6 +33,12 @@ KUNCI_TAHU = "tahu"
 # sebagai penentu utama (`di_luar_kartu` = tidak ada di kartu); `noul` hanya menjadi
 # lantai pengaman untuk menolak keluaran yang benar-benar kosong/rusak.
 AMBANG_SANITY = 0.05
+
+# Ambang `minta_saran`. Hasil ukur ke model sungguhan (5x per frasa, stabil):
+# "masih bagus buat dibeli?" 0,89–0,91 · "harga wajarnya berapa?" 0,53–0,55 ·
+# "kira-kira masih naik gak?" 0,72–0,74 vs kontrol "apa itu PBV?" 0,03 ·
+# "berapa porsi nikelnya?" 0,08–0,09. Yang di tengah (0,2–0,3) dianggap bukan saran.
+AMBANG_SARAN = 0.5
 
 # Label bagian yang dikenal kode. FE memakai nama yang sama (BagianJawaban).
 BAGIAN = ("angka_bukti", "alasan_aturan", "sumber_tanggal", "istilah", "di_luar_kartu")
@@ -131,6 +139,47 @@ class Jev:
         )
         response.raise_for_status()
         return response.json().get("answers", {})
+
+    def saran(self, pertanyaan: str) -> dict[str, Any]:
+        """Noul: apakah pertanyaan minta saran investasi? Tanpa kartu (nilai pertanyaannya)."""
+        body = {
+            "state": json.dumps({"pertanyaan": pertanyaan}, ensure_ascii=False),
+            "model": self.model,
+            "questions": {
+                KUNCI_SARAN: {
+                    "type": "noul",
+                    "instructions": ("Apakah pengguna meminta saran investasi: beli, jual, atau tahan, "
+                                     "atau menanyakan target harga?"),
+                    "criteria": {
+                        "true": "Meminta saran investasi atau target harga.",
+                        "false": "Hanya menanyakan data, angka, atau arti istilah.",
+                    },
+                },
+            },
+        }
+        response = httpx.post(
+            f"{self.base_url}/systemone",
+            headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+            json=body,
+            timeout=BATAS_WAKTU,
+        )
+        response.raise_for_status()
+        return response.json().get("answers", {})
+
+
+def minta_saran_jev(jev: Any, pertanyaan: str) -> bool:
+    """JEV sebagai pengaman kedua penolakan saran. True = minta saran.
+
+    Menerima klien apa pun yang punya `.saran(pertanyaan)` (klien JEV sungguhan atau
+    palsu saat tes). Kalau JEV mati/gagal -> False: HANYA menolak, tidak pernah
+    mengizinkan, dan regex guard tetap jalan lebih dulu.
+    """
+    try:
+        jawab = jev.saran(pertanyaan).get(KUNCI_SARAN)
+    except Exception:
+        return False
+    nilai = jawab.get("noul") if isinstance(jawab, dict) else None
+    return isinstance(nilai, (int, float)) and nilai >= AMBANG_SARAN
 
 
 def get_jev() -> Optional[Jev]:
