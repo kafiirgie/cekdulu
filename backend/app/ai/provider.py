@@ -17,11 +17,11 @@ from ..catalog import known_ids
 from ..config import settings
 from ..schemas import Card, KlaimResponse
 from . import fallback
-from .jev import get_jev, klaim_jev, prediksi_jev, target_jev
+from .jev import get_jev, saring_jev
 
 
 def _get_jev_prediksi():
-    """Klien JEV untuk memeriksa prediksi, atau None (mode kode / tanpa kunci).
+    """Klien JEV untuk menyaring klaim, atau None (mode kode / tanpa kunci).
 
     Dipisah supaya tes bisa menggantinya. Kegagalan apa pun -> None: tanpa JEV,
     heuristik kata kunci yang dipakai, jadi jalur tanpa AI tetap sama seperti dulu.
@@ -42,7 +42,7 @@ def _layak_diperiksa(kalimat: str, jev_pred) -> bool:
         return False
     if jev_pred is None:
         return True
-    return klaim_jev(jev_pred, kalimat)
+    return bool(saring_jev(jev_pred, kalimat)["klaim"])
 
 
 class LLM(Protocol):
@@ -113,14 +113,19 @@ def _normalisasi(res: KlaimResponse, teks: Optional[str], ticker: Optional[str],
         awal = sumber.find(klaim.text)
         if awal < 0:
             continue
-        if not _layak_diperiksa(klaim.text, jev_pred):
+        # Salah satu panggilan JEV per kalimat (dulu tiga terpisah) mengembalikan
+        # tiga keputusan sekaligus. Tanpa JEV, hasilnya default: dianggap klaim,
+        # bukan prediksi, bukan target -> perilaku heuristik lama.
+        putus = saring_jev(jev_pred, klaim.text) if jev_pred else {
+            "klaim": True, "prediksi": False, "target": False}
+        if fallback.bukan_klaim(klaim.text) or not putus["klaim"]:
             continue  # sapaan/pertanyaan/ngobrol, bukan klaim saham
         checks = klaim.checks[:2]
-        if fallback.prediksi_tanpa_angka(klaim.text) or (jev_pred and prediksi_jev(jev_pred, klaim.text)):
+        if fallback.prediksi_tanpa_angka(klaim.text) or putus["prediksi"]:
             checks = []
         # Target/prediksi harga berangka juga tidak boleh diberi vonis (T-1), walau
         # angkanya terlihat seperti klaim "dari A ke B".
-        if jev_pred and checks and target_jev(jev_pred, klaim.text):
+        if checks and putus["target"]:
             checks = []
         klaim_bersih.append(klaim.model_copy(update={
             "id": f"c{len(klaim_bersih) + 1}",
