@@ -64,6 +64,7 @@ class Source(_Model):
 
 
 class Card(_Model):
+    # A-3: konflik memakai rule_id A-3; periode/keterbatasan di reason, sumber per dataset yang tersedia.
     claim_id: Optional[str] = None  # None untuk kartu "Yang tidak diceritakan"
     verdict: Verdict
     check: Optional[str] = None

@@ -30,6 +30,7 @@ export interface Chart { type: 'line' | 'bar'; series: { name: string; points: [
 export interface Source { name: string; as_of?: string | null }
 
 export interface Card {
+  // A-3: konflik memakai rule_id A-3; periode/keterbatasan di reason, sumber per dataset yang tersedia.
   claim_id?: string | null
   verdict: Verdict
   check?: string | null
