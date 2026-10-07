@@ -2,7 +2,7 @@
 Setiap aturan di contract/rules.json idealnya punya minimal satu tes di sini."""
 from datetime import date, timedelta
 
-from app.checkers.asing import aturan_a1, aturan_a2
+from app.checkers.asing import aturan_a1, aturan_a2, aturan_a2_konflik
 from app.checkers.base import angka_persen, angka_rupiah, rp
 from app.checkers.dividen import aturan_d1, aturan_d1_periode, aturan_d2
 from app.checkers.free_float import aturan_f1
@@ -103,6 +103,23 @@ def test_asing_tren_bulanan_tidak_mengarang_data():
     for kurang in ([], rows[:2], [rows[0]] * 3):
         with pytest.raises(DataUnavailable):
             aturan_a2(kurang)
+
+
+def test_asing_konflik_hanya_tanpa_periode():
+    assert aturan_a2_konflik(1, -0.05, False)
+    assert aturan_a2_konflik(-1, 0.05, False)
+    assert not aturan_a2_konflik(1, -0.05, True)
+    assert not aturan_a2_konflik(1, 0.05, False)
+    assert not aturan_a2_konflik(0, -0.05, False)
+    assert not aturan_a2_konflik(1, 0, False)
+
+
+def test_asing_bulan_hilang_tidak_dianggap_periode_lengkap():
+    import pytest
+    from app.data.sectors import DataUnavailable
+    rows = [KomposisiBulanan(date(2026, i, 1), 0.4, 0.2, None) for i in (1, 3, 4)]
+    with pytest.raises(DataUnavailable, match="tidak lengkap"):
+        aturan_a2(rows)
 
 
 # ---------- H ----------

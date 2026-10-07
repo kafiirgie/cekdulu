@@ -59,7 +59,7 @@
     },
     {
       "id": "A-2", "check": "asing", "status": "final",
-      "text": "Tren porsi asing/ritel dari komposisi pemegang saham bulanan (3–6 bulan). Hanya dibandingkan dalam satu emiten.",
+      "text": "Tren porsi asing/ritel dari 3–6 observasi komposisi bulanan terakhir, hanya dalam satu emiten dan sebagai porsi saham lokal + asing yang tercatat. Klaim tanpa periode menyesatkan jika arah A-1 dan A-2 berlawanan (tergantung jendela waktu). Klaim dengan periode 20 hari bursa memakai A-1; klaim 3–6 bulan memakai A-2 pada jumlah observasi yang disebut. Tren lain hanya menjadi konteks, tidak mengubah vonis. Periode lain atau data periode yang tidak lengkap tidak bisa dicek; tren datar bukan arus keluar.",
       "params": { "bulan_min": 3, "bulan_maks": 6 }
     },
     {

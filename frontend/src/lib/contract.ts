@@ -30,6 +30,7 @@ export interface Chart { type: 'line' | 'bar'; series: { name: string; points: [
 export interface Source { name: string; as_of?: string | null }
 
 export interface Card {
+  // A-2: periode dan konteks lintas jendela dijelaskan di reason; sumber tetap per dataset.
   claim_id?: string | null
   verdict: Verdict
   check?: string | null

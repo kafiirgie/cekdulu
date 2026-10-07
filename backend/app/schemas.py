@@ -64,6 +64,7 @@ class Source(_Model):
 
 
 class Card(_Model):
+    # A-2: periode dan konteks lintas jendela dijelaskan di reason; sumber tetap per dataset.
     claim_id: Optional[str] = None  # None untuk kartu "Yang tidak diceritakan"
     verdict: Verdict
     check: Optional[str] = None

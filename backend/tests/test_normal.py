@@ -177,6 +177,91 @@ def test_komposisi_denominator_lokal_asing_dan_null(simpan):
     assert hasil[0].jumlah_pemegang is None
 
 
+def simpan_asing(simpan, bulanan=True, harian=True):
+    if harian:
+        simpan("aliran_asing", {"data": [
+            {"date": str(date(2026, 9, 1) + timedelta(days=i)), "net_foreign_inflow": 1e9}
+            for i in range(20)]})
+    if bulanan:
+        simpan("komposisi_pemegang", {"data": [
+            {"date": str(date(2026, i, 1)), "total_l": i * 10, "total_f": 100 - i * 10,
+             "individual_l": 10, "numbers_of_shareholders": None}
+            for i in range(3, 9)]})
+
+
+@pytest.mark.parametrize("teks,verdict,aturan", [
+    ("asing masuk", "menyesatkan", "A-2"),
+    ("asing keluar", "menyesatkan", "A-2"),
+    ("asing beli dalam 20 hari bursa terakhir", "sesuai", "A-1"),
+    ("asing keluar dalam 20 hari bursa terakhir", "tidak_sesuai", "A-1"),
+    ("porsi asing masuk dalam 6 bulan terakhir", "tidak_sesuai", "A-2"),
+    ("porsi asing turun dalam tiga bulan terakhir", "sesuai", "A-2"),
+])
+def test_asing_periode_menentukan_vonis_dan_konteks(simpan, teks, verdict, aturan):
+    from app.checkers.asing import Asing
+    from app.schemas import Claim
+    simpan_asing(simpan)
+    kartu = Asing().run("MGLV", Claim(id="c1", text=teks, checks=["asing"]), date(2026, 9, 30)).card
+    assert kartu.verdict == verdict and kartu.rule_id == aturan
+    assert len(kartu.sources) == 2
+    assert [s.as_of for s in kartu.sources] == ["2026-09-20", "2026-08-01"]
+    assert "saham lokal + asing yang tercatat" in kartu.reason
+    if "tiga" in teks:
+        assert "2026-06-01" in kartu.reason and "2026-03-01" not in kartu.reason
+    if verdict == "menyesatkan":
+        assert "jendela waktu" in kartu.headline
+
+
+@pytest.mark.parametrize("bulanan,teks,aturan", [
+    (False, "asing beli dalam 20 hari bursa terakhir", "A-1"),
+    (True, "porsi asing turun dalam 6 bulan terakhir", "A-2"),
+])
+def test_asing_konteks_hilang_tidak_menghalangi_periode_klaim(simpan, bulanan, teks, aturan):
+    from app.checkers.asing import Asing
+    from app.schemas import Claim
+    simpan_asing(simpan, bulanan=bulanan, harian=not bulanan)
+    kartu = Asing().run("MGLV", Claim(id="c1", text=teks, checks=["asing"]), date(2026, 9, 30)).card
+    assert kartu.verdict == "sesuai" and kartu.rule_id == aturan
+    assert len(kartu.sources) == 1
+    assert "tidak tersedia untuk konteks" in kartu.reason
+
+
+@pytest.mark.parametrize("teks", [
+    "asing masuk 1 bulan terakhir", "asing masuk 12 bulan terakhir", "asing masuk minggu ini",
+    "asing masuk sejak Januari", "asing masuk 6 bulan tahun 2025", "asing masuk 20 hari terakhir",
+    "asing masuk 20 hari bursa dan 6 bulan terakhir",
+])
+def test_asing_periode_tidak_didukung_tidak_diganti_default(simpan, teks):
+    from app.engine import run_cek
+    from app.schemas import CekRequest, Claim
+    simpan_asing(simpan)
+    hasil = run_cek(CekRequest(ticker="MGLV", claims=[Claim(id="c1", text=teks, checks=["asing"])]), date(2026, 9, 30))
+    assert hasil.claims[0].verdict == "tidak_bisa_dicek"
+    assert "tidak menggantinya dengan periode lain" in hasil.claims[0].reason
+
+
+def test_asing_tanpa_periode_memerlukan_dua_sumber(simpan):
+    from app.checkers.asing import Asing
+    from app.schemas import Claim
+    simpan_asing(simpan, bulanan=False)
+    with pytest.raises(sectors.DataUnavailable):
+        Asing().run("MGLV", Claim(id="c1", text="asing masuk", checks=["asing"]), date(2026, 9, 30))
+
+
+def test_asing_periode_kurang_data_tidak_diputuskan(simpan):
+    from app.checkers.asing import Asing
+    from app.schemas import Claim
+    simpan_asing(simpan)
+    simpan("aliran_asing", {"data": [{"date": "2026-09-20", "net_foreign_inflow": 1e9}]})
+    with pytest.raises(sectors.DataUnavailable, match="jendela A-1"):
+        Asing().run("MGLV", Claim(id="c1", text="asing beli dalam 20 hari bursa", checks=["asing"]), date(2026, 9, 30))
+    simpan("komposisi_pemegang", {"data": [
+        {"date": str(date(2026, i, 1)), "total_l": 60, "total_f": 40, "individual_l": 10}
+        for i in range(6, 9)]})
+    with pytest.raises(sectors.DataUnavailable, match="periode klaim"):
+        Asing().run("MGLV", Claim(id="c1", text="asing masuk dalam 6 bulan terakhir", checks=["asing"]), date(2026, 9, 30))
+
+
 @pytest.mark.parametrize("parser,kunci,data", [
     (normal.laba_kuartalan, "keuangan_kuartalan", []),
     (normal.laba_kuartalan, "keuangan_kuartalan", [{"date": "2026-06-30", "earnings": None}]),
