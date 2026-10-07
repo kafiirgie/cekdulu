@@ -81,6 +81,25 @@ export interface FreeFloatItem {
 }
 export interface FreeFloatList { as_of?: string | null; items: FreeFloatItem[] }
 
+export interface KomoditasItem {
+  ticker: string
+  komoditas: string
+  porsi_pendapatan: number | null
+  komoditas_terbesar: string | null
+  porsi_terbesar: number | null
+  tahun_buku: number | null
+  korelasi: number
+  kategori: 'lemah' | 'sedang' | 'cukup kuat'
+  periode: string
+  n_bulan: number
+  total_return_saham: number | null
+  perubahan_komoditas: number | null
+  arah_tahunan: string[]
+  sources: Source[]
+}
+export interface KomoditasList { as_of: string; jenis: string; items: KomoditasItem[] }
+export interface KomoditasDetail { ticker: string; as_of: string; items: KomoditasItem[] }
+
 export interface Rule { id: string; check: string | null; status: 'final' | 'usulan'; text: string; params: Record<string, number>; catatan?: string }
 export interface Catalog {
   checks: { id: string; label: string; step_label: string; standar: boolean }[]
