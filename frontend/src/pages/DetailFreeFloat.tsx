@@ -4,6 +4,7 @@ import Remah from '@/components/alat/Remah'
 import TagTekanan from '@/components/alat/TagTekanan'
 import { ATURAN_RADAR, SUMBER_RADAR, teksHariSerap, tidakDiRadar, useRadar } from '@/components/alat/radar'
 import DaftarAturan from '@/components/DaftarAturan'
+import Istilah from '@/components/Istilah'
 import JudulLayar from '@/components/JudulLayar'
 import Panel from '@/components/Panel'
 import TautanKembali from '@/components/TautanKembali'
@@ -22,7 +23,9 @@ function AngkaUtama({ i }: { i: FreeFloatItem }) {
     <Panel>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[12.5px] font-semibold text-muted-foreground">Hari serap · Dihitung</div>
+          <div className="text-[12.5px] text-muted-foreground">
+            <Istilah k="hari_serap" /> · Dihitung
+          </div>
           <div className="font-mono text-[28px] leading-tight font-semibold whitespace-nowrap">{teksHariSerap(i)}</div>
           <div className="text-sm text-ink-2">
             {i.hari_serap == null ? 'Belum dihitung untuk kelompok tenggat ini.' : 'transaksi normal untuk menyerap saham yang harus dilepas'}

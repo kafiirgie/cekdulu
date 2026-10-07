@@ -29,6 +29,11 @@ export function tanggal(teks: string): string {
   return FORMAT_TANGGAL.format(d)
 }
 
+const FORMAT_JAM_WIB = new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })
+
+/** "2026-10-08T00:00:00+07:00" → "00.00 WIB" */
+export const jamWib = (iso: string) => `${FORMAT_JAM_WIB.format(new Date(iso))} WIB`
+
 /** Akhiran " · data per 30 Sep 2026" untuk baris keterangan; kosong kalau tanggal data tidak ada. */
 export const dataPer = (asOf?: string | null) => (asOf ? ` · data per ${tanggal(asOf)}` : '')
 
