@@ -66,7 +66,7 @@ function UnggahScreenshot({ gambar, onGambar, onGagalBaca }: UnggahProps) {
 }
 
 export default function Input() {
-  const { text, setText, setKlaim, setHasil } = useCek()
+  const { text, setText, setKlaim, setHasil, mulaiCek } = useCek()
   const [gambar, setGambar] = useState<Gambar | null>(null)
   const [loading, setLoading] = useState(false)
   const [pesan, setPesan] = useState<string | null>(null)
@@ -103,9 +103,14 @@ export default function Input() {
         )
         return
       }
-      setKlaim(k)
-      setHasil(null)
-      nav(k.claims.length ? '/cek/konfirmasi' : '/cek/hasil')
+      if (k.claims.length) {
+        setKlaim(k)
+        setHasil(null)
+        nav('/cek/konfirmasi')
+      } else {
+        mulaiCek(k) // kode saham saja → cek umum, langsung ke Hasil
+        nav('/cek/hasil')
+      }
     } catch (e) {
       setPesan(galat(e))
     } finally {

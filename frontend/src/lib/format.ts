@@ -16,6 +16,19 @@ export function fmt(value: Evidence['value'], f: Fmt): string {
   }
 }
 
+const FORMAT_TANGGAL = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+
+/**
+ * "2026-09-30" → "30 Sep 2026". Selain tanggal lengkap (mis. tahun buku "2024") dikembalikan apa adanya,
+ * supaya tidak tampil seolah ada tanggal pasti yang tidak ada di data.
+ */
+export function tanggal(teks: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(teks)
+  if (!m) return teks
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+  return FORMAT_TANGGAL.format(d)
+}
+
 /** 14650 → "Rp14.650"; 9.35e12 → "Rp9,35 T" */
 export function rupiah(n: number): string {
   const a = Math.abs(n)

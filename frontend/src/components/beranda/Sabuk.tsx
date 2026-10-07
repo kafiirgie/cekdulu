@@ -1,9 +1,10 @@
 // Sabuk klaim: klaim mentah lewat meja periksa lalu keluar sebagai kartu bercap vonis.
 // Posisi digerakkan langsung lewat DOM (requestAnimationFrame) supaya tidak me-render React tiap frame;
 // React hanya me-render ulang saat satu slot berganti isi.
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { memo, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Logo } from '@/components/Logo'
 import Stamp from '@/components/Stamp'
+import { cn } from '@/lib/utils'
 import type { ContohSabuk } from './contoh'
 
 interface Slot {
@@ -61,7 +62,7 @@ function KlaimHasil({ c, miring }: { c: ContohSabuk; miring: number }) {
   )
 }
 
-export default function Sabuk({ contoh }: { contoh: ContohSabuk[] }) {
+function Sabuk({ contoh, className }: { contoh: ContohSabuk[]; className?: string }) {
   const akarRef = useRef<HTMLDivElement>(null)
   const mejaRef = useRef<HTMLDivElement>(null)
   const garisRef = useRef<HTMLDivElement>(null)
@@ -187,7 +188,7 @@ export default function Sabuk({ contoh }: { contoh: ContohSabuk[] }) {
   useEffect(() => tataRef.current?.(), [slots])
 
   return (
-    <div ref={akarRef} className="sabuk -mx-5 sm:-mx-9" aria-hidden="true">
+    <div ref={akarRef} className={cn('sabuk', className)} aria-hidden="true">
       <div className="sabuk-jalur">
         <div ref={garisRef} className="sabuk-garis" />
       </div>
@@ -216,3 +217,6 @@ export default function Sabuk({ contoh }: { contoh: ContohSabuk[] }) {
     </div>
   )
 }
+
+// Di formulir berjalan induknya re-render tiap langkah; props sabuk tetap sama.
+export default memo(Sabuk)

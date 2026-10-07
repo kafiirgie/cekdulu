@@ -7,6 +7,9 @@ const KATALOG = rules as unknown as Catalog
 export const CEK = KATALOG.checks
 /** 8 pemeriksa yang selalu jalan untuk setiap saham. */
 export const CEK_STANDAR = CEK.filter((c) => c.standar)
+const ID_STANDAR = new Set(CEK_STANDAR.map((c) => c.id))
+/** Selain 8 pemeriksa standar, sisanya modul khusus (mis. m_komoditas). */
+export const isStandar = (check: string) => ID_STANDAR.has(check)
 export const ATURAN = KATALOG.rules
 
 // Pemecah klaim bisa memilih pemeriksa maupun kartu "Yang tidak diceritakan" (mis. analis, pemegang).

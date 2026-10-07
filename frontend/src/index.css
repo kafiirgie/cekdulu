@@ -113,6 +113,7 @@
   --color-hl: var(--cd-hl);
   --color-hl-mark: var(--cd-hl-mark);
   --color-hl-edge: var(--cd-hl-edge);
+  --color-hl-soft: var(--cd-hl-soft);
   --color-on-hl: var(--cd-on-hl);
   --color-pop: var(--cd-pop);
   --color-on-pop: var(--cd-on-pop);
@@ -191,13 +192,19 @@
     transform: rotate(var(--r, -6deg));
     filter: url(#ink);
   }
-  .stamp[data-verdict="sesuai"] { --c: var(--cd-sesuai); }
-  .stamp[data-verdict="menyesatkan"] { --c: var(--cd-menyesatkan); }
-  .stamp[data-verdict="tidak_sesuai"] { --c: var(--cd-tidak-sesuai); }
-  .stamp[data-verdict="tidak_bisa_dicek"] { --c: var(--cd-tidak-bisa); }
+  /* Warna vonis untuk elemen apa pun yang ber-data-verdict (cap, kotak alasan). */
+  [data-verdict="sesuai"] { --c: var(--cd-sesuai); }
+  [data-verdict="menyesatkan"] { --c: var(--cd-menyesatkan); }
+  [data-verdict="tidak_sesuai"] { --c: var(--cd-tidak-sesuai); }
+  [data-verdict="tidak_bisa_dicek"] { --c: var(--cd-tidak-bisa); }
+  [data-verdict="info"] { --c: var(--cd-info); }
   .stamp[data-verdict="info"] {
     border-style: dashed;
     box-shadow: none;
+  }
+  /* Cap di halaman hasil dicap berurutan; jeda tiap kartu lewat --tunda dari daftarnya. */
+  .dicap .stamp {
+    animation: stamp-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) var(--tunda, 0.35s) both;
   }
 
   /* Stabilo: lebar latar beranimasi dari 0 ke 100% sesaat setelah halaman tampil. */
@@ -351,5 +358,6 @@
 
 /* Sabuk sudah diam sendiri di mode ini (Sabuk.tsx hanya menggambar satu frame dengan .instant). */
 @media (prefers-reduced-motion: reduce) {
-  .stabilo { animation: none; }
+  .stabilo,
+  .dicap .stamp { animation: none; }
 }

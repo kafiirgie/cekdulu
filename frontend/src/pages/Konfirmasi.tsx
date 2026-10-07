@@ -1,8 +1,9 @@
 // Layar 3 — Konfirmasi klaim: teks asli dengan stabilo per klaim (claim.span), klaim bisa diubah atau dihapus.
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import JudulLayar from '@/components/JudulLayar'
+import TautanKembali from '@/components/TautanKembali'
 import { Button } from '@/components/ui/button'
 import type { Claim } from '@/lib/contract'
 import { CEK_STANDAR, labelCek } from '@/lib/labels'
@@ -54,7 +55,7 @@ function BarisKlaim({ klaim, nomor, onUbah }: { klaim: Claim; nomor: number; onU
 }
 
 export default function Konfirmasi() {
-  const { text, klaim, setKlaim, setHasil } = useCek()
+  const { text, klaim, setKlaim, mulaiCek } = useCek()
   const nav = useNavigate()
   if (!klaim?.ticker) return <Navigate to="/cek" replace />
 
@@ -67,8 +68,7 @@ export default function Konfirmasi() {
   const periksa = () => {
     // Klaim yang dikosongkan saat diubah dianggap dihapus.
     const claims = klaim.claims.map((c) => ({ ...c, text: c.text.trim() })).filter((c) => c.text)
-    setKlaim({ ...klaim, claims })
-    setHasil(null)
+    mulaiCek({ ...klaim, claims })
     nav('/cek/hasil')
   }
 
@@ -91,9 +91,7 @@ export default function Konfirmasi() {
         ))}
       </ul>
       <div className="mt-5 flex items-center justify-between">
-        <Link to="/cek" className="px-2 py-1.5 font-semibold text-ink-2 hover:text-ink">
-          Kembali
-        </Link>
+        <TautanKembali />
         <Button onClick={periksa}>
           Cek sekarang <span aria-hidden="true">→</span>
         </Button>
