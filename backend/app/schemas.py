@@ -123,6 +123,31 @@ class TanyaResponse(_Model):
     refused: bool
 
 
+# ---------- /api/rules ----------
+class GlosariumItem(_Model):
+    key: str
+    nama: str
+    arti: str
+
+
+class GlosariumPemetaan(_Model):
+    checks: dict[str, str] = Field(default_factory=dict)
+    untold: dict[str, str] = Field(default_factory=dict)
+
+
+class Glosarium(_Model):
+    versi: str
+    pemetaan: GlosariumPemetaan
+    istilah: list[GlosariumItem]
+
+
+# Harus sama dengan frontend/src/lib/contract.ts → KunciGlosarium dan kunci di contract/glosarium.json.
+GlosariumKey = Literal[
+    "laba", "per", "pbv", "dividen", "yield", "payout", "orang_dalam", "asing", "suspensi",
+    "free_float", "hari_serap", "korelasi", "kapitalisasi", "papan_pemantauan",
+]
+
+
 # ---------- modul ----------
 class FreeFloatItem(_Lenient):
     ticker: str

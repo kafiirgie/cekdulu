@@ -38,3 +38,18 @@ def check_label(check_id: str) -> str:
 def known_ids() -> set[str]:
     cat = catalog()
     return {c["id"] for c in cat["checks"]} | {u["id"] for u in cat["untold"]}
+
+
+@lru_cache
+def glosarium() -> dict[str, Any]:
+    """Glosarium = bagian kontrak. FE memakai teksnya (ikon info), BE memakai kuncinya di Tanya."""
+    isi = json.loads((settings.contract_dir / "glosarium.json").read_text(encoding="utf-8"))
+    isi.pop("_catatan", None)  # sama seperti contoh di contract/examples: catatan bukan data
+    return isi
+
+
+def kamus() -> dict[str, Any]:
+    """Katalog rules.json + glosarium, supaya keduanya sampai ke FE lewat satu endpoint."""
+    cat = dict(catalog())
+    cat["glosarium"] = glosarium()
+    return cat

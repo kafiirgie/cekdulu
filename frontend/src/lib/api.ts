@@ -9,6 +9,7 @@ import klaimMglv from '@contract/examples/klaim_res_mglv.json'
 import ffList from '@contract/examples/modul_free_float_list.json'
 import komoditasMdka from '@contract/examples/modul_komoditas_detail_mdka.json'
 import komoditasEmas from '@contract/examples/modul_komoditas_list_emas.json'
+import glosarium from '@contract/glosarium.json'
 import rules from '@contract/rules.json'
 import tanyaContoh from '@contract/examples/tanya.json'
 import type {
@@ -79,7 +80,8 @@ export const api = {
     if (API_MODE === 'mock') {
       await tunggu(500)
       const tolak = new RegExp(rules.tanya_tolak_regex, 'i').test(req.question)
-      return tolak ? tanyaContoh.res_tolak : tanyaContoh.res_jawab
+      // JSON mengimpor `bagian` sebagai string (bukan literal union): paksa ke kontrak.
+      return (tolak ? tanyaContoh.res_tolak : tanyaContoh.res_jawab) as unknown as TanyaResponse
     }
     return post('/api/tanya', req)
   },
@@ -104,7 +106,7 @@ export const api = {
     return get(`/api/modul/komoditas/${encodeURIComponent(ticker)}`)
   },
   async rules(): Promise<Catalog> {
-    if (API_MODE === 'mock') return rules as unknown as Catalog
+    if (API_MODE === 'mock') return { ...rules, glosarium } as unknown as Catalog
     return get('/api/rules')
   },
 }
