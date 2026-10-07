@@ -132,18 +132,57 @@ def test_gemini_screenshot_satu_request_dan_span_dari_ocr(monkeypatch):
     assert hasil.ticker == "MGLV"
     assert [c.text for c in hasil.claims] == ["dari 600 udah 14 ribuan"]
     assert hasil.claims[0].span == (5, 28)
+    assert hasil.source_text == "MGLV dari 600 udah 14 ribuan, buruan!"
 
 
-def test_screenshot_tidak_memanggil_llm_sebelum_kontrak_source_text(monkeypatch):
-    class JanganDipanggil:
-        def extract_claims(self, text, image_base64, ticker):
-            raise AssertionError("LLM tidak boleh dipanggil sebelum kontrak siap")
+TEKS_SCREENSHOT = "MGLV dari 600 udah 14 ribuan, buruan!"
 
-    monkeypatch.setattr(provider, "get_llm", lambda: JanganDipanggil())
-    hasil = provider.extract_with_fallback(None, "base64-belum-divalidasi", None)
+
+class LLMScreenshot:
+    def __init__(self, ticker="MGLV"):
+        self.ticker = ticker
+
+    def extract_claims(self, text, image_base64, ticker):
+        return KlaimResponse(
+            ticker=self.ticker,
+            source_text=TEKS_SCREENSHOT,
+            claims=[
+                Claim(id="a", text="dari 600 udah 14 ribuan", span=(0, 1), checks=["lonjakan_harga"]),
+                Claim(id="b", text="teks halusinasi", checks=["laba"]),
+            ],
+            used_ai=True,
+        )
+
+    def answer(self, card, question):
+        return "tidak dipakai"
+
+
+def test_screenshot_disorot_pada_teks_bacaan_ai(monkeypatch):
+    monkeypatch.setattr(provider, "get_llm", lambda: LLMScreenshot())
+    hasil = provider.extract_with_fallback(None, "gambar-base64", None)
+
+    assert hasil.used_ai is True
+    assert hasil.source_text == TEKS_SCREENSHOT
+    assert hasil.ticker == "MGLV"
+    assert [(c.id, c.text, c.span) for c in hasil.claims] == [("c1", "dari 600 udah 14 ribuan", (5, 28))]
+
+
+def test_ticker_screenshot_harus_tertulis_di_teks_bacaan(monkeypatch):
+    monkeypatch.setattr(provider, "get_llm", lambda: LLMScreenshot(ticker="BBRI"))
+    assert provider.extract_with_fallback(None, "gambar-base64", None).ticker == "MGLV"
+
+
+def test_screenshot_tanpa_ai_tidak_menebak(monkeypatch):
+    monkeypatch.setattr(provider, "get_llm", lambda: LLMError())
+    hasil = provider.extract_with_fallback(None, "gambar-base64", None)
 
     assert hasil.used_ai is False
-    assert hasil.claims == []
+    assert hasil.ticker is None and hasil.claims == [] and hasil.source_text is None
+
+
+def test_teks_biasa_tanpa_source_text(monkeypatch):
+    monkeypatch.setattr(provider, "get_llm", lambda: LLMPalsu())
+    assert provider.extract_with_fallback("BBRI asing net buy", None, None).source_text is None
 
 
 KARTU = Card(

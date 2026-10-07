@@ -159,6 +159,9 @@ export default function Input() {
             {loading ? 'Membaca klaim…' : <>Pecah jadi klaim <span aria-hidden="true">→</span></>}
           </Button>
         </div>
+        <p className="mt-2.5 mb-0 text-[12.5px] text-muted-foreground">
+          Screenshot dibaca oleh AI (Google Gemini). Potong nama dan nomor HP sebelum mengunggah.
+        </p>
       </div>
       {menungguLama && (
         <p role="status" className="mt-3 text-sm text-ink-2">

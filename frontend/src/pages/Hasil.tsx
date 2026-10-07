@@ -13,7 +13,7 @@ import { useGalatApi } from '@/lib/galat'
 import { useCek } from '@/lib/store'
 
 export default function Hasil() {
-  const { text, klaim, cek, mulaiCek, hasil, setHasil } = useCek()
+  const { teksAsli, klaim, cek, mulaiCek, hasil, setHasil } = useCek()
   const galat = useGalatApi()
   const [diterima, setDiterima] = useState<CekResponse | null>(null)
   const [pesan, setPesan] = useState<string | null>(null)
@@ -41,7 +41,7 @@ export default function Hasil() {
   }, [cek, hasil, galat])
 
   if (!klaim?.ticker || !(cek || hasil)) return <Navigate to="/cek" replace />
-  if (hasil) return <HasilCek hasil={hasil} teksAsli={text} teksKlaim={teksKlaim} />
+  if (hasil) return <HasilCek hasil={hasil} teksAsli={teksAsli} teksKlaim={teksKlaim} />
   if (pesan) {
     const cobaLagi = () => {
       setPesan(null)
