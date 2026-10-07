@@ -1,4 +1,5 @@
 // "Yang kamu dapat": empat ubin yang memperlihatkan isi hasil cek. Angka dari FINAL_PLAN §6 (data 30 Sep 2026).
+import { Info } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Logo, Wordmark } from '@/components/Logo'
 import StatusIkon from '@/components/StatusIkon'
@@ -105,10 +106,11 @@ export default function Bento() {
         <Ubin lebar judul="Prosesnya terlihat" isi="Kamu tahu apa yang sedang diperiksa, satu per satu.">
           <LangkahMini />
         </Ubin>
-        <Ubin judul="Istilah dijelaskan" isi="Ketuk ⓘ untuk arti dalam bahasa sehari-hari.">
+        <Ubin judul="Istilah dijelaskan" isi="Ketuk ikon info untuk arti dalam bahasa sehari-hari.">
           <div className="w-[min(260px,100%)]">
             <div className="text-sm leading-normal text-ink-2">
-              …pembagian <u className="decoration-dotted underline-offset-[3px]">dividen</u> ⓘ tahun ini…
+              …pembagian <u className="decoration-dotted underline-offset-[3px]">dividen</u>
+              <Info aria-hidden="true" className="ml-0.5 inline-block size-[0.85em] align-[-0.08em] text-muted-foreground" /> tahun ini…
             </div>
             <div className="mt-2.5 rounded-[10px] bg-pop px-3 py-2.5 text-[12.5px] leading-[1.45] text-on-pop">
               <b className="block text-hl">Dividen</b>
