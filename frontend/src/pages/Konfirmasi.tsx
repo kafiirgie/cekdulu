@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import JudulLayar from '@/components/JudulLayar'
+import Panah from '@/components/Panah'
 import TautanKembali from '@/components/TautanKembali'
 import { Button } from '@/components/ui/button'
 import type { Claim } from '@/lib/contract'
@@ -94,7 +95,7 @@ export default function Konfirmasi() {
       <div className="mt-5 flex items-center justify-between">
         <TautanKembali />
         <Button onClick={periksa}>
-          Cek sekarang <span aria-hidden="true">→</span>
+          Cek sekarang <Panah />
         </Button>
       </div>
     </section>

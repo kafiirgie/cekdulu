@@ -94,7 +94,7 @@ export default function DetailFreeFloat() {
       </Panel>
       <Jembatan kode={kode} />
       <div className="mt-4">
-        <TautanKembali ke="/alat/free-float">← Kembali ke radar</TautanKembali>
+        <TautanKembali ke="/alat/free-float">Kembali ke radar</TautanKembali>
       </div>
     </section>
   )

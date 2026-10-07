@@ -1,4 +1,4 @@
-// Istilah yang diberi ⓘ: satu kalimat, bahasa sehari-hari, untuk investor pemula.
+// Istilah yang diberi ikon info: satu kalimat, bahasa sehari-hari, untuk investor pemula.
 export const ISTILAH = {
   laba: { nama: 'Laba bersih', arti: 'Keuntungan perusahaan setelah semua biaya dan pajak dibayar.' },
   per: { nama: 'PER', arti: 'Harga saham dibagi laba per saham setahun; PER 8 artinya harga saham setara 8 tahun laba.' },
@@ -24,7 +24,7 @@ export const ISTILAH = {
 
 export type KunciIstilah = keyof typeof ISTILAH
 
-/** Istilah utama tiap pemeriksa, untuk ⓘ di daftar pemeriksa (Metodologi). */
+/** Istilah utama tiap pemeriksa, untuk ikon info di daftar pemeriksa (Metodologi). */
 export const ISTILAH_CEK: Partial<Record<string, KunciIstilah>> = {
   laba: 'laba',
   valuasi: 'per',

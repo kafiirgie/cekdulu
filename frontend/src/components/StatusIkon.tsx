@@ -1,4 +1,5 @@
 // Ikon status pemeriksa (formulir berjalan, ringkasan formulir, formulir inspeksi).
+import { Check, Minus, X, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { FormStatus } from '@/lib/contract'
 import { STATUS_LABEL } from '@/lib/labels'
@@ -6,19 +7,21 @@ import { cn } from '@/lib/utils'
 
 export type StatusLangkah = FormStatus | 'jalan' | 'antre'
 
-const GAYA: Record<StatusLangkah, { ikon: string; kelas: string }> = {
+// Tanda centang/silang/strip memakai ikon garis; ! dan ? tetap huruf karena tampil rapi di font mana pun.
+const GAYA: Record<StatusLangkah, { ikon: LucideIcon | string; kelas: string }> = {
   temuan: { ikon: '!', kelas: 'border-menyesatkan bg-surface text-menyesatkan' },
-  aman: { ikon: '✓', kelas: 'border-ink bg-ink text-page' },
+  aman: { ikon: Check, kelas: 'border-ink bg-ink text-page' },
   modul_aktif: { ikon: '', kelas: 'border-hl bg-hl shadow-[0_0_0_3px_var(--cd-hl-soft)]' },
-  tidak_relevan: { ikon: '–', kelas: 'border-dashed text-muted-foreground' },
+  tidak_relevan: { ikon: Minus, kelas: 'border-dashed text-muted-foreground' },
   data_kurang: { ikon: '?', kelas: 'rotate-45 rounded-[5px] text-ink-2 [&>i]:-rotate-45' },
-  gagal: { ikon: '✕', kelas: 'border-tidak-sesuai text-tidak-sesuai' },
+  gagal: { ikon: X, kelas: 'border-tidak-sesuai text-tidak-sesuai' },
   jalan: { ikon: '', kelas: 'animate-spin border-ink border-r-transparent motion-reduce:animate-none' },
   antre: { ikon: '', kelas: 'text-line-2' },
 }
 
 export default function StatusIkon({ status, className }: { status: StatusLangkah; className?: string }) {
   const g = GAYA[status]
+  const Ikon = g.ikon
   return (
     <span
       aria-hidden="true"
@@ -28,7 +31,7 @@ export default function StatusIkon({ status, className }: { status: StatusLangka
         className,
       )}
     >
-      <i className="not-italic">{g.ikon}</i>
+      {typeof Ikon === 'string' ? <i className="not-italic">{Ikon}</i> : <Ikon className="size-3" strokeWidth={3} />}
     </span>
   )
 }

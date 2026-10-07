@@ -1,4 +1,5 @@
 // Kartu vonis di layar Hasil: cap, kalimat, sumber; "Lihat detail" membuka alasan, aturan, angka, dan grafik.
+import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import Grafik from '@/components/hasil/Grafik'
 import type { ItemKartu } from '@/components/hasil/kartu'
@@ -9,7 +10,6 @@ import Stamp from '@/components/Stamp'
 import type { Card } from '@/lib/contract'
 import { fmt } from '@/lib/format'
 import { VERDICT_LABEL } from '@/lib/labels'
-
 
 function Aturan({ card, className }: { card: Card; className: string }) {
   if (!card.rule_id) return null
@@ -78,7 +78,7 @@ export default function VerdictCard({ item }: { item: ItemKartu }) {
             className="inline-flex items-center gap-1.5 py-1.5 text-sm font-semibold text-ink-2 hover:text-ink"
           >
             {buka ? 'Tutup detail' : 'Lihat detail'}
-            <span aria-hidden="true" className={buka ? 'rotate-180' : ''}>⌄</span>
+            <ChevronDown aria-hidden="true" className={`size-4 transition-transform duration-200 ${buka ? 'rotate-180' : ''}`} />
           </button>
         )}
         {kunciTanya && <PanelTanya item={item} kunci={kunciTanya} />}

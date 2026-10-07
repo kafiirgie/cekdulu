@@ -1,6 +1,7 @@
 // Layar 5 — Hasil: ringkasan, kartu per klaim, "Yang tidak diceritakan", ajakan ke formulir lengkap.
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import Panah from '@/components/Panah'
 import Seksi from '@/components/Seksi'
 import StatusIkon from '@/components/StatusIkon'
 import Stamp from '@/components/Stamp'
@@ -71,7 +72,7 @@ function RingkasanFormulir({ form }: { form: FormRow[] }) {
       </div>
       <Button asChild>
         <Link to="/cek/formulir">
-          Buka formulir <span aria-hidden="true">→</span>
+          Buka formulir <Panah />
         </Link>
       </Button>
     </div>

@@ -1,5 +1,6 @@
 // Jembatan dari layar detail modul ke cek klaim saham yang sama.
 import { useNavigate } from 'react-router-dom'
+import Panah from '@/components/Panah'
 import { Button } from '@/components/ui/button'
 import { useCek } from '@/lib/store'
 
@@ -16,7 +17,7 @@ export default function Jembatan({ kode }: { kode: string }) {
         Dengar klaim soal <b className="text-ink">{kode}</b> di grup? Periksa dengan aturan yang sama.
       </p>
       <Button onClick={cekKlaim}>
-        Cek klaim saham ini <span aria-hidden="true">→</span>
+        Cek klaim saham ini <Panah />
       </Button>
     </div>
   )
