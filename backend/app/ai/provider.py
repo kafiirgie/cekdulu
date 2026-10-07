@@ -17,6 +17,19 @@ from ..catalog import known_ids
 from ..config import settings
 from ..schemas import Card, KlaimResponse
 from . import fallback
+from .jev import get_jev, prediksi_jev
+
+
+def _get_jev_prediksi():
+    """Klien JEV untuk memeriksa prediksi, atau None (mode kode / tanpa kunci).
+
+    Dipisah supaya tes bisa menggantinya. Kegagalan apa pun -> None: tanpa JEV,
+    heuristik kata kunci yang dipakai, jadi jalur tanpa AI tetap sama seperti dulu.
+    """
+    try:
+        return get_jev()
+    except Exception:
+        return None
 
 
 class LLM(Protocol):
@@ -77,13 +90,18 @@ def _normalisasi(res: KlaimResponse, teks: Optional[str], ticker: Optional[str],
     ticker_ai = _ticker_valid(sumber, res.ticker)
     ticker_akhir = ticker_input or ticker_ai or fallback.cari_ticker(sumber)
 
+    # Pengaman kedua: heuristik kata kunci melewatkan prediksi seperti "momen bagus
+    # buat masuk, gaskeun". JEV (kalau ada) memutuskan; ia hanya bisa MENGHAPUS pemeriksa,
+    # tidak pernah menambah, dan JEV mati/gagal -> hasil heuristik yang dipakai.
+    jev_pred = _get_jev_prediksi()
+
     klaim_bersih = []
     for klaim in res.claims:
         awal = sumber.find(klaim.text)
         if awal < 0:
             continue
         checks = klaim.checks[:2]
-        if fallback.prediksi_tanpa_angka(klaim.text):
+        if fallback.prediksi_tanpa_angka(klaim.text) or (jev_pred and prediksi_jev(jev_pred, klaim.text)):
             checks = []
         klaim_bersih.append(klaim.model_copy(update={
             "id": f"c{len(klaim_bersih) + 1}",
