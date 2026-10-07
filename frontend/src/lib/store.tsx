@@ -16,50 +16,46 @@ interface CekState {
   setHasil: (h: CekResponse | null) => void
 }
 
-// Disimpan per tab supaya Hasil, Formulir, dan Detail tidak hilang saat halaman di-refresh.
-// Permintaan yang sedang berjalan tidak ikut disimpan: refresh di tengah pemeriksaan kembali ke Input
-// alih-alih memakai kuota lagi.
-const KUNCI = 'cekdulu_sesi'
-
-interface Sesi {
-  text: string
-  klaim: KlaimResponse | null
-  hasil: CekResponse | null
-}
-
-function bacaSesi(): Sesi {
-  try {
-    const s = sessionStorage.getItem(KUNCI)
-    if (s) return JSON.parse(s) as Sesi
-  } catch {
-    // Penyimpanan diblokir atau isinya rusak: mulai sesi baru.
-  }
-  return { text: '', klaim: null, hasil: null }
+/**
+ * State yang disimpan per tab supaya Hasil, Formulir, dan Detail tidak hilang saat halaman di-refresh.
+ * Satu kunci per nilai: mengetik di Input hanya menulis ulang teks, bukan seluruh hasil cek.
+ */
+function useTersimpan<T>(kunci: string, awal: T) {
+  const [nilai, setNilai] = useState<T>(() => {
+    try {
+      const s = sessionStorage.getItem(kunci)
+      if (s) return JSON.parse(s) as T
+    } catch {
+      // Penyimpanan diblokir atau isinya rusak: mulai dari awal.
+    }
+    return awal
+  })
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(kunci, JSON.stringify(nilai))
+    } catch {
+      // Penyimpanan diblokir (mode privat): sesi tetap jalan, hanya tidak bertahan saat refresh.
+    }
+  }, [kunci, nilai])
+  return [nilai, setNilai] as const
 }
 
 const Ctx = createContext<CekState | null>(null)
 
 export function CekProvider({ children }: { children: ReactNode }) {
-  const [awal] = useState(bacaSesi)
-  const [text, setText] = useState(awal.text)
-  const [klaim, setKlaim] = useState(awal.klaim)
+  const [text, setText] = useTersimpan('cekdulu_teks', '')
+  const [klaim, setKlaim] = useTersimpan<KlaimResponse | null>('cekdulu_klaim', null)
+  const [hasil, setHasil] = useTersimpan<CekResponse | null>('cekdulu_hasil', null)
+  // Permintaan yang sedang berjalan tidak disimpan: refresh di tengah pemeriksaan kembali ke Input
+  // alih-alih memakai kuota lagi.
   const [cek, setCek] = useState<Promise<CekResponse> | null>(null)
-  const [hasil, setHasil] = useState(awal.hasil)
-
-  useEffect(() => {
-    try {
-      sessionStorage.setItem(KUNCI, JSON.stringify({ text, klaim, hasil } satisfies Sesi))
-    } catch {
-      // Penyimpanan diblokir (mode privat): sesi tetap jalan, hanya tidak bertahan saat refresh.
-    }
-  }, [text, klaim, hasil])
 
   const mulaiCek = useCallback((k: KlaimResponse) => {
     if (!k.ticker) return
     setKlaim(k)
     setHasil(null)
     setCek(api.cek({ ticker: k.ticker, claims: k.claims }))
-  }, [])
+  }, [setKlaim, setHasil])
 
   return (
     <Ctx.Provider value={{ text, setText, klaim, setKlaim, cek, mulaiCek, hasil, setHasil }}>{children}</Ctx.Provider>
