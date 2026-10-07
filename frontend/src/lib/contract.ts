@@ -23,6 +23,8 @@ export interface KlaimResponse {
   company?: string | null
   claims: Claim[]
   used_ai?: boolean
+  /** Teks yang dibaca AI dari screenshot; `span` klaim menunjuk ke teks ini. Kosong untuk input teks. */
+  source_text?: string | null
 }
 
 export interface Evidence { label: string; value: number | string | null; fmt: Fmt }
