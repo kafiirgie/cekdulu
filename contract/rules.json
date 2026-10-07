@@ -151,5 +151,5 @@
     }
   ],
   "quota": { "cek_per_hari": 5 },
-  "tanya_tolak_regex": "\\b(beli|jual|masuk|hold|cuan|layak|harus|saran|rekomendasi(kan)?|serok|average|cut ?loss|target harga|tp)\\b"
+  "tanya_tolak_regex": "\\blayak\\b|\\b(sebaiknya|mending|harus(kah)?|perlu|boleh|aman|waktunya|saatnya)\\s+(di)?(beli|jual|masuk|hold|tahan|serok|keluar|cut ?loss)\\b|(?<!asing )\\b(beli|jual|hold|tahan|serok)\\s+(atau|ato|apa|gak|ga|nggak|ngga|enggak|engga|tidak|sekarang|skrg|dong|aja)\\b|\\bmasuk\\s+(sekarang|skrg|dong|aja)\\b|\\btarget\\s*harga(nya)?\\b|\\btp\\b|\\bsaran\\b|\\brekomendasikan\\b|\\brekomendasi\\s+(saham|beli|jual|dong)\\b|\\bcut\\s?loss\\b|\\baverage\\s+(down|up)\\b|\\bserok\\b|\\bhold\\s*\\?|\\b(bisa|bakal|masih)\\s+cuan\\b|\\bbuy\\s+or\\s+sell\\b"
 }

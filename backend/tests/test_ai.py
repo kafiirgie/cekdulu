@@ -195,6 +195,30 @@ def test_lima_pertanyaan_saran_ditolak_sebelum_llm(pertanyaan):
     assert guard.minta_saran(pertanyaan)
 
 
+@pytest.mark.parametrize("pertanyaan", [
+    "target harganya berapa?",
+    "TP-nya berapa?",
+    "beli atau tunggu dulu?",
+    "jual aja?",
+    "cut loss aja?",
+    "average down gak?",
+])
+def test_variasi_saran_ditolak(pertanyaan):
+    assert guard.minta_saran(pertanyaan)
+
+
+@pytest.mark.parametrize("pertanyaan", [
+    "kapan asing masuk?",
+    "asing masuk gak minggu ini?",
+    "asing beli atau jual?",
+    "berapa rekomendasi buy?",
+    "kenapa targetnya 15%?",
+    "kenapa harus 15%?",
+])
+def test_pertanyaan_data_tidak_ditolak(pertanyaan):
+    assert not guard.minta_saran(pertanyaan)
+
+
 def test_jawaban_dengan_angka_asing_ditolak(monkeypatch):
     class ResponsePalsu:
         def raise_for_status(self):
