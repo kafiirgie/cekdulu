@@ -15,7 +15,7 @@ from typing import Any, Optional
 from ..catalog import glosarium
 from ..schemas import Card, Evidence
 from . import guard
-from .jev import ambang, get_jev, istilah_card, pilih_bagian, pilih_istilah, yakin
+from .jev import ambang, get_jev, istilah_card, minta_saran_jev, pilih_bagian, pilih_istilah, yakin
 
 BULAN = ("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des")
 
@@ -142,21 +142,35 @@ def _glosarium_untuk(card: Card, jawaban_jev: dict) -> Optional[dict[str, str]]:
     return by_key.get(kunci or "")
 
 
+def _ditolak(question: str, jev: Any | None) -> bool:
+    """Regex dulu (cepat, offline, deterministik); JEV jadi pengaman kedua kalau regex lolos.
+
+    Hasil ukur JEV menandai "berapa PER wajar saham ini?" (0,51) yang lolos dari regex.
+    JEV di sini HANYA menolak, tidak pernah mengizinkan; kalau JEV mati/gagal, hasil regex
+    yang dipakai (tanpa panggilan jaringan).
+    """
+    if guard.minta_saran(question):
+        return True
+    if jev is None:
+        return False
+    return minta_saran_jev(jev, question)
+
+
 def jawab_tanya(card: Card, question: str, jev: Any | None = None) -> dict:
     """Penjawab panel Tanya: JEV memilih bagian, kode merakit kalimatnya.
 
     Selalu mengembalikan bentuk lengkap, termasuk saat JEV mati/gagal (fallback kode)
     supaya /api/tanya tidak pernah 500. `jev` boleh disuntik (untuk tes dan endpoint).
     """
-    if guard.minta_saran(question):
-        return {"answer": guard.PENOLAKAN, "refused": True, "used_ai": False,
-                "answer_kind": "saran", "bagian": None}
-
     if jev is None:
         try:
             jev = get_jev()
         except Exception:
             jev = None
+
+    if _ditolak(question, jev):
+        return {"answer": guard.PENOLAKAN, "refused": True, "used_ai": False,
+                "answer_kind": "saran", "bagian": None}
 
     if jev is None:
         # Tanpa JEV: kode menjawab ringkas (angka + aturan + sumber), tanpa klasifikasi.

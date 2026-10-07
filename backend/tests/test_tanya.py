@@ -114,6 +114,130 @@ def test_jev_gagal_jatuh_ke_ringkasan_kode():
     assert "Angka di kartu ini" in hasil["answer"]
 
 
+# ---------- pengaman kedua penolakan saran: JEV (regex tetap jalan lebih dulu) ----------
+
+class JevSaran:
+    """Klien JEV palsu: .klasifikasi() tetap jalan, .saran() mengembalikan nilai tetap."""
+
+    def __init__(self, noul_saran: float, bagian="angka_bukti"):
+        self._noul, self._bagian = noul_saran, bagian
+        self.dipanggil = 0
+
+    def saran(self, pertanyaan):
+        self.dipanggil += 1
+        return {jev.KUNCI_SARAN: {"type": "noul", "noul": self._noul}}
+
+    def klasifikasi(self, card, question):
+        return {"bagian": {"type": "choice", "choice": self._bagian, "confidence": 0.9},
+                "istilah_key": {"type": "choice", "choice": "korelasi", "confidence": 0.9},
+                "tahu": {"type": "noul", "noul": 0.9}}
+
+
+def test_regex_ditolak_tanpa_panggil_jev():
+    """Regex menangkap lebih dulu -> JEV tidak dipanggil sama sekali."""
+    jev_palsu = JevSaran(0.0)
+    hasil = tanya.jawab_tanya(KARTU, "layak beli nggak?", jev=jev_palsu)
+    assert hasil["refused"] is True and hasil["answer_kind"] == "saran"
+    assert jev_palsu.dipanggil == 0
+
+
+def test_jev_menolak_pertanyaan_yang_lolos_regex():
+    """Pertanyaan saran yang lolos regex tetap ditolak kalau JEV menilainya minta saran.
+
+    Contoh nyata hasil ukur: "harga wajarnya berapa?" (0,55) dan
+    "masih bagus buat dibeli?" (0,90) lolos dari regex tapi ditangkap JEV.
+    """
+    assert not tanya.guard.minta_saran("masih bagus buat dibeli?")
+    hasil = tanya.jawab_tanya(KARTU, "masih bagus buat dibeli?", jev=JevSaran(0.90))
+    assert hasil["refused"] is True and hasil["answer_kind"] == "saran"
+    assert hasil["answer"] == tanya.guard.PENOLAKAN
+
+
+def test_jev_tidak_menolak_pertanyaan_data_biasa():
+    """noul rendah -> bukan saran -> jawaban normal (JEV hanya menolak, tak mengizinkan)."""
+    jev_palsu = JevSaran(0.03)
+    hasil = tanya.jawab_tanya(KARTU, "berapa porsi nikelnya?", jev=jev_palsu)
+    assert hasil["refused"] is False and hasil["answer_kind"] == "angka"
+    assert jev_palsu.dipanggil == 1
+
+
+def test_jev_mati_tidak_menolak_dan_tidak_menjatuhkan():
+    """JEV error pada pengaman saran -> regex saja, tidak 500."""
+    class JevRusak:
+        def saran(self, pertanyaan):
+            raise TimeoutError("jev mati")
+
+        def klasifikasi(self, card, question):
+            return {}
+
+    hasil = tanya.jawab_tanya(KARTU, "berapa porsi nikelnya?", jev=JevRusak())
+    assert hasil["refused"] is False
+
+
+def test_batas_ambang_saran():
+    """Batas AMBANG_SARAN: 0,5 ditolak; di bawahnya lolos. Nilai tengah (0,2–0,3) bukan saran."""
+    assert tanya.jawab_tanya(KARTU, "q", jev=JevSaran(jev.AMBANG_SARAN))["refused"] is True
+    assert tanya.jawab_tanya(KARTU, "q", jev=JevSaran(jev.AMBANG_SARAN - 0.01))["refused"] is False
+    assert tanya.jawab_tanya(KARTU, "q", jev=JevSaran(0.23))["refused"] is False  # "berapa PER wajar"
+
+
+def test_klien_saran_sunggal_memuat_satu_pertanyaan_tanpa_kartu(monkeypatch):
+    """Jev.saran mengirim satu kunci noul; state = pertanyaan saja (tanpa kartu)."""
+    panggilan = {}
+
+    class ResponsePalsu:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"answers": {jev.KUNCI_SARAN: {"type": "noul", "noul": 0.9}}}
+
+    def post_palsu(url, **kwargs):
+        panggilan.update({"url": url, **kwargs})
+        return ResponsePalsu()
+
+    monkeypatch.setattr("app.ai.jev.httpx.post", post_palsu)
+    hasil = jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").saran("layak beli?")
+
+    assert panggilan["url"].endswith("/systemone")
+    body = panggilan["json"]
+    assert set(body["questions"]) == {jev.KUNCI_SARAN}
+    assert body["questions"][jev.KUNCI_SARAN]["type"] == "noul"
+    assert json.loads(body["state"]) == {"pertanyaan": "layak beli?"}
+    assert hasil[jev.KUNCI_SARAN]["noul"] == 0.9
+
+
+# ---------- kunci utama: JEV untuk pemilihan di luar Tanya, dan tak bisa melihat gambar ----------
+
+def test_permintaan_jev_tidak_pernah_memuat_gambar(monkeypatch):
+    """JEV tidak menerima gambar: state harus JSON teks, tanpa field biner/base64."""
+    panggilan = {}
+
+    class ResponsePalsu:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"answers": {"bagian": {"choice": "angka_bukti", "confidence": 0.9},
+                                "istilah_key": {"choice": "korelasi"},
+                                "tahu": {"noul": 0.9}}}
+
+    def post_palsu(url, **kwargs):
+        panggilan.update({"json": kwargs["json"]})
+        return ResponsePalsu()
+
+    monkeypatch.setattr("app.ai.jev.httpx.post", post_palsu)
+    jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").klasifikasi(KARTU, "q")
+    assert set(panggilan["json"]) == {"state", "model", "questions"}
+    assert isinstance(panggilan["json"]["state"], str)
+
+
+def test_tiga_tipe_pertanyaan_didukung():
+    """JEV hanya punya choice/noul/score; modul memakai choice + noul saja."""
+    assert jev.BAGIAN and all(isinstance(x, str) for x in jev.BAGIAN)
+    assert 0 < jev.AMBANG_SARAN < 1 and 0 <= jev.AMBANG_SANITY < jev.AMBANG_SARAN
+
+
 @pytest.mark.parametrize("pertanyaan", ["layak beli?", "target harga berapa?", "mending hold?"])
 def test_saran_ditolak_sebelum_jev(pertanyaan):
     hasil = tanya.jawab_tanya(KARTU, pertanyaan, jev=JevPalsu())
