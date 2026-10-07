@@ -10,7 +10,9 @@
     { "id": "suspensi", "label": "Suspensi", "step_label": "Riwayat suspensi 36 bulan", "standar": true },
     { "id": "free_float", "label": "Free float", "step_label": "Porsi saham publik", "standar": true },
     { "id": "m_free_float", "label": "Radar Free Float", "step_label": "Modul Radar Free Float", "standar": false },
-    { "id": "m_komoditas", "label": "Saham vs komoditas", "step_label": "Modul komoditas", "standar": false }
+    { "id": "m_komoditas", "label": "Saham vs komoditas", "step_label": "Modul komoditas", "standar": false },
+    {"id": "analis", "label": "Rekomendasi analis", "step_label": "Rekomendasi analis", "standar": false},
+    {"id": "pemegang", "label": "Komposisi pemegang saham", "step_label": "Komposisi pemegang saham", "standar": false}
   ],
   "untold": [
     { "id": "papan_pemantauan", "label": "Papan Pemantauan Khusus" },
@@ -106,6 +108,46 @@
       "id": "T-1", "check": null, "status": "final",
       "text": "Prediksi (\"pasti terbang\"), opini, dan rumor tanpa angka diberi vonis Tidak bisa dicek. Kami tidak menebak.",
       "params": {}
+    },
+    {
+      "id": "N-1",
+      "check": "analis",
+      "status": "usulan",
+      "text": "Klaim semua rekomendasi buy sesuai hanya jika seluruh rekomendasi buy atau strong buy. Klaim mayoritas/sebagian besar sesuai jika minimal 90% rekomendasi buy atau strong buy. Jumlah rekomendasi bukan jumlah analis; proyeksi EPS dan pendapatan adalah konteks dari analis, bukan prediksi kami.",
+      "params": {
+        "porsi_semua": 1.0,
+        "porsi_mayoritas": 0.9
+      }
+    },
+    {
+      "id": "P-1",
+      "check": "pemegang",
+      "status": "usulan",
+      "text": "Klaim diserbu ritel diperiksa pada 3–6 observasi bulanan terakhir dalam satu emiten. Sesuai jika porsi ritel lokal naik minimal 1 poin persen dan jumlah pemegang saham naik. Menyesatkan jika hanya satu indikator naik; tidak sesuai jika keduanya tidak naik. Jika salah satu indikator kosong, data tidak cukup. Cakupan saham tercatat dan periode ditampilkan; periode khusus belum didukung.",
+      "params": {
+        "bulan_min": 3,
+        "bulan_maks": 6,
+        "batas_perubahan_porsi": 0.01
+      }
+    },
+    {
+      "id": "Q-1",
+      "check": null,
+      "status": "usulan",
+      "text": "Likuiditas rendah dicatat jika rata-rata perkiraan nilai transaksi (harga penutupan × volume) pada 60 hari bursa terakhir di bawah Rp1 miliar per hari. Ini perkiraan, bukan nilai transaksi aktual atau saran investasi. Seluruh 60 observasi harus tersedia.",
+      "params": {
+        "jendela_hari_bursa": 60,
+        "batas_nilai_harian_rp": 1000000000
+      }
+    },
+    {
+      "id": "C-1",
+      "check": null,
+      "status": "usulan",
+      "text": "Aksi korporasi dari snapshot kalender ditampilkan jika tanggal ex berada antara tanggal pemeriksaan dan 90 hari berikutnya. Harga pelaksanaan right issue dibandingkan dengan harga penutupan terbaru jika tersedia; tidak digunakan untuk memberi saran transaksi.",
+      "params": {
+        "jendela_hari": 90
+      }
     }
   ],
   "quota": { "cek_per_hari": 5 },
