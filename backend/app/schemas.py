@@ -118,9 +118,20 @@ class TanyaRequest(_Model):
     question: str
 
 
+# Nilai `bagian` ditentukan kode (JEV), bukan LLM bebas: FE memakainya untuk memilih label kecil.
+BagianJawaban = Literal["angka_bukti", "alasan_aturan", "sumber_tanggal", "istilah", "di_luar_kartu"]
+
+
 class TanyaResponse(_Model):
     answer: str
     refused: bool
+    used_ai: bool = False  # True = jawaban lewat klasifikasi JEV; False = template kode
+    # Bagian kartu yang dipakai menjawab: angka, aturan, sumber, istilah, saran (penolakan),
+    # ringkasan (kode menjawab tanpa klasifikasi JEV), tidak_ada.
+    answer_kind: Optional[Literal["angka", "aturan", "sumber", "istilah", "saran", "ringkasan",
+                                  "tidak_ada"]] = None
+    # Hanya diisi kalau jawaban diklasifikasi JEV; None saat fallback/penolakan.
+    bagian: Optional[BagianJawaban] = None
 
 
 # ---------- /api/rules ----------
@@ -139,6 +150,8 @@ class Glosarium(_Model):
     versi: str
     pemetaan: GlosariumPemetaan
     istilah: list[GlosariumItem]
+
+
 
 
 # Harus sama dengan frontend/src/lib/contract.ts → KunciGlosarium dan kunci di contract/glosarium.json.

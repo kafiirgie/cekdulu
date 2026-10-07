@@ -11,7 +11,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import quota
 from .ai import guard
+from .ai.jev import get_jev
 from .ai.provider import extract_with_fallback, get_llm
+from .ai.tanya import jawab_tanya
 from .catalog import catalog, kamus
 from .config import settings
 from .data import sectors
@@ -100,7 +102,7 @@ def cek(req: CekRequest, x_device_id: str = Header(default="anon")):
 @app.post("/api/tanya", response_model=TanyaResponse)
 def tanya(req: TanyaRequest):
     if guard.minta_saran(req.question):
-        return TanyaResponse(answer=guard.PENOLAKAN, refused=True)
+        return TanyaResponse(answer=guard.PENOLAKAN, refused=True, answer_kind="saran")
     cek_res = _CEK.get(req.cek_id)
     if cek_res is None:
         raise HTTPException(404, "Hasil cek tidak ditemukan (server mungkin restart). Cek ulang dulu.")
@@ -110,12 +112,8 @@ def tanya(req: TanyaRequest):
         kartu = cek_res.untold[idx] if 0 <= idx < len(cek_res.untold) else None
     if kartu is None:
         raise HTTPException(404, "Kartu tidak ditemukan.")
-    try:
-        jawab = get_llm().answer(kartu, req.question)
-    except Exception:
-        from .ai.provider import NoLLM
-        jawab = NoLLM().answer(kartu, req.question)
-    return TanyaResponse(answer=jawab, refused=False)
+    # Angka dan kalimat disusun kode; JEV hanya memilih bagian kartu yang relevan.
+    return TanyaResponse(**jawab_tanya(kartu, req.question, jev=get_jev()))
 
 
 @app.get("/api/modul/free-float", response_model=FreeFloatList)
