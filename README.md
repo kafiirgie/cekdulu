@@ -86,6 +86,35 @@ text / screenshot / ticker
 
 Verdicts in English: `sesuai` = matches the data · `menyesatkan` = misleading · `tidak_sesuai` = contradicts the data · `tidak_bisa_dicek` = can't be checked · `info` = context.
 
+## AI provider
+
+The selected provider is the Gemini Developer API with the stable
+`gemini-3.1-flash-lite` model. It has a free tier, accepts text and image input,
+and is optimized for high-volume, simple processing such as claim extraction.
+Gemini also supports structured JSON output. The development API key is held by
+the Lane C owner and is never stored in the repository.
+
+Set `LLM_API_KEY` in the root `.env` to enable Gemini. Set
+`LLM_PROVIDER=none` to develop or run tests with the keyword fallback and no
+external AI calls. Automated tests use fake LLM implementations and must not
+call Gemini or Sectors. The default data mode remains `fixture`, so enabling
+Gemini does not enable the Sectors API.
+
+C0's evaluation set contains ten Indonesian stock messages: the four product examples plus
+mixed data/prediction claims, "ARA", "asing net buy", multiple checks, and two
+tickers in one message. The keyword fallback produced valid claim structures
+for all ten; its known limitation is that a two-ticker message selects only the
+first ticker. One Gemini batch returned schema-valid results for all ten in 6.3
+seconds and matched the expected semantics in 8/10 cases. It initially mapped a
+prediction about gold to `m_komoditas` and a retail-holder claim to `likuiditas`;
+a focused retry after tightening those prompt rules reached the 8-second timeout.
+Therefore C1 must keep the hard timeout and automatic `NoLLM` fallback. No more
+live requests are used for C0, to conserve the development quota.
+
+References: [Gemini models](https://ai.google.dev/gemini-api/docs/models),
+[Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing), and
+[structured output](https://ai.google.dev/gemini-api/docs/structured-output).
+
 ## Data sources
 
 Core: **Sectors REST API v2** (financial statements, daily prices, foreign flows, insider filings, suspensions, corporate actions, revenue segments, analyst ratings, shareholder composition, free float).
@@ -93,9 +122,8 @@ Supplementary (labelled snapshots in `data/bahan_produk/`): World Bank Pink Shee
 
 ## Open decisions
 
-1. LLM provider + API key holder → task C0
-2. Owners of Lanes B, C, D → `LANES.md`
-3. How to show the HuluHilir (upstream–downstream) chain in the Commodity Module
-4. Source for the sector average dividend yield (rule D-1) → B3
-5. Whether Sectors quarterly data separates one-off items (rule L-2) → B3
-6. Hosting & domain → C4
+1. Owners of Lanes B, C, D → `LANES.md`
+2. How to show the HuluHilir (upstream–downstream) chain in the Commodity Module
+3. Source for the sector average dividend yield (rule D-1) → B3
+4. Whether Sectors quarterly data separates one-off items (rule L-2) → B3
+5. Hosting & domain → C4
