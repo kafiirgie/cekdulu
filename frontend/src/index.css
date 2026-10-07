@@ -2,12 +2,16 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Tema dipasang lewat atribut data-theme di <html> oleh skrip di index.html (sebelum render). */
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+/* Tema dipasang lewat atribut data-theme di <html> oleh skrip di index.html (sebelum render).
+   Bagian yang dipaksa terang (data-theme="light", mis. kartu bagikan) tidak ikut kelas dark:. */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *):not(:where([data-theme=light], [data-theme=light] *)));
 
 /* Token dari prototipe iterasi 3, aksen Kuning. Muted, ink-3, menyesatkan, dan tidak-bisa
-   digelapkan sedikit dari prototipe supaya lolos kontras WCAG AA (teks 4,5:1, judul besar 3:1). */
-:root {
+   digelapkan sedikit dari prototipe supaya lolos kontras WCAG AA (teks 4,5:1, judul besar 3:1).
+   [data-theme="light"] juga di sini supaya bagian yang harus selalu terang (kartu bagikan) bisa memaksanya
+   di tema gelap; token shadcn ikut dideklarasi ulang agar var()-nya dihitung dengan nilai terang. */
+:root,
+[data-theme="light"] {
   color-scheme: light;
   --cd-page: #ffffff;
   --cd-dot: #e6e3dd;
@@ -63,7 +67,7 @@
 }
 
 /* Tema gelap: bukan dari prototipe. Semua pasangan teks/latar dicek ≥ 4,5:1. */
-:root[data-theme="dark"] {
+[data-theme="dark"] {
   color-scheme: dark;
   --cd-page: #111113;
   --cd-dot: #26262b;
@@ -201,6 +205,10 @@
   .stamp[data-verdict="info"] {
     border-style: dashed;
     box-shadow: none;
+  }
+  /* Filter #ink tidak ikut tersalin ke gambar kartu bagikan, jadi capnya dibuat polos dan tajam. */
+  .kartu-bagikan .stamp {
+    filter: none;
   }
   /* Cap di halaman hasil dicap berurutan; jeda tiap kartu lewat --tunda dari daftarnya. */
   .dicap .stamp {
