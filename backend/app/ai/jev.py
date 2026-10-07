@@ -202,81 +202,8 @@ class Jev:
         response.raise_for_status()
         return response.json().get("answers", {})
 
-    def prediksi(self, kalimat: str) -> dict[str, Any]:
-        """Noul: apakah kalimat ini prediksi/opini tanpa angka terukur? Tanpa kartu."""
-        body = {
-            "state": json.dumps({"kalimat": kalimat}, ensure_ascii=False),
-            "model": self.model,
-            "questions": {
-                KUNCI_PREDIKSI: {
-                    "type": "noul",
-                    "instructions": TEKS_PREDIKSI,
-                    "criteria": KRITERIA_PREDIKSI,
-                },
-            },
-        }
-        response = httpx.post(
-            f"{self.base_url}/systemone",
-            headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
-            json=body,
-            timeout=BATAS_WAKTU,
-        )
-        response.raise_for_status()
-        return response.json().get("answers", {})
 
-    def klaim(self, kalimat: str) -> dict[str, Any]:
-        """Noul: apakah kalimat ini klaim/kabar tentang saham yang layak diperiksa? Tanpa kartu."""
-        body = {
-            "state": json.dumps({"kalimat": kalimat}, ensure_ascii=False),
-            "model": self.model,
-            "questions": {
-                KUNCI_KLAIM: {
-                    "type": "noul",
-                    "instructions": ("Apakah kalimat ini berisi klaim, kabar, atau pendapat tentang "
-                                     "saham yang bisa diperiksa? Jawab tidak kalau hanya sapaan, ucapan "
-                                     "terima kasih, pertanyaan, rencana pribadi, atau ajakan ngobrol."),
-                    "criteria": {
-                        "true": "Klaim/kabar/pendapat tentang saham yang bisa diperiksa.",
-                        "false": "Sapaan, terima kasih, pertanyaan, rencana pribadi, atau ngobrol.",
-                    },
-                },
-            },
-        }
-        response = httpx.post(
-            f"{self.base_url}/systemone",
-            headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
-            json=body,
-            timeout=BATAS_WAKTU,
-        )
-        response.raise_for_status()
-        return response.json().get("answers", {})
 
-    def target(self, kalimat: str) -> dict[str, Any]:
-        """Noul: apakah kalimat ini target/prediksi harga (walau berangka)? Tanpa kartu."""
-        body = {
-            "state": json.dumps({"kalimat": kalimat}, ensure_ascii=False),
-            "model": self.model,
-            "questions": {
-                KUNCI_TARGET: {
-                    "type": "noul",
-                    "instructions": ("Apakah kalimat ini berisi target harga atau prediksi arah harga "
-                                     "ke depan (mis. \"naik ke 20.000\", \"target 20rb\")? Jawab tidak "
-                                     "kalau kalimatnya melaporkan data atau harga yang sudah terjadi."),
-                    "criteria": {
-                        "true": "Target harga atau prediksi arah harga ke depan.",
-                        "false": "Melaporkan data atau harga yang sudah terjadi.",
-                    },
-                },
-            },
-        }
-        response = httpx.post(
-            f"{self.base_url}/systemone",
-            headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
-            json=body,
-            timeout=BATAS_WAKTU,
-        )
-        response.raise_for_status()
-        return response.json().get("answers", {})
 
     def saring(self, kalimat: str) -> dict[str, Any]:
         """Satu panggilan untuk tiga pertanyaan sekaligus: klaim? prediksi? target harga?
