@@ -13,10 +13,13 @@ import httpx
 from ..catalog import catalog
 from ..schemas import Claim, KlaimResponse
 
-# Model nalar butuh jatah token besar; dengan max_tokens kecil isinya bisa kosong.
-# 768 adalah batas bawah yang dipakai di sini supaya jawaban tidak terpotong.
-BATAS_WAKTU = httpx.Timeout(connect=5.0, read=60.0, write=10.0, pool=2.0)
-MIN_TOKEN = 768
+# Model nalar menghabiskan jatahnya untuk berpikir sebelum menulis jawaban. Kalau
+# max_tokens terlalu kecil, sisa untuk isi habis dan `content` kembali KOSONG walau
+# status 200 (finish_reason "length") -- panggilan dianggap gagal dan app diam-diam
+# jatuh ke heuristik (used_ai=false). Diukur pada deepseek-v4.1-flash dengan prompt
+# ekstraksi 1365 karakter: 1024 -> kosong, 2048 -> kosong, 4096 -> isi 221 karakter.
+BATAS_WAKTU = httpx.Timeout(connect=5.0, read=180.0, write=10.0, pool=2.0)
+MIN_TOKEN = 4096
 
 
 class OpenAICompatLLM:
@@ -86,7 +89,7 @@ Pesan:
                 "model": self.model,
                 "messages": [{"role": "user", "content": self._prompt(text, ticker)}],
                 "temperature": 0,
-                "max_tokens": max(MIN_TOKEN, 1024),
+                "max_tokens": MIN_TOKEN,
                 "response_format": {"type": "json_object"},
             },
             timeout=BATAS_WAKTU,
