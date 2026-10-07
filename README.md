@@ -194,9 +194,10 @@ The selected setup is one Render backend instance plus a Vercel frontend:
 
 1. Deploy the repository through `render.yaml`. In Render, provide
    `LLM_API_KEY` and set `CORS_ORIGINS` to the final Vercel origin.
-2. Supply `data/fixtures/` separately from the team archive; fixture contents
-   must not be committed. Keep `CEKDULU_DATA_MODE=fixture` and
-   `SECTORS_CREDIT_BUDGET=0`.
+2. Run `python deploy/pack_fixtures.py`. In the Render dashboard, create a
+   Secret File named `fixtures.zip.b64` and paste the generated file's contents.
+   The generated file is ignored by Git; never commit fixture contents. Keep
+   `CEKDULU_DATA_MODE=fixture` and `SECTORS_CREDIT_BUDGET=0`.
 3. Deploy `frontend/` to Vercel with build command `npm run build`, output
    directory `dist`, `VITE_API_MODE=api`, and
    `VITE_API_BASE=<the Render URL>`.
