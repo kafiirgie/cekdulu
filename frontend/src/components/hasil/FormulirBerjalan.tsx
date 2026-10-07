@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Sabuk from '@/components/beranda/Sabuk'
 import type { ContohSabuk } from '@/components/beranda/contoh'
+import { teksAtauJudul } from '@/components/hasil/kartu'
 import KotakDaftar from '@/components/KotakDaftar'
 import StatusIkon from '@/components/StatusIkon'
 import type { CekResponse } from '@/lib/contract'
@@ -35,7 +36,7 @@ export default function FormulirBerjalan({ hasil, teksKlaim, onSelesai }: Props)
       hasil.claims.map((c, i) => ({
         jenis: JENIS_KERTAS[i % JENIS_KERTAS.length],
         dari: 'Grup',
-        teks: (c.claim_id && teksKlaim[c.claim_id]) || c.headline,
+        teks: teksAtauJudul(c, teksKlaim),
         vonis: c.verdict,
         hasil: c.headline,
       })),

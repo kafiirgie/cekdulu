@@ -13,6 +13,9 @@ export interface ItemKartu {
 export const teksPerKlaim = (klaim: KlaimResponse | null): Record<string, string> =>
   Object.fromEntries((klaim?.claims ?? []).map((c) => [c.id, c.text]))
 
+/** Teks klaim aslinya kalau ada, kalau tidak judul kartu (mis. kartu cek umum tanpa klaim). */
+export const teksAtauJudul = (card: Card, teks: Record<string, string>) => (card.claim_id && teks[card.claim_id]) || card.headline
+
 export const itemKlaim = (hasil: CekResponse, teks: Record<string, string>): ItemKartu[] =>
   hasil.claims.map((card, i) => ({ card, judul: `Klaim ${i + 1}`, kutipan: card.claim_id ? teks[card.claim_id] : undefined }))
 

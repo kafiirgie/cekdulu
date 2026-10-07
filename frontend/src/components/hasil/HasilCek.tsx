@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import type { CekResponse, FormRow } from '@/lib/contract'
 import { dataPer } from '@/lib/format'
 import { isStandar, STATUS_LABEL } from '@/lib/labels'
+import BagikanKeGrup from './BagikanKeGrup'
 import DaftarKartu from './DaftarKartu'
 import { itemKlaim, itemTakDiceritakan } from './kartu'
 
@@ -123,6 +124,7 @@ export default function HasilCek({ hasil, teksAsli, teksKlaim }: Props) {
           <Link to="/cek">Cek klaim lain</Link>
         </Button>
       </div>
+      <BagikanKeGrup hasil={hasil} teksKlaim={teksKlaim} />
     </section>
   )
 }
