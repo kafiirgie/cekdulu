@@ -34,6 +34,7 @@ ENDPOINTS: dict[str, dict[str, Any]] = {
     # kunci               path                                              params                                                   kredit
     # Bagian laporan untuk B1/B2. Kredit dihitung per bagian, bukan per request.
     "report":             {"path": "/v2/company/report/{ticker}/", "params": {"sections": "overview,ownership,valuation,dividend"}, "kredit": 4},
+    "report_keuangan":    {"path": "/v2/company/report/{ticker}/", "params": {"sections": "valuation,dividend"}, "kredit": 2},
     "keuangan_kuartalan": {"path": "/v2/financials/quarterly/{ticker}/", "params": {"n_quarters": 5}, "kredit": 5},
     "harga_harian":       {"path": "/v2/daily/{ticker}/", "params": {"start": "-90", "end": "0"}, "kredit": 1},
     "aliran_asing":       {"path": "/v2/foreign-flow/{ticker}/", "params": {"start": "-90", "end": "0"}, "kredit": 1},

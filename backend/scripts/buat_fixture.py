@@ -29,6 +29,7 @@ DEMO = ["MGLV", "MDKA", "ANTM", "BUMI", "PSAB", "BBRI", "BREN", "PTBA"]
 # "gabung": True = file list harian digabung & di-dedup per tanggal.
 POLA: dict[str, dict] = {
     "report":             {"pola": ["awal/{t}_report.json", "cache/eks_report_{t}.json"]},
+    "report_keuangan":    {"pola": []},  # Tambahan valuation/dividend, dipilih lewat --kunci.
     "keuangan_kuartalan": {"pola": ["awal/{t}_quarterly.json"]},
     "harga_harian":       {"pola": ["awal/{t}_daily_90d.json", "cache/daily90_{t}.json", "cache/eks_daily_{t}_*.json",
                                     "cache/daily_{t}_*.json"], "gabung": True},
@@ -78,7 +79,7 @@ def main():
     ap.add_argument("tickers", nargs="*", default=DEMO)
     sumber_lama = settings.fixtures_dir.parents[2] / "cekdulu-datacheck" / "data_mentah" / "sectors"
     ap.add_argument("--sumber", default=str(settings.cache_dir if settings.cache_dir.is_dir() or not sumber_lama.is_dir() else sumber_lama))
-    ap.add_argument("--kunci", nargs="+", choices=POLA, default=list(POLA), help="batasi kunci fixture yang disusun/ditarik")
+    ap.add_argument("--kunci", nargs="+", choices=POLA, default=[k for k in POLA if k != "report_keuangan"], help="batasi kunci fixture yang disusun/ditarik")
     ap.add_argument("--live", action="store_true", help="tarik kunci yang kosong dari Sectors (memakai kredit)")
     a = ap.parse_args()
     sumber = Path(a.sumber)
@@ -101,6 +102,9 @@ def main():
                 from app.data import sectors
                 try:
                     data = sectors._call_live(t, kunci)
+                    cache = settings.cache_dir / t / f"{kunci}.json"
+                    cache.parent.mkdir(parents=True, exist_ok=True)
+                    cache.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
                 except Exception as e:  # noqa: BLE001
                     print(f"  {t} {kunci}: {e}")
             if data is not None:
