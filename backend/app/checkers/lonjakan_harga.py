@@ -36,9 +36,12 @@ def aturan_h1(harga: list[normal.HargaHarian], tanggal_aksi: set[date]) -> Optio
     return terbesar
 
 
-def aturan_h2(klaim_dari: float, klaim_ke: float, terendah: float, terakhir: float) -> bool:
+def aturan_h2(klaim_dari: float, klaim_ke: float, harga_jendela: list[float], terakhir: float) -> bool:
+    """Harga awal pernah tercatat dalam jendela; harga akhir dibandingkan catatan terbaru."""
     tol = param("H-2", "toleransi_relatif")
-    return abs(terendah - klaim_dari) <= tol * klaim_dari and abs(terakhir - klaim_ke) <= tol * klaim_ke
+    return (klaim_dari > 0 and klaim_ke > 0
+            and any(abs(h - klaim_dari) <= tol * klaim_dari for h in harga_jendela)
+            and abs(terakhir - klaim_ke) <= tol * klaim_ke)
 
 
 class LonjakanHarga(Checker):
@@ -51,19 +54,23 @@ class LonjakanHarga(Checker):
         if claim is not None:
             angka = angka_rupiah(claim.text)
             if len(angka) >= 2:
-                terendah = min(x.close for x in harga)
-                terakhir = sorted(harga, key=lambda x: x.tanggal)[-1].close
-                ok = aturan_h2(angka[0], angka[1], terendah, terakhir)
+                awal = min(harga, key=lambda x: abs(x.close - angka[0]))
+                akhir = max(harga, key=lambda x: x.tanggal)
+                ok = aturan_h2(angka[0], angka[1], [x.close for x in harga], akhir.close)
                 return Outcome(
                     status="temuan" if ok else "aman",
                     why="Klaim harga dibandingkan dengan harga tercatat.",
                     card=card(
                         verdict="sesuai" if ok else "tidak_sesuai", check=self.id, rule_id="H-2", claim=claim,
-                        headline=(f"Benar, harga tercatat dari {rp(terendah)} ke {rp(terakhir)}." if ok
-                                  else f"Harga tercatat berbeda: terendah {rp(terendah)}, terakhir {rp(terakhir)}."),
-                        evidence=[Evidence(label="Harga terendah", value=terendah, fmt="rp"),
-                                  Evidence(label="Harga terakhir", value=terakhir, fmt="rp")],
-                        sources=src,
+                        headline=(f"Harga {rp(awal.close)} pernah tercatat; harga terakhir {rp(akhir.close)}." if ok
+                                  else "Klaim harga tidak sesuai catatan dalam jendela data."),
+                        reason=(f"Harga penutupan terdekat dengan klaim awal {rp(angka[0])} adalah {rp(awal.close)} pada {awal.tanggal}. "
+                                f"Harga penutupan terakhir {rp(akhir.close)} pada {akhir.tanggal} dibandingkan klaim akhir {rp(angka[1])}. "
+                                f"Toleransi masing-masing {param('H-2', 'toleransi_relatif'):.0%}; jendela data {min(x.tanggal for x in harga)}–{akhir.tanggal}."),
+                        evidence=[Evidence(label="Harga awal terdekat tercatat", value=awal.close, fmt="rp"),
+                                  Evidence(label="Harga terakhir", value=akhir.close, fmt="rp")],
+                        sources=[Source(name="Sectors · harga harian · harga awal", as_of=str(awal.tanggal)),
+                                 Source(name="Sectors · harga harian · harga terakhir", as_of=str(akhir.tanggal))],
                     ),
                 )
 

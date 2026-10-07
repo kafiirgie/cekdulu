@@ -35,7 +35,7 @@ export default function Layout() {
           <Wordmark />
         </Link>
         <nav className="flex items-center gap-1.5 text-[14.5px] font-semibold text-ink-2">
-          <Link to="/alat/free-float" className="px-2 py-1.5 hover:text-ink">Alat analisis</Link>
+          <Link to="/alat" className="px-2 py-1.5 hover:text-ink">Alat analisis</Link>
           <Link to="/metodologi" className="hidden px-2 py-1.5 hover:text-ink sm:block">Metodologi</Link>
           <TombolTema />
         </nav>
@@ -53,7 +53,7 @@ export default function Layout() {
           Data dari <b className="text-ink-2">Sectors</b> · Bukan saran investasi
         </span>
         <span>
-          <Link to="/alat/free-float" className="hover:text-ink">Alat analisis</Link> ·{' '}
+          <Link to="/alat" className="hover:text-ink">Alat analisis</Link> ·{' '}
           <Link to="/metodologi" className="hover:text-ink">Metodologi</Link>
         </span>
       </footer>

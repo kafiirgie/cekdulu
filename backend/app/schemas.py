@@ -64,6 +64,8 @@ class Source(_Model):
 
 
 class Card(_Model):
+    # A-3: konflik memakai rule_id A-3; periode/keterbatasan di reason, sumber per dataset yang tersedia.
+    # H-2: harga awal yang paling dekat dan harga terakhir di evidence, masing-masing bertanggal di sources.
     claim_id: Optional[str] = None  # None untuk kartu "Yang tidak diceritakan"
     verdict: Verdict
     check: Optional[str] = None
@@ -137,3 +139,32 @@ class FreeFloatItem(_Lenient):
 class FreeFloatList(_Lenient):
     as_of: Optional[str] = None
     items: list[FreeFloatItem]
+
+
+class KomoditasItem(_Model):
+    ticker: str
+    komoditas: str
+    porsi_pendapatan: Optional[float] = None
+    komoditas_terbesar: Optional[str] = None
+    porsi_terbesar: Optional[float] = None
+    tahun_buku: Optional[int] = None
+    korelasi: float
+    kategori: Literal["lemah", "sedang", "cukup kuat"]
+    periode: str
+    n_bulan: int
+    total_return_saham: Optional[float] = None
+    perubahan_komoditas: Optional[float] = None
+    arah_tahunan: list[str]
+    sources: list[Source]
+
+
+class KomoditasList(_Model):
+    as_of: str
+    jenis: str
+    items: list[KomoditasItem]
+
+
+class KomoditasDetail(_Model):
+    ticker: str
+    as_of: str
+    items: list[KomoditasItem]

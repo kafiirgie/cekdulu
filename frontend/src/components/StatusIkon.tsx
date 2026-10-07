@@ -1,4 +1,5 @@
 // Ikon status pemeriksa (formulir berjalan, ringkasan formulir, formulir inspeksi).
+import type { ReactNode } from 'react'
 import type { FormStatus } from '@/lib/contract'
 import { STATUS_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
@@ -41,11 +42,16 @@ const GAYA_TAG: Record<FormStatus, string> = {
   gagal: 'border-tidak-sesuai text-tidak-sesuai',
 }
 
-/** Label status berbentuk pil, mis. "Ada temuan". */
-export function TagStatus({ status }: { status: FormStatus }) {
+/** Pil label kecil; warna lewat `kelas`. Dipakai TagStatus dan TagTekanan. */
+export function TagDasar({ kelas, children }: { kelas: string; children: ReactNode }) {
   return (
-    <span className={cn('inline-flex items-center rounded-full border px-2.5 py-[3px] text-[11px] font-bold whitespace-nowrap', GAYA_TAG[status])}>
-      {STATUS_LABEL[status]}
+    <span className={cn('inline-flex items-center rounded-full border px-2.5 py-[3px] text-[11px] font-bold whitespace-nowrap', kelas)}>
+      {children}
     </span>
   )
+}
+
+/** Label status berbentuk pil, mis. "Ada temuan". */
+export function TagStatus({ status }: { status: FormStatus }) {
+  return <TagDasar kelas={GAYA_TAG[status]}>{STATUS_LABEL[status]}</TagDasar>
 }

@@ -10,6 +10,7 @@ Batas peran AI (FINAL_PLAN §5) — dijaga di kode, bukan hanya di prompt:
 """
 from __future__ import annotations
 
+import re
 from typing import Optional, Protocol
 
 from ..catalog import known_ids
@@ -43,8 +44,9 @@ def get_llm() -> LLM:
     p = settings.llm_provider.lower()
     if p in ("", "none"):
         return NoLLM()
-    # TODO(C1): tambahkan kelas penyedia, mis. GeminiLLM di ai/gemini.py, lalu:
-    # if p == "gemini": from .gemini import GeminiLLM; return GeminiLLM(settings.llm_api_key, settings.llm_model)
+    if p == "gemini":
+        from .gemini import GeminiLLM
+        return GeminiLLM(settings.llm_api_key, settings.llm_model)
     raise ValueError(f"LLM_PROVIDER '{p}' belum dibuat")
 
 
@@ -56,8 +58,56 @@ def sanitize(res: KlaimResponse) -> KlaimResponse:
     return res
 
 
+def _ticker_valid(teks: str, ticker: Optional[str]) -> Optional[str]:
+    kandidat = (ticker or "").upper()
+    if not re.fullmatch(r"[A-Z]{4}", kandidat):
+        return None
+    if teks and not re.search(rf"\b{re.escape(kandidat)}\b", teks):
+        return None
+    return kandidat
+
+
+def _normalisasi(res: KlaimResponse, teks: Optional[str], ticker: Optional[str],
+                 used_ai: bool) -> KlaimResponse:
+    """Hitung ulang semua bagian yang tidak boleh dipercayakan kepada LLM."""
+    sumber = teks or ""
+    ticker_input = _ticker_valid("", ticker) if ticker else None
+    ticker_ai = _ticker_valid(sumber, res.ticker)
+    ticker_akhir = ticker_input or ticker_ai or fallback.cari_ticker(sumber)
+
+    klaim_bersih = []
+    for klaim in res.claims:
+        awal = sumber.find(klaim.text)
+        if awal < 0:
+            continue
+        checks = klaim.checks[:2]
+        if fallback.prediksi_tanpa_angka(klaim.text):
+            checks = []
+        klaim_bersih.append(klaim.model_copy(update={
+            "id": f"c{len(klaim_bersih) + 1}",
+            "span": (awal, awal + len(klaim.text)),
+            "checks": checks,
+        }))
+
+    return KlaimResponse(
+        ticker=ticker_akhir,
+        company=res.company,
+        claims=klaim_bersih,
+        used_ai=used_ai,
+    )
+
+
 def extract_with_fallback(text, image_base64, ticker) -> KlaimResponse:
-    try:
-        return sanitize(get_llm().extract_claims(text, image_base64, ticker))
-    except Exception:
+    # C2 core sudah dapat membaca gambar, tetapi jangan habiskan request Gemini
+    # sebelum kontrak `source_text` disetujui. Tanpa field itu, normalisasi pusat
+    # tidak dapat memverifikasi span terhadap teks OCR dan FE tidak bisa menyorotnya.
+    if image_base64:
         return sanitize(NoLLM().extract_claims(text, image_base64, ticker))
+    try:
+        llm = get_llm()
+        hasil = sanitize(llm.extract_claims(text, image_base64, ticker))
+        memakai_ai = not isinstance(llm, NoLLM) and bool(text or image_base64)
+        return _normalisasi(hasil, text, ticker, memakai_ai)
+    except Exception:
+        hasil = sanitize(NoLLM().extract_claims(text, image_base64, ticker))
+        return _normalisasi(hasil, text, ticker, False)

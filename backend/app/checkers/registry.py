@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from .asing import Asing
+from .analis import Analis
+from .pemegang import Pemegang
 from .base import Checker
 from .dividen import Dividen
 from .free_float import FreeFloat
@@ -14,5 +16,5 @@ from .valuasi import Valuasi
 
 CHECKERS: dict[str, Checker] = {c.id: c for c in [
     Laba(), Valuasi(), Dividen(), OrangDalam(), Asing(), LonjakanHarga(), Suspensi(), FreeFloat(),
-    MKomoditas(),
+    MKomoditas(), Analis(), Pemegang(),
 ]}

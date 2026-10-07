@@ -43,6 +43,12 @@ def cari_ticker(teks: str) -> Optional[str]:
     return None
 
 
+def prediksi_tanpa_angka(kalimat: str) -> bool:
+    """Prediksi/opini tanpa angka tidak punya pemeriksa yang boleh memberi vonis."""
+    teks = " " + kalimat.lower() + " "
+    return any(k in teks for k in KATA_PREDIKSI) and not POLA_ANGKA.search(teks)
+
+
 def _potong(teks: str) -> list[tuple[str, int, int]]:
     hasil, awal = [], 0
     for m in re.finditer(r"[,.;!?\n]| dan | tapi ", teks):
@@ -61,7 +67,7 @@ def _potong(teks: str) -> list[tuple[str, int, int]]:
 def pilih_cek(kalimat: str) -> list[str]:
     t = " " + kalimat.lower() + " "
     ada_angka = bool(POLA_ANGKA.search(t))
-    if any(k in t for k in KATA_PREDIKSI) and not ada_angka:
+    if prediksi_tanpa_angka(kalimat):
         return []  # prediksi → tidak bisa dicek
     cocok = [cid for kata, cid in KATA_CEK if any(k in t for k in kata)][:2]
     if not cocok and ada_angka and any(k in t for k in KATA_HARGA):
