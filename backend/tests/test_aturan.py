@@ -222,6 +222,42 @@ def test_komoditas():
     assert aturan_k2(0.11) == "lemah" and aturan_k2(0.46) == "sedang" and aturan_k2(0.63) == "cukup kuat"
 
 
+def test_n1_semua_berbeda_dari_mayoritas():
+    from app.checkers.analis import aturan_n1
+    assert not aturan_n1(68 / 70, True)
+    assert aturan_n1(68 / 70, False)
+    assert aturan_n1(1, True)
+    assert aturan_n1(0.9, False)
+    assert not aturan_n1(0.899, False)
+
+
+def test_p1_kedua_indikator_dan_ambang():
+    from app.checkers.pemegang import aturan_p1
+    assert aturan_p1(0.01, 100) == "sesuai"
+    assert aturan_p1(0.009, 100) == "menyesatkan"
+    assert aturan_p1(0.02, -100) == "menyesatkan"
+    assert aturan_p1(0, 0) == "tidak_sesuai"
+    assert aturan_p1(-0.01, -100) == "tidak_sesuai"
+
+
+def test_q1_batas_dan_observasi_lengkap():
+    import pytest
+    from app.untold.providers import aturan_q1
+    from app.data.sectors import DataUnavailable
+    assert aturan_q1([1e9] * 60) == (False, 1e9)
+    assert aturan_q1([5e8] * 60) == (True, 5e8)
+    with pytest.raises(DataUnavailable):
+        aturan_q1([5e8] * 59)
+
+
+def test_c1_batas_jendela_kalender():
+    from app.untold.providers import aturan_c1
+    assert aturan_c1(HARI, HARI)
+    assert aturan_c1(HARI + timedelta(days=90), HARI)
+    assert not aturan_c1(HARI + timedelta(days=91), HARI)
+    assert not aturan_c1(HARI - timedelta(days=1), HARI)
+
+
 def test_radar_cocok_dengan_csv_lab_data():
     """Hari serap hitungan R-1 harus sama dengan hasil skrip lab data (cekdulu-datacheck)."""
     import pytest

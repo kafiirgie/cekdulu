@@ -1,7 +1,7 @@
 """Skenario FINAL_PLAN §6 lewat pemecah klaim dan engine asli, tanpa API/LLM.
 
-Skip = fixture belum dibagikan. Xfail ketat = hambatan yang tercatat;
-ketika sudah selesai, XPASS meminta penanda hambatan dihapus.
+Skip hanya jika fixture belum dibagikan. Semua skenario memakai aturan
+yang berlaku dan jendela data tercatat, bukan angka contoh yang dipaksakan.
 """
 from dataclasses import replace
 from datetime import date
@@ -60,7 +60,6 @@ def test_mglv_prediksi_harga_dan_temuan_dari_fixture():
     assert [e.value for e in kartu["orang_dalam"].evidence if e.label.lower().startswith("nextier")] == pytest.approx([0.7874, 0.6271])
 
 
-@pytest.mark.xfail(strict=True, reason="Menunggu provider papan pemantauan dan aksi korporasi Lane D2")
 def test_mglv_kartu_tambahan_lane_d2():
     perlu_fixture("MGLV", "report", "harga_harian", "aksi_korporasi", "filings", "suspensi")
     kartu = {k.check for k in cek(MGLV).untold}
@@ -72,7 +71,6 @@ def test_mdka_prediksi_tetap_tidak_bisa_dicek():
     assert hasil.claims[1].verdict == "tidak_bisa_dicek"
 
 
-@pytest.mark.xfail(strict=True, reason="Menunggu porsi pendapatan dan korelasi komoditas Lane D1")
 def test_mdka_klaim_saham_emas():
     perlu_fixture("MDKA", "segmen", "harga_harian")
     hasil = cek("MDKA saham emas, emas lagi naik pasti ikut")
@@ -80,12 +78,15 @@ def test_mdka_klaim_saham_emas():
     assert hasil.claims[0].rule_id == "K-1"
 
 
-@pytest.mark.xfail(strict=True, reason="Menunggu checker analis dan provider proyeksi laba Lane D3")
 def test_antm_analis_dan_konteks_proyeksi():
     perlu_fixture("ANTM", "report")
     hasil = cek("Semua analis rekomendasi buy ANTM")
-    assert hasil.claims[0].verdict == "sesuai"
+    assert hasil.claims[0].verdict == "tidak_sesuai"  # 68/70 bukan seluruh rekomendasi.
     assert any(k.check == "analis" for k in hasil.untold)
+
+
+def test_antm_mayoritas_rekomendasi_buy():
+    assert cek("Mayoritas analis rekomendasi buy ANTM").claims[0].verdict == "sesuai"
 
 
 def test_bumi_asing_memakai_dataset_yang_tersedia():
@@ -104,11 +105,10 @@ def test_bumi_asing_tanpa_aliran_harian_tetap_diputus(monkeypatch):
     assert kartu.verdict == "tidak_sesuai" and kartu.rule_id == "A-2"
 
 
-@pytest.mark.xfail(strict=True, reason="Menunggu checker pemegang Lane D3; pemeriksaan asing Lane B sudah lulus sendiri")
 def test_bumi_ritel_dan_asing():
     perlu_fixture("BUMI", "komposisi_pemegang")
     hasil = cek("BUMI diserbu ritel, asing juga masuk")
-    assert [k.verdict for k in hasil.claims] == ["sesuai", "tidak_sesuai"]
+    assert [k.verdict for k in hasil.claims] == ["menyesatkan", "tidak_sesuai"]
 
 
 def test_psab_dividen_dan_payout():

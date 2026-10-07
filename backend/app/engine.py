@@ -98,7 +98,7 @@ def run_cek(req: CekRequest, today: Optional[date] = None) -> CekResponse:
               and not any(k.check == cid and k.rule_id == o.card.rule_id for k in cards)]
     for pid, provider in PROVIDERS.items():
         try:
-            k = provider(ticker, req.claims)
+            k = provider(ticker, req.claims, today)
             if k is not None:
                 untold.append(k)
         except DataUnavailable:
