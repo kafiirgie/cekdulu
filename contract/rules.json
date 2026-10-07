@@ -59,8 +59,13 @@
     },
     {
       "id": "A-2", "check": "asing", "status": "final",
-      "text": "Tren porsi asing/ritel dari 3–6 observasi komposisi bulanan terakhir, hanya dalam satu emiten dan sebagai porsi saham lokal + asing yang tercatat. Klaim tanpa periode menyesatkan jika arah A-1 dan A-2 berlawanan (tergantung jendela waktu). Klaim dengan periode 20 hari bursa memakai A-1; klaim 3–6 bulan memakai A-2 pada jumlah observasi yang disebut. Tren lain hanya menjadi konteks, tidak mengubah vonis. Periode lain atau data periode yang tidak lengkap tidak bisa dicek; tren datar bukan arus keluar.",
-      "params": { "bulan_min": 3, "bulan_maks": 6 }
+      "text": "Tren porsi asing/ritel dari 3–6 observasi komposisi bulanan terakhir, hanya dibandingkan dalam satu emiten sebagai porsi saham lokal + asing yang tercatat. Perubahan absolut porsi asing di bawah 1 poin persen dianggap datar; minimal 1 poin persen menentukan arah naik/turun. Tren datar bukan arus keluar.",
+      "params": { "bulan_min": 3, "bulan_maks": 6, "batas_perubahan_porsi": 0.01 }
+    },
+    {
+      "id": "A-3", "check": "asing", "status": "usulan",
+      "text": "Klaim tanpa periode menyesatkan jika arah A-1 dan A-2 berlawanan, setelah ambang perubahan A-2 diterapkan (tergantung jendela waktu). Jika hanya satu dataset tersedia, klaim tanpa periode diputus dari dataset itu dan keterbatasannya dijelaskan. Klaim dengan periode 20 hari bursa memakai A-1; klaim 3–6 bulan memakai A-2 pada jumlah observasi yang disebut. Tren lain hanya menjadi konteks dan tidak mengubah vonis. Periode dikenali melalui kata kunci di kode, bukan AI. Periode lain atau data untuk periode yang disebut tidak lengkap tidak bisa dicek; dataset lain tidak menggantikan periode klaim.",
+      "params": {}
     },
     {
       "id": "H-1", "check": "lonjakan_harga", "status": "final",

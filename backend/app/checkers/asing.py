@@ -1,8 +1,9 @@
-"""Pemeriksa 5 — Investor asing. Aturan A-1 dan tren bulanan A-2.  [Lane B]"""
+"""Pemeriksa 5 — Investor asing. Aturan A-1, tren A-2, konflik periode A-3.  [Lane B]"""
 from __future__ import annotations
 
 import re
 from datetime import date
+from math import isclose
 from typing import Optional
 
 from ..catalog import param
@@ -38,9 +39,17 @@ def aturan_a2(komposisi: list[normal.KomposisiBulanan]) -> tuple[float, float]:
             rows[-1].porsi_ritel_lokal - rows[0].porsi_ritel_lokal)
 
 
-def aturan_a2_konflik(arah_harian: int, perubahan_bulanan: float, ada_periode: bool) -> bool:
+def arah_a2(perubahan: float) -> int:
+    """Perubahan di bawah ambang katalog dianggap datar, termasuk pembulatan float."""
+    batas = param("A-2", "batas_perubahan_porsi")
+    if abs(perubahan) < batas and not isclose(abs(perubahan), batas):
+        return 0
+    return 1 if perubahan > 0 else -1 if perubahan < 0 else 0
+
+
+def aturan_a3(arah_harian: int, perubahan_bulanan: float, ada_periode: bool) -> bool:
     """Konflik hanya mengubah vonis klaim yang tidak menyebut periode."""
-    return not ada_periode and arah_harian * perubahan_bulanan < 0
+    return not ada_periode and arah_harian * arah_a2(perubahan_bulanan) < 0
 
 
 def _periode(teks: str) -> tuple[Optional[str], Optional[int]]:
@@ -71,7 +80,7 @@ class Asing(Checker):
             periode, n_bulan = _periode(claim.text) if claim else (None, None)
         except DataUnavailable:
             alasan = "Periode ini belum didukung. Kami dapat memeriksa 20 hari bursa atau 3–6 observasi bulanan terakhir; kami tidak menggantinya dengan periode lain."
-            return Outcome("data_kurang", alasan, card(verdict="tidak_bisa_dicek", check=self.id, rule_id="A-2",
+            return Outcome("data_kurang", alasan, card(verdict="tidak_bisa_dicek", check=self.id, rule_id="A-3",
                                                        claim=claim, headline="Periode klaim belum bisa diperiksa.", reason=alasan))
         ev, src = [], []
         arah_harian = perubahan = None
@@ -89,7 +98,7 @@ class Asing(Checker):
                        Evidence(label="Porsi hari masuk bersih", value=porsi, fmt="pct")])
             src.append(Source(name=f"Sectors · foreign flow · {aliran[0].tanggal}–{aliran[-1].tanggal}", as_of=str(aliran[-1].tanggal)))
         except DataUnavailable:
-            if periode != "bulanan":
+            if periode == "harian":
                 raise
             konteks.append("Aliran harian tidak tersedia untuk konteks.")
 
@@ -99,25 +108,33 @@ class Asing(Checker):
             if n_bulan and len(komposisi) < n_bulan:
                 raise DataUnavailable("Komposisi belum mencakup periode klaim")
             perubahan, perubahan_ritel = aturan_a2(komposisi)
-            konteks.append(f"Porsi asing {'naik' if perubahan > 0 else 'turun' if perubahan < 0 else 'tetap'} pada {len(komposisi)} observasi bulanan ({komposisi[0].tanggal}–{komposisi[-1].tanggal}). Porsi dihitung dari saham lokal + asing yang tercatat, bukan seluruh saham emiten.")
+            arah_bulanan = arah_a2(perubahan)
+            konteks.append(f"Porsi asing {'naik' if arah_bulanan > 0 else 'turun' if arah_bulanan < 0 else 'datar (perubahan di bawah ambang aturan)'} pada {len(komposisi)} observasi bulanan ({komposisi[0].tanggal}–{komposisi[-1].tanggal}). Porsi dihitung dari saham lokal + asing yang tercatat, bukan seluruh saham emiten.")
             ev.extend([Evidence(label="Porsi asing awal (komposisi tercatat)", value=komposisi[0].porsi_asing, fmt="pct"),
                        Evidence(label="Porsi asing akhir (komposisi tercatat)", value=komposisi[-1].porsi_asing, fmt="pct"),
                        Evidence(label="Perubahan porsi asing", value=perubahan, fmt="pct"),
                        Evidence(label="Perubahan porsi ritel lokal", value=perubahan_ritel, fmt="pct")])
             src.append(Source(name="Sectors · shareholders composition", as_of=str(komposisi[-1].tanggal)))
         except DataUnavailable:
-            if claim is not None and periode != "harian":
+            if periode == "bulanan":
                 raise
             konteks.append("Tren bulanan tidak tersedia untuk konteks.")
 
+        if arah_harian is None and perubahan is None:
+            raise DataUnavailable("Aliran harian dan komposisi bulanan tidak tersedia")
         if claim is None:
-            return Outcome("aman", "Aliran harian dan tren bulanan diperiksa." if perubahan is not None
+            return Outcome("aman", "Aliran harian dan tren bulanan diperiksa." if arah_harian is not None and perubahan is not None
+                           else "Tren bulanan diperiksa; aliran harian tidak tersedia." if arah_harian is None
                            else "Aliran harian diperiksa; tren bulanan tidak tersedia untuk konteks.")
         arah_klaim = -1 if any(k in claim.text.lower() for k in _KATA_JUAL) else 1
-        konflik = perubahan is not None and aturan_a2_konflik(arah_harian or 0, perubahan, periode is not None)
-        arah = (1 if perubahan > 0 else -1 if perubahan < 0 else 0) if periode == "bulanan" else arah_harian
+        konflik = perubahan is not None and aturan_a3(arah_harian or 0, perubahan, periode is not None)
+        pakai_bulanan = periode == "bulanan" or arah_harian is None
+        arah = arah_a2(perubahan) if pakai_bulanan else arah_harian
+        if periode is None and (arah_harian is None or perubahan is None):
+            konteks.append("Hanya satu dataset tersedia; vonis memakai tren kepemilikan bulanan." if pakai_bulanan
+                           else "Hanya satu dataset tersedia; vonis memakai aliran harian.")
         verdict = "menyesatkan" if konflik else "sesuai" if arah == arah_klaim else "tidak_sesuai"
         h = "Tergantung jendela waktu: aliran harian dan tren kepemilikan bulanan berlawanan." if konflik else (
             "Sesuai data untuk periode yang diperiksa." if verdict == "sesuai" else "Tidak sesuai data untuk periode yang diperiksa.")
-        return Outcome("aman", h, card(verdict=verdict, check=self.id, rule_id="A-2" if konflik or periode == "bulanan" else "A-1",
+        return Outcome("aman", h, card(verdict=verdict, check=self.id, rule_id="A-3" if konflik else "A-2" if pakai_bulanan else "A-1",
                                         claim=claim, headline=h, reason=" ".join(konteks), evidence=ev, sources=src))

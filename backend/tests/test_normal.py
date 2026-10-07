@@ -190,8 +190,8 @@ def simpan_asing(simpan, bulanan=True, harian=True):
 
 
 @pytest.mark.parametrize("teks,verdict,aturan", [
-    ("asing masuk", "menyesatkan", "A-2"),
-    ("asing keluar", "menyesatkan", "A-2"),
+    ("asing masuk", "menyesatkan", "A-3"),
+    ("asing keluar", "menyesatkan", "A-3"),
     ("asing beli dalam 20 hari bursa terakhir", "sesuai", "A-1"),
     ("asing keluar dalam 20 hari bursa terakhir", "tidak_sesuai", "A-1"),
     ("porsi asing masuk dalam 6 bulan terakhir", "tidak_sesuai", "A-2"),
@@ -240,12 +240,84 @@ def test_asing_periode_tidak_didukung_tidak_diganti_default(simpan, teks):
     assert "tidak menggantinya dengan periode lain" in hasil.claims[0].reason
 
 
-def test_asing_tanpa_periode_memerlukan_dua_sumber(simpan):
+@pytest.mark.parametrize("bulanan,teks,verdict,aturan", [
+    (False, "asing masuk", "sesuai", "A-1"),
+    (False, "asing keluar", "tidak_sesuai", "A-1"),
+    (True, "asing masuk", "tidak_sesuai", "A-2"),
+    (True, "asing keluar", "sesuai", "A-2"),
+])
+def test_asing_tanpa_periode_memakai_sumber_yang_ada(simpan, bulanan, teks, verdict, aturan):
     from app.checkers.asing import Asing
     from app.schemas import Claim
-    simpan_asing(simpan, bulanan=False)
-    with pytest.raises(sectors.DataUnavailable):
-        Asing().run("MGLV", Claim(id="c1", text="asing masuk", checks=["asing"]), date(2026, 9, 30))
+    simpan_asing(simpan, bulanan=bulanan, harian=not bulanan)
+    # Respons kosong juga dianggap tidak tersedia, bukan nol atau arus keluar.
+    simpan("aliran_asing" if bulanan else "komposisi_pemegang", {"data": []})
+    kartu = Asing().run("MGLV", Claim(id="c1", text=teks, checks=["asing"]), date(2026, 9, 30)).card
+    assert kartu.verdict == verdict and kartu.rule_id == aturan
+    assert len(kartu.sources) == 1
+    assert "Hanya satu dataset tersedia" in kartu.reason
+
+
+def test_asing_kedua_data_kosong_tetap_tidak_bisa_dicek(simpan):
+    from app.engine import run_cek
+    from app.schemas import CekRequest, Claim
+    hasil = run_cek(CekRequest(ticker="MGLV", claims=[Claim(id="c1", text="asing masuk", checks=["asing"])]), date(2026, 9, 30))
+    assert hasil.claims[0].verdict == "tidak_bisa_dicek"
+    assert next(f.status for f in hasil.form if f.check == "asing") == "data_kurang"
+
+
+@pytest.mark.parametrize("bulanan,teks", [
+    (True, "asing masuk dalam 20 hari bursa terakhir"),
+    (False, "asing masuk dalam 6 bulan terakhir"),
+])
+def test_asing_satu_sumber_tidak_mengganti_periode_yang_diminta(simpan, bulanan, teks):
+    from app.engine import run_cek
+    from app.schemas import CekRequest, Claim
+    simpan_asing(simpan, bulanan=bulanan, harian=not bulanan)
+    hasil = run_cek(CekRequest(ticker="MGLV", claims=[Claim(id="c1", text=teks, checks=["asing"])]), date(2026, 9, 30))
+    assert hasil.claims[0].verdict == "tidak_bisa_dicek"
+
+
+@pytest.mark.parametrize("delta", [-0.009, 0, 0.009])
+def test_asing_tren_datar_tidak_menimbulkan_konflik(simpan, delta):
+    from app.checkers.asing import Asing
+    from app.schemas import Claim
+    simpan_asing(simpan)
+    simpan("komposisi_pemegang", {"data": [
+        {"date": str(date(2026, i, 1)), "total_l": 50 - delta * (i - 3) / 5 * 100,
+         "total_f": 50 + delta * (i - 3) / 5 * 100, "individual_l": 10}
+        for i in range(3, 9)]})
+    kartu = Asing().run("MGLV", Claim(id="c1", text="asing masuk", checks=["asing"]), date(2026, 9, 30)).card
+    assert kartu.verdict == "sesuai" and kartu.rule_id == "A-1"
+    assert "datar" in kartu.reason
+    # Dengan periode bulanan eksplisit, datar tidak membuktikan klaim masuk/keluar.
+    for teks in ("asing masuk dalam 6 bulan terakhir", "asing keluar dalam 6 bulan terakhir"):
+        assert Asing().run("MGLV", Claim(id="c1", text=teks, checks=["asing"]), date(2026, 9, 30)).card.verdict == "tidak_sesuai"
+
+
+def test_bumi_fixture_tanpa_aliran_harian_diputus_dari_bulanan(monkeypatch):
+    from app.ai.fallback import pecah_klaim
+    from app.engine import run_cek
+    from app.schemas import CekRequest
+    if not (settings.fixtures_dir / "BUMI" / "komposisi_pemegang.json").exists():
+        pytest.skip("Fixture komposisi BUMI belum tersedia")
+    monkeypatch.setattr(sectors, "settings", replace(settings, data_mode="fixture"))
+    monkeypatch.setattr(sectors, "_call_live", lambda *args: pytest.fail("Tes tidak boleh memanggil Sectors"))
+    asli = normal.aliran_asing
+    def tanpa_bumi(ticker):
+        if ticker == "BUMI":
+            raise sectors.DataUnavailable("BUMI tanpa aliran harian")
+        return asli(ticker)
+    monkeypatch.setattr(normal, "aliran_asing", tanpa_bumi)
+    pecahan = pecah_klaim("BUMI asing juga masuk")
+    hasil = run_cek(CekRequest(ticker=pecahan.ticker, claims=pecahan.claims), date(2026, 9, 30))
+    kartu = hasil.claims[0]
+    assert kartu.verdict == "tidak_sesuai" and kartu.rule_id == "A-2"
+    assert len(kartu.sources) == 1 and kartu.sources[0].as_of == "2026-08-31"
+    assert "Hanya satu dataset tersedia" in kartu.reason
+    komposisi = normal.komposisi_bulanan("BUMI")[-6:]
+    assert [e.value for e in kartu.evidence[:2]] == [komposisi[0].porsi_asing, komposisi[-1].porsi_asing]
+    assert next(f.status for f in hasil.form if f.check == "asing") == "aman"
 
 
 def test_asing_periode_kurang_data_tidak_diputuskan(simpan):
