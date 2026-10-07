@@ -20,7 +20,7 @@ from .untold.providers import PROVIDERS
 log = logging.getLogger("cekdulu.engine")
 
 VERDICT_TEKS = {"sesuai": "sesuai data", "menyesatkan": "menyesatkan", "tidak_sesuai": "tidak sesuai",
-                "tidak_bisa_dicek": "tidak bisa dicek"}
+                "tidak_bisa_dicek": "tidak bisa dicek", "info": "informasi"}
 
 
 def _run(check_id: str, ticker: str, claim: Optional[Claim], today: date) -> tuple[Outcome, int]:
@@ -74,7 +74,6 @@ def run_cek(req: CekRequest, today: Optional[date] = None) -> CekResponse:
 
     # 2) vonis per klaim
     cards: list[Card] = []
-    dipakai: set[str] = set()
     for claim in req.claims:
         if not claim.checks:
             cards.append(_tidak_bisa_dicek(claim, "Ini prediksi, opini, atau rumor tanpa angka. Kami tidak menebak."))
@@ -82,7 +81,6 @@ def run_cek(req: CekRequest, today: Optional[date] = None) -> CekResponse:
         kartu = None
         for cid in claim.checks:
             out, ms = _run(cid, ticker, claim, today)
-            dipakai.add(cid)
             if cid not in std_out and not any(s.check == cid for s in steps):
                 steps.append(Step(check=cid, label=check_label(cid), ms=max(ms, 300)))
                 form.append(FormRow(check=cid, status="modul_aktif" if out.status != "gagal" else "gagal", why=out.why))
@@ -95,8 +93,9 @@ def run_cek(req: CekRequest, today: Optional[date] = None) -> CekResponse:
     if std_out.get("free_float") and std_out["free_float"].status == "temuan":
         form.append(FormRow(check="m_free_float", status="modul_aktif", why="Free float di bawah 15%."))
 
-    # 4) Yang tidak diceritakan: temuan standar yang tidak disinggung klaim + provider Lane D
-    untold = [o.card for cid, o in std_out.items() if o.status == "temuan" and o.card and cid not in dipakai]
+    # 4) Temuan aturan lain tetap tampil (mis. D-2 saat klaim yield memakai D-1).
+    untold = [o.card for cid, o in std_out.items() if o.status == "temuan" and o.card
+              and not any(k.check == cid and k.rule_id == o.card.rule_id for k in cards)]
     for pid, provider in PROVIDERS.items():
         try:
             k = provider(ticker, req.claims)

@@ -73,6 +73,8 @@ def get(ticker: str, kunci: str) -> Any:
     if cache.exists():
         return json.loads(cache.read_text(encoding="utf-8"))
 
+    if mode != "live":
+        raise DataUnavailable(f"Mode {mode} tidak mengizinkan panggilan live Sectors")
     data = _call_live(ticker, kunci)
     cache.parent.mkdir(parents=True, exist_ok=True)
     cache.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")

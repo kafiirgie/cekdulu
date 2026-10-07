@@ -53,6 +53,13 @@ def test_tanpa_cache_tetap_laporkan_kunci_kosong(lokasi, monkeypatch, capsys):
     assert not (lokasi.fixtures_dir / "MGLV" / "report.json").exists()
 
 
+@pytest.mark.parametrize("mode", ["fixture", "mock"])
+def test_mode_offline_tidak_memanggil_live_saat_data_kosong(lokasi, monkeypatch, mode):
+    monkeypatch.setattr(sectors, "settings", replace(lokasi, data_mode=mode))
+    with pytest.raises(sectors.DataUnavailable):
+        sectors.get("MGLV", "report")
+
+
 def test_report_memakai_bagian_sah_dan_batas_kredit(monkeypatch):
     import httpx
     konfigurasi = replace(settings, sectors_api_key="kunci-uji", sectors_credit_budget=4)
