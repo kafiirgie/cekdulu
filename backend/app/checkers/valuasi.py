@@ -28,7 +28,7 @@ class Valuasi(Checker):
         ev = [Evidence(label="PER", value=v.per, fmt="x"), Evidence(label="PBV", value=v.pbv, fmt="x"),
               Evidence(label="Forward PE", value=v.forward_pe if v.forward_pe is not None else "tidak tersedia",
                        fmt="x" if v.forward_pe is not None else "text")]
-        src = [Source(name="Sectors · report valuation", as_of=str(today))]
+        src = [Source(name="Sectors · report valuation", as_of=str(v.as_of) if v.as_of else None)]
         if claim is not None:
             for nama, aktual in (("per", v.per), ("pbv", v.pbv)):
                 klaim = _angka_setelah(nama, claim.text)
