@@ -10,7 +10,7 @@ import json
 import pytest
 
 from app.ai import fallback, jev, provider, tanya
-from app.ai.openai_compat import OpenAICompatLLM
+from app.ai.openai_compat import MIN_TOKEN, OpenAICompatLLM
 from app.schemas import Card, Claim, Evidence, KlaimResponse, Source
 
 KARTU = Card(
@@ -298,7 +298,8 @@ def test_openai_compat_meminta_json_dan_token_besar(monkeypatch):
         "MDKA saham emas", None, None)
 
     assert panggilan["url"] == "https://ollama.com/v1/chat/completions"
-    assert panggilan["json"]["max_tokens"] >= 768  # model nalar: jangan sampai kosong
+    assert panggilan["json"]["max_tokens"] == MIN_TOKEN
+    assert MIN_TOKEN >= 4096  # model nalar: jatah 1024/2048 kosong
     assert hasil.ticker == "MDKA" and hasil.claims[0].checks == ["m_komoditas"]
     assert hasil.claims[0].span == (0, 15)  # "MDKA saham emas"
 
@@ -378,7 +379,7 @@ def test_tanpa_jev_hasil_sama_seperti_sebelumnya(monkeypatch):
     assert checks["dari 600 udah 14 ribuan"] == ["lonjakan_harga"]
 
 
-def test_klien_prediksi_memuat_satu_noul_tanpa_kartu(monkeypatch):
+def test_klien_saring_memuat_pertanyaan_prediksi_tanpa_kartu(monkeypatch):
     panggilan = {}
 
     class ResponsePalsu:
@@ -393,10 +394,10 @@ def test_klien_prediksi_memuat_satu_noul_tanpa_kartu(monkeypatch):
         return ResponsePalsu()
 
     monkeypatch.setattr("app.ai.jev.httpx.post", post_palsu)
-    hasil = jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").prediksi("besok pasti ARA")
+    hasil = jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").saring("besok pasti ARA")
 
     body = panggilan["json"]
-    assert set(body["questions"]) == {jev.KUNCI_PREDIKSI}
+    assert set(body["questions"]) == {jev.KUNCI_KLAIM, jev.KUNCI_PREDIKSI, jev.KUNCI_TARGET}
     assert body["questions"][jev.KUNCI_PREDIKSI]["type"] == "noul"
     assert json.loads(body["state"]) == {"kalimat": "besok pasti ARA"}
     assert hasil[jev.KUNCI_PREDIKSI]["noul"] == 0.8
@@ -543,7 +544,7 @@ def test_heuristik_bukan_klaim_tanpa_jev():
     assert not fallback.bukan_klaim("laba BBRI naik 20% tahun ini")
 
 
-def test_klien_klaim_memuat_satu_noul_tanpa_kartu(monkeypatch):
+def test_klien_saring_memuat_pertanyaan_klaim_tanpa_kartu(monkeypatch):
     panggilan = {}
 
     class ResponsePalsu:
@@ -558,10 +559,10 @@ def test_klien_klaim_memuat_satu_noul_tanpa_kartu(monkeypatch):
         return ResponsePalsu()
 
     monkeypatch.setattr("app.ai.jev.httpx.post", post_palsu)
-    hasil = jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").klaim("halo semua")
+    hasil = jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").saring("halo semua")
 
     body = panggilan["json"]
-    assert set(body["questions"]) == {jev.KUNCI_KLAIM}
+    assert set(body["questions"]) == {jev.KUNCI_KLAIM, jev.KUNCI_PREDIKSI, jev.KUNCI_TARGET}
     assert body["questions"][jev.KUNCI_KLAIM]["type"] == "noul"
     assert json.loads(body["state"]) == {"kalimat": "halo semua"}
     assert hasil[jev.KUNCI_KLAIM]["noul"] == 0.9
@@ -633,7 +634,7 @@ def test_target_jev_ambang_lewat_saring():
     assert jev.saring_jev(JevTarget(jev.AMBANG_TARGET - 0.01), "x")["target"] is False
 
 
-def test_klien_target_memuat_satu_noul_tanpa_kartu(monkeypatch):
+def test_klien_saring_memuat_pertanyaan_target_tanpa_kartu(monkeypatch):
     panggilan = {}
 
     class ResponsePalsu:
@@ -648,7 +649,66 @@ def test_klien_target_memuat_satu_noul_tanpa_kartu(monkeypatch):
         return ResponsePalsu()
 
     monkeypatch.setattr("app.ai.jev.httpx.post", post_palsu)
-    jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").target("besok naik ke 20.000")
+    jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").saring("besok naik ke 20.000")
     body = panggilan["json"]
-    assert set(body["questions"]) == {jev.KUNCI_TARGET}
+    assert set(body["questions"]) == {jev.KUNCI_KLAIM, jev.KUNCI_PREDIKSI, jev.KUNCI_TARGET}
     assert json.loads(body["state"]) == {"kalimat": "besok naik ke 20.000"}
+
+
+# ---------- regresi PR #34: kalimat fakta tanpa angka BUKAN prediksi ----------
+
+def test_pertanyaan_prediksi_tidak_menangkap_fakta_tanpa_angka(monkeypatch):
+    """Rumusan lama ("TANPA angka") membuang pemeriksa dari fakta tanpa angka.
+
+    Nyata: "MDKA saham emas" dinilai prediksi 0,82 sehingga pemeriksa nikel hilang dan
+    demo utama rusak. Rumusan baru harus menanyakan ramalan MURNI, dan menyebut keadaan
+    sekarang/lampau sebagai alasan menjawab "tidak".
+    """
+    panggilan = {}
+
+    class ResponsePalsu:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"answers": {"prediksi": {"type": "noul", "noul": 0.1}}}
+
+    monkeypatch.setattr("app.ai.jev.httpx.post",
+                        lambda url, **k: panggilan.update(k["json"]) or ResponsePalsu())
+    jev.Jev("https://api.typesafe.ai/v1", "k", "jev-latest").saring("MDKA saham emas")
+
+    instr = panggilan["questions"][jev.KUNCI_PREDIKSI]["instructions"]
+    assert "MURNI ramalan" in instr or "murni ramalan" in instr.lower()
+    assert "keadaan sekarang" in instr and "lewat" in instr
+    # rumusan lama yang menyesatkan tidak boleh kembali
+    assert "TANPA angka" not in instr
+
+
+def test_fakta_tanpa_angka_menyimpan_pemeriksa(monkeypatch):
+    """Ujung-ke-ujung: JEV bilang "bukan prediksi" -> pemeriksa tetap ada (demo MDKA)."""
+    class JevFakta:
+        def saring(self, kalimat):
+            return {"klaim_saham": {"noul": 0.9}, "prediksi": {"noul": 0.12},
+                    "target_harga": {"noul": 0.05}}
+
+    monkeypatch.setattr(provider, "_get_jev_prediksi", lambda: JevFakta())
+    kalimat = "MDKA saham emas"
+    res = provider._normalisasi(
+        KlaimResponse(ticker="MDKA", claims=[Claim(id="c1", text=kalimat, checks=["komoditas"])]),
+        kalimat, None, used_ai=True, dari_gambar=False)
+    assert res.claims[0].checks == ["komoditas"], "fakta tanpa angka tetap diperiksa"
+
+
+def test_ramalan_murni_tetap_dimatikan(monkeypatch):
+    """Perbaikan tidak boleh melonggarkan sisi lain: ramalan tetap kehilangan vonis."""
+    class JevRamalan:
+        def saring(self, kalimat):
+            return {"klaim_saham": {"noul": 0.9}, "prediksi": {"noul": 0.88},
+                    "target_harga": {"noul": 0.1}}
+
+    monkeypatch.setattr(provider, "_get_jev_prediksi", lambda: JevRamalan())
+    kalimat = "MGLV masih bakal terbang"
+    res = provider._normalisasi(
+        KlaimResponse(ticker="MGLV", claims=[Claim(id="c1", text=kalimat, checks=["lonjakan_harga"])]),
+        kalimat, None, used_ai=True, dari_gambar=False)
+    assert res.claims[0].checks == []

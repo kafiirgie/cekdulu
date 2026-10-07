@@ -48,6 +48,24 @@ AMBANG_SARAN = 0.5
 # (dua-duanya lolos dari heuristik kata kunci) vs "laba naik 20%" 0,02 · "yield 6%" 0,03.
 AMBANG_PREDIKSI = 0.5
 
+# Pertanyaan `prediksi`. Rumusan lama ("...TANPA angka atau fakta terukur") ikut menangkap
+# kalimat fakta yang kebetulan tak berangka, sehingga pemeriksanya dibuang (regresi PR #34:
+# "MDKA saham emas" 0,82 -> pemeriksa nikel hilang). Rumusan ini menanyakan apakah kalimat
+# MURNI ramalan, jadi fakta tanpa angka tetap tidak dianggap prediksi. Diukur 3x per kalimat:
+# fakta tanpa angka 0,09-0,29 (dulu 0,55-0,82) vs ramalan 0,74-0,90 (dulu 0,37-0,90).
+TEKS_PREDIKSI = (
+    "Apakah kalimat ini MURNI ramalan atau spekulasi tentang masa depan, tanpa satu pun "
+    "pernyataan tentang keadaan sekarang atau kejadian yang sudah lewat yang bisa dicek "
+    "dengan data? Jawab tidak kalau kalimatnya menyebut sifat atau keadaan saham saat ini "
+    "(misalnya soal bisnisnya, sektornya, atau kinerjanya), dan jawab tidak juga kalau ada angka."
+)
+KRITERIA_PREDIKSI = {
+    "true": ("Murni ramalan tentang masa depan; tak ada keadaan sekarang atau kejadian lampau "
+             "yang bisa dicek data."),
+    "false": ("Ada pernyataan tentang keadaan sekarang, kejadian lampau, atau angka yang bisa "
+              "dicek data."),
+}
+
 # Ambang `klaim_saham`: pisahkan kalimat yang LAYAK diperiksa dari sapaan/pertanyaan/ngobrol.
 # Hasil ukur: non-klaim maksimum 0,28 ("mantap, lanjut pantau"), klaim minimum 0,55
 # ("cuan gede nih"). 0,4 di tengah-tengahnya.
@@ -192,13 +210,8 @@ class Jev:
             "questions": {
                 KUNCI_PREDIKSI: {
                     "type": "noul",
-                    "instructions": ("Apakah kalimat ini berisi prediksi, opini, atau rumor tentang "
-                                     "harga/nasib saham di masa depan TANPA angka atau fakta terukur "
-                                     "yang bisa diperiksa?"),
-                    "criteria": {
-                        "true": "Prediksi/opini/rumor tanpa angka atau fakta terukur.",
-                        "false": "Berisi angka atau fakta yang bisa diperiksa.",
-                    },
+                    "instructions": TEKS_PREDIKSI,
+                    "criteria": KRITERIA_PREDIKSI,
                 },
             },
         }
@@ -288,13 +301,8 @@ class Jev:
                 },
                 KUNCI_PREDIKSI: {
                     "type": "noul",
-                    "instructions": ("Apakah kalimat ini berisi prediksi, opini, atau rumor tentang "
-                                     "harga/nasib saham di masa depan TANPA angka atau fakta terukur "
-                                     "yang bisa diperiksa?"),
-                    "criteria": {
-                        "true": "Prediksi/opini/rumor tanpa angka atau fakta terukur.",
-                        "false": "Berisi angka atau fakta yang bisa diperiksa.",
-                    },
+                    "instructions": TEKS_PREDIKSI,
+                    "criteria": KRITERIA_PREDIKSI,
                 },
                 KUNCI_TARGET: {
                     "type": "noul",
