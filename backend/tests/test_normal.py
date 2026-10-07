@@ -158,6 +158,29 @@ def test_dividen_bukan_rata_rata_sektor(simpan, nilai):
         assert Dividen().run("MGLV", None, date(2026, 9, 30)).status == "tidak_relevan"
 
 
+def test_laporan_tambahan_melengkapi_keuangan_tanpa_mengganti_snapshot(simpan):
+    simpan("report", {"company_name": "Snapshot lama", "ownership": {
+        "major_shareholders": [{"name": "Public", "share_percentage": "0.3292"}]}})
+    simpan("report_keuangan", {
+        "company_name": "Jangan mengganti nama", "ownership": {"major_shareholders": []},
+        "valuation": {"latest_close_date": "2026-10-06", "historical_valuation": [{"year": 2026, "pe": 10, "pb": 2}], "forward_pe": None},
+        "dividend": {"yield_ttm": 0.05, "payout_ratio": 0.6}})
+    assert normal.nama_emiten("MGLV") == "Snapshot lama"
+    assert normal.free_float("MGLV") == pytest.approx(0.3292)
+    assert normal.valuasi("MGLV") == normal.Valuasi(10, 2, None, date(2026, 10, 6))
+    assert normal.dividen("MGLV") == normal.Dividen(0.05, 0.6, None, date(2026, 10, 6))
+
+
+def test_laporan_lengkap_tidak_memerlukan_laporan_tambahan(simpan):
+    simpan("report", {
+        "valuation": {"latest_close_date": "2026-09-28", "historical_valuation": [{"year": 2026, "pe": 7, "pb": 1}]},
+        "dividend": {"yield_ttm": 0.1, "payout_ratio": 0.8}})
+    simpan("report_keuangan", {"valuation": {"latest_close_date": "2026-10-06"}, "dividend": {"yield_ttm": 0.2}})
+    assert normal.valuasi("MGLV").per == 7
+    assert normal.dividen("MGLV").yield_ttm == 0.1
+    assert normal.dividen("MGLV").as_of == date(2026, 9, 28)
+
+
 def test_aliran_asing_urut_dan_nol_sah(simpan):
     simpan("aliran_asing", {"data": [
         {"date": "2026-09-30", "net_foreign_inflow": "-100"},
@@ -375,6 +398,46 @@ def test_form_lengkap_fixture_b2(monkeypatch, ticker):
     assert normal.dividen(ticker).as_of == date(2026, 9, 28)
     if ticker == "BREN":
         assert normal.valuasi(ticker).forward_pe is None
+
+
+@pytest.mark.parametrize("ticker", ["MGLV", "MDKA", "ANTM", "BUMI", "PSAB"])
+def test_fixture_b0_melengkapi_form_tanpa_mengarang_laba(monkeypatch, ticker):
+    from app.engine import run_cek
+    from app.schemas import CekRequest
+    diperlukan = ["report", "keuangan_kuartalan", "aliran_asing", "harga_harian", "aksi_korporasi", "filings", "suspensi"]
+    if ticker in ("MGLV", "ANTM", "BUMI"):
+        diperlukan.append("report_keuangan")
+    if not all((settings.fixtures_dir / ticker / f"{k}.json").exists() for k in diperlukan):
+        pytest.skip(f"Fixture B0 lengkap {ticker} belum tersedia")
+    monkeypatch.setattr(sectors, "settings", replace(settings, data_mode="fixture"))
+    monkeypatch.setattr(sectors, "_call_live", lambda *args: pytest.fail("Tes tidak boleh memanggil Sectors"))
+    hasil = run_cek(CekRequest(ticker=ticker, claims=[]), date(2026, 10, 7))
+    assert all(f.status != "gagal" for f in hasil.form)
+    assert {f.check for f in hasil.form if f.status == "data_kurang"} == ({"laba"} if ticker in ("MGLV", "PSAB") else set())
+    assert normal.valuasi(ticker).as_of == date(2026, 10, 6)
+    if ticker in ("MGLV", "PSAB"):
+        with pytest.raises(sectors.DataUnavailable, match="earnings"):
+            normal.laba_kuartalan(ticker)
+
+
+def test_fixture_psab_klaim_yield_dan_payout_aktual(monkeypatch):
+    from app.ai.fallback import pecah_klaim
+    from app.engine import run_cek
+    from app.schemas import CekRequest
+    if not (settings.fixtures_dir / "PSAB" / "report.json").exists():
+        pytest.skip("Fixture report PSAB belum tersedia")
+    monkeypatch.setattr(sectors, "settings", replace(settings, data_mode="fixture"))
+    monkeypatch.setattr(sectors, "_call_live", lambda *args: pytest.fail("Tes tidak boleh memanggil Sectors"))
+    p = pecah_klaim("PSAB dividennya 25%, gede banget")
+    kartu = run_cek(CekRequest(ticker=p.ticker, claims=p.claims), date(2026, 10, 7)).claims[0]
+    assert kartu.verdict == "sesuai" and kartu.rule_id == "D-1"
+    dividen = normal.dividen("PSAB")
+    assert kartu.evidence[0].value == dividen.yield_ttm
+    assert kartu.sources[0].as_of == str(dividen.as_of)
+    # Pemeriksaan umum tetap memberikan konteks payout dari laporan yang sama.
+    umum = run_cek(CekRequest(ticker="PSAB", claims=[]), date(2026, 10, 7))
+    payout = next(k for k in umum.untold if k.rule_id == "D-2")
+    assert next(e.value for e in payout.evidence if e.label == "Payout ratio") == dividen.payout_ratio
 
 
 def test_api_mglv_melewati_parser_asli(simpan):
