@@ -1,4 +1,4 @@
-"""Pemeriksa 5 — Investor asing. Aturan A-1 (A-2 tren bulanan: TODO B2).  [Lane B]"""
+"""Pemeriksa 5 — Investor asing. Aturan A-1 dan tren bulanan A-2.  [Lane B]"""
 from __future__ import annotations
 
 from datetime import date
@@ -6,6 +6,7 @@ from typing import Optional
 
 from ..catalog import param
 from ..data import normal
+from ..data.sectors import DataUnavailable
 from ..schemas import Claim, Evidence, Source
 from .base import Checker, Outcome, card
 
@@ -21,6 +22,16 @@ def aturan_a1(aliran: list[normal.AliranAsing]) -> tuple[bool, float, float]:
     total = sum(x.bersih_rp for x in a)
     porsi = sum(1 for x in a if x.bersih_rp > 0) / len(a)
     return total > 0 and porsi >= param("A-1", "porsi_hari_masuk"), total, porsi
+
+
+def aturan_a2(komposisi: list[normal.KomposisiBulanan]) -> tuple[float, float]:
+    """Perubahan porsi asing dan ritel lokal dalam jendela bulanan satu emiten."""
+    rows = sorted(komposisi, key=lambda r: r.tanggal)[-param("A-2", "bulan_maks"):]
+    bulan = {(r.tanggal.year, r.tanggal.month) for r in rows}
+    if len(rows) < param("A-2", "bulan_min") or len(bulan) != len(rows):
+        raise DataUnavailable("Tren A-2 memerlukan bulan berbeda sesuai jendela aturan")
+    return (rows[-1].porsi_asing - rows[0].porsi_asing,
+            rows[-1].porsi_ritel_lokal - rows[0].porsi_ritel_lokal)
 
 
 class Asing(Checker):

@@ -55,7 +55,7 @@ def test_tanpa_cache_tetap_laporkan_kunci_kosong(lokasi, monkeypatch, capsys):
 
 def test_report_memakai_bagian_sah_dan_batas_kredit(monkeypatch):
     import httpx
-    konfigurasi = replace(settings, sectors_api_key="kunci-uji", sectors_credit_budget=2)
+    konfigurasi = replace(settings, sectors_api_key="kunci-uji", sectors_credit_budget=4)
     monkeypatch.setattr(sectors, "settings", konfigurasi)
     monkeypatch.setattr(sectors, "_credits_used", 0)
     calls = []
@@ -66,8 +66,8 @@ def test_report_memakai_bagian_sah_dan_batas_kredit(monkeypatch):
 
     monkeypatch.setattr(sectors.httpx, "get", http_palsu)
     assert sectors._call_live("MGLV", "report")["company_name"] == "Emiten uji"
-    assert calls == [{"sections": "overview,ownership"}]
-    assert sectors.credits_used() == 2
+    assert calls == [{"sections": "overview,ownership,valuation,dividend"}]
+    assert sectors.credits_used() == 4
     with pytest.raises(sectors.DataUnavailable, match="Batas kredit"):
         sectors._call_live("MGLV", "report")
     assert len(calls) == 1

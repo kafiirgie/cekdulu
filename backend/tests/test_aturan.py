@@ -2,7 +2,7 @@
 Setiap aturan di contract/rules.json idealnya punya minimal satu tes di sini."""
 from datetime import date, timedelta
 
-from app.checkers.asing import aturan_a1
+from app.checkers.asing import aturan_a1, aturan_a2
 from app.checkers.base import angka_persen, angka_rupiah, rp
 from app.checkers.dividen import aturan_d1, aturan_d1_periode, aturan_d2
 from app.checkers.free_float import aturan_f1
@@ -11,7 +11,7 @@ from app.checkers.lonjakan_harga import aturan_h1, aturan_h2
 from app.checkers.orang_dalam import OrangDalam, aturan_o1
 from app.checkers.suspensi import aturan_s1
 from app.checkers.valuasi import aturan_v1
-from app.data.normal import AliranAsing, HargaHarian, Kuartal, Suspensi, TransaksiOrangDalam
+from app.data.normal import AliranAsing, HargaHarian, KomposisiBulanan, Kuartal, Suspensi, TransaksiOrangDalam
 from app.modul import free_float as ff
 from app.modul.komoditas import aturan_k1, aturan_k2, komoditas_disebut
 
@@ -84,6 +84,25 @@ def test_asing_borong():
     assert borong and total > 0 and porsi >= 0.6
     keluar = [AliranAsing(HARI - timedelta(days=i), -1e9) for i in range(20)]
     assert aturan_a1(keluar)[0] is False
+
+
+def test_asing_tren_bulanan_memakai_enam_bulan_terakhir():
+    import pytest
+    rows = [KomposisiBulanan(date(2026, i, 1), 0.8 - i / 100, i / 100, None) for i in range(1, 9)]
+    asing, ritel = aturan_a2(list(reversed(rows)))
+    assert asing == pytest.approx(-0.05)
+    assert ritel == pytest.approx(0.05)
+    assert aturan_a2(rows[-3:])[0] == pytest.approx(-0.02)
+
+
+def test_asing_tren_bulanan_tidak_mengarang_data():
+    import pytest
+    from app.data.sectors import DataUnavailable
+    rows = [KomposisiBulanan(date(2026, i, 1), 0.4, 0.2, None) for i in range(1, 4)]
+    assert aturan_a2(rows) == (0, 0)
+    for kurang in ([], rows[:2], [rows[0]] * 3):
+        with pytest.raises(DataUnavailable):
+            aturan_a2(kurang)
 
 
 # ---------- H ----------

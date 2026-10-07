@@ -1,4 +1,4 @@
-"""Parser B1: JSON buatan lewat adapter fixture, tanpa jaringan atau kredit Sectors."""
+"""Parser: JSON buatan lewat adapter fixture, tanpa jaringan atau kredit Sectors."""
 import json
 from dataclasses import replace
 from datetime import date, timedelta
@@ -65,6 +65,11 @@ def test_filings_urut_persen_dan_nilai_rupiah(simpan):
     assert transaksi[-1].nilai_rp == 2e9  # transaction_value, bukan jumlah saham
 
 
+def test_filings_pemindahan_bukan_jual_beli(simpan):
+    simpan("filings", {"results": [{"transaction_type": "others"}]})
+    assert normal.transaksi_orang_dalam("MGLV") == []
+
+
 def test_aksi_hanya_tanggal_ex(simpan):
     simpan("aksi_korporasi", {"corporate_actions": {
         "dividend": [{"ex_date": "2026-09-01", "payment_date": "2026-09-20"}],
@@ -126,6 +131,93 @@ def test_data_kosong_atau_rusak_tidak_ditebak(simpan, parser, kunci, data):
 def test_fixture_hilang_tidak_memanggil_live(simpan):
     with pytest.raises(sectors.DataUnavailable, match="Fixture"):
         normal.harga_harian("MGLV")
+
+
+def test_laba_urut_dan_rugi_tetap_negatif(simpan):
+    simpan("keuangan_kuartalan", [
+        {"date": "2026-06-30", "earnings": "120"},
+        {"date": "2026-03-31", "earnings": -5},
+    ])
+    assert normal.laba_kuartalan("MGLV") == [normal.Kuartal("2026-03-31", -5), normal.Kuartal("2026-06-30", 120)]
+
+
+def test_valuasi_tahun_terbaru_dan_null(simpan):
+    simpan("report", {"valuation": {"historical_valuation": [
+        {"year": 2026, "pe": "7.5", "pb": 1.4},
+        {"year": 2024, "pe": 10, "pb": 2}], "forward_pe": None, "latest_close_date": "2026-09-28"}})
+    assert normal.valuasi("MGLV") == normal.Valuasi(7.5, 1.4, None, date(2026, 9, 28))
+
+
+@pytest.mark.parametrize("nilai", [None, 0, 0.11])
+def test_dividen_bukan_rata_rata_sektor(simpan, nilai):
+    from app.checkers.dividen import Dividen
+    simpan("report", {"dividend": {"yield_ttm": nilai, "payout_ratio": None, "dividend_yield_avg": 0.07},
+                      "valuation": {"latest_close_date": "2026-09-28"}})
+    assert normal.dividen("MGLV") == normal.Dividen(nilai, None, None, date(2026, 9, 28) if nilai else None)
+    if nilai in (None, 0):
+        assert Dividen().run("MGLV", None, date(2026, 9, 30)).status == "tidak_relevan"
+
+
+def test_aliran_asing_urut_dan_nol_sah(simpan):
+    simpan("aliran_asing", {"data": [
+        {"date": "2026-09-30", "net_foreign_inflow": "-100"},
+        {"date": "2026-09-29", "net_foreign_inflow": 0}]})
+    assert normal.aliran_asing("MGLV") == [
+        normal.AliranAsing(date(2026, 9, 29), 0), normal.AliranAsing(date(2026, 9, 30), -100)]
+
+
+def test_komposisi_denominator_lokal_asing_dan_null(simpan):
+    simpan("komposisi_pemegang", {"data": [
+        {"date": "2026-08-31", "total_l": 60, "total_f": 40, "individual_l": 20,
+         "shares_number": 1000, "numbers_of_shareholders": "25"},
+        {"date": "2026-07-31", "total_l": 70, "total_f": 30, "individual_l": 10,
+         "numbers_of_shareholders": None}]})
+    hasil = normal.komposisi_bulanan("MGLV")
+    assert hasil[-1] == normal.KomposisiBulanan(date(2026, 8, 31), 0.4, 0.2, 25)
+    assert hasil[0].jumlah_pemegang is None
+
+
+@pytest.mark.parametrize("parser,kunci,data", [
+    (normal.laba_kuartalan, "keuangan_kuartalan", []),
+    (normal.laba_kuartalan, "keuangan_kuartalan", [{"date": "2026-06-30", "earnings": None}]),
+    (normal.valuasi, "report", {"valuation": {"historical_valuation": []}}),
+    (normal.valuasi, "report", {"valuation": {"historical_valuation": [{"year": None}]}}),
+    (normal.valuasi, "report", {"valuation": {"historical_valuation": [{"year": 2026, "pe": 10, "pb": 2}]}}),
+    (normal.dividen, "report", {"dividend": {"yield_ttm": 0.1}}),
+    (normal.dividen, "report", {"dividend": {}}),
+    (normal.dividen, "report", {"dividend": None}),
+    (normal.aliran_asing, "aliran_asing", {"data": []}),
+    (normal.aliran_asing, "aliran_asing", {"data": [{"date": "2026-09-30", "net_foreign_inflow": None}]}),
+    (normal.komposisi_bulanan, "komposisi_pemegang", {"data": []}),
+    (normal.komposisi_bulanan, "komposisi_pemegang", {"data": [
+        {"date": "2026-08-31", "total_l": 0, "total_f": 0, "individual_l": 0}]}),
+    (normal.komposisi_bulanan, "komposisi_pemegang", {"data": [
+        {"date": "2026-08-31", "total_l": 60, "total_f": 40, "individual_l": 70}]}),
+])
+def test_b2_data_hilang_tidak_ditebak(simpan, parser, kunci, data):
+    simpan(kunci, data)
+    with pytest.raises(sectors.DataUnavailable):
+        parser("MGLV")
+
+
+@pytest.mark.parametrize("ticker", ["BBRI", "BREN", "PTBA"])
+def test_form_lengkap_fixture_b2(monkeypatch, ticker):
+    from app.engine import run_cek
+    from app.schemas import CekRequest
+    diperlukan = ("report", "keuangan_kuartalan", "aliran_asing", "harga_harian", "aksi_korporasi", "filings", "suspensi")
+    if not all((settings.fixtures_dir / ticker / f"{k}.json").exists() for k in diperlukan):
+        pytest.skip(f"Fixture lengkap {ticker} belum tersedia")
+    monkeypatch.setattr(sectors, "settings", replace(settings, data_mode="fixture"))
+    monkeypatch.setattr(sectors, "_call_live", lambda *args: pytest.fail("Tes tidak boleh memanggil Sectors"))
+    hasil = run_cek(CekRequest(ticker=ticker, claims=[]), today=date(2026, 9, 30))
+    assert len([f for f in hasil.form if not f.check.startswith("m_")]) == 8
+    assert all(f.status not in ("data_kurang", "gagal") for f in hasil.form), hasil.form
+    assert normal.laba_kuartalan(ticker)[-1].periode == "2026-06-30"
+    assert normal.komposisi_bulanan(ticker)[-1].tanggal == date(2026, 8, 31)
+    assert normal.valuasi(ticker).as_of == date(2026, 9, 28)
+    assert normal.dividen(ticker).as_of == date(2026, 9, 28)
+    if ticker == "BREN":
+        assert normal.valuasi(ticker).forward_pe is None
 
 
 def test_api_mglv_melewati_parser_asli(simpan):

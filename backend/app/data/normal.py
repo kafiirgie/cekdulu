@@ -4,8 +4,7 @@ Pemeriksa TIDAK membaca JSON mentah Sectors. Mereka memanggil fungsi di sini,
 yang mengubah JSON mentah (dari sectors.get) jadi bentuk sederhana di bawah.
 Keuntungannya: aturan di checkers/ bisa dites dengan data buatan tanpa API.
 
-Parser B1 memakai bentuk JSON yang dicatat di docs/DATA_NOTES.md.
-Parser laporan keuangan dan aliran asing menyusul di tugas B2.
+Parser memakai bentuk JSON yang dicatat di docs/DATA_NOTES.md.
 Kalau field yang dibutuhkan kosong, `raise DataUnavailable(...)` — jangan isi 0.
 """
 from __future__ import annotations
@@ -20,7 +19,7 @@ from .sectors import DataUnavailable, get
 
 @dataclass
 class Kuartal:
-    periode: str          # "2026-Q2"
+    periode: str          # tanggal akhir kuartal, ISO
     laba_bersih: float    # Rupiah penuh
 
 
@@ -29,6 +28,7 @@ class Valuasi:
     per: Optional[float]
     pbv: Optional[float]
     forward_pe: Optional[float]  # None = tidak tersedia (jangan 0)
+    as_of: Optional[date] = None
 
 
 @dataclass
@@ -36,6 +36,7 @@ class Dividen:
     yield_ttm: Optional[float]       # 0.25 = 25%
     payout_ratio: Optional[float]    # 1.14 = 114%
     yield_rata_sektor: Optional[float]
+    as_of: Optional[date] = None
 
 
 @dataclass
@@ -55,6 +56,14 @@ class AliranAsing:
 
 
 @dataclass
+class KomposisiBulanan:
+    tanggal: date
+    porsi_asing: float
+    porsi_ritel_lokal: float
+    jumlah_pemegang: Optional[int]
+
+
+@dataclass
 class HargaHarian:
     tanggal: date
     close: float
@@ -69,7 +78,7 @@ class Suspensi:
 
 def _ambil(ticker: str, kunci: str):
     data = get(ticker.strip().upper().removesuffix(".JK"), kunci)
-    if kunci != "harga_harian" and not isinstance(data, dict):
+    if kunci not in ("harga_harian", "keuangan_kuartalan") and not isinstance(data, dict):
         raise DataUnavailable(f"Bentuk data {kunci} tidak sesuai")
     return data
 
@@ -110,15 +119,52 @@ def nama_emiten(ticker: str) -> Optional[str]:
 
 
 def laba_kuartalan(ticker: str) -> list[Kuartal]:
-    raise DataUnavailable("TODO(B2): parser keuangan_kuartalan")
+    rows = _daftar(_ambil(ticker, "keuangan_kuartalan"), "keuangan_kuartalan")
+    if not rows:
+        raise DataUnavailable("Laba kuartalan kosong")
+    return sorted((Kuartal(
+        periode=str(_tanggal(r.get("date"), "date")),
+        laba_bersih=_angka(r.get("earnings"), "earnings"),
+    ) for r in rows), key=lambda r: r.periode)
+
+
+def _bagian_laporan(ticker: str, bagian: str) -> dict:
+    data = _ambil(ticker, "report").get(bagian)
+    if not isinstance(data, dict):
+        raise DataUnavailable(f"Bagian {bagian} tidak tersedia")
+    return data
 
 
 def valuasi(ticker: str) -> Valuasi:
-    raise DataUnavailable("TODO(B2): parser report section valuation")
+    data = _bagian_laporan(ticker, "valuation")
+    rows = _daftar(data.get("historical_valuation"), "historical_valuation")
+    if not rows:
+        raise DataUnavailable("Riwayat valuasi kosong")
+    terbaru = max(rows, key=lambda r: _angka(r.get("year"), "year"))
+    return Valuasi(
+        per=_angka(terbaru.get("pe"), "pe", opsional=True),
+        pbv=_angka(terbaru.get("pb"), "pb", opsional=True),
+        forward_pe=_angka(data.get("forward_pe"), "forward_pe", opsional=True),
+        as_of=_tanggal(data.get("latest_close_date"), "latest_close_date"),
+    )
 
 
 def dividen(ticker: str) -> Dividen:
-    raise DataUnavailable("TODO(B2): parser report section dividend")
+    report = _ambil(ticker, "report")
+    data = report.get("dividend")
+    if not isinstance(data, dict):
+        raise DataUnavailable("Bagian dividend tidak tersedia")
+    if "yield_ttm" not in data:
+        raise DataUnavailable("yield_ttm tidak tersedia")
+    valuation = report.get("valuation")
+    tanggal = valuation.get("latest_close_date") if isinstance(valuation, dict) else None
+    yield_ttm = _angka(data["yield_ttm"], "yield_ttm", opsional=True)
+    return Dividen(
+        yield_ttm=yield_ttm,
+        payout_ratio=_angka(data.get("payout_ratio"), "payout_ratio", opsional=True),
+        yield_rata_sektor=None,  # Rata-rata emiten sendiri bukan rata-rata sektor (B3).
+        as_of=_tanggal(tanggal, "latest_close_date") if yield_ttm else None,
+    )
 
 
 def transaksi_orang_dalam(ticker: str) -> list[TransaksiOrangDalam]:
@@ -126,6 +172,8 @@ def transaksi_orang_dalam(ticker: str) -> list[TransaksiOrangDalam]:
     hasil = []
     for r in rows:
         jenis = _teks(r.get("transaction_type"), "transaction_type").lower()
+        if jenis == "others":
+            continue  # Pemindahan saham bukan pembelian/penjualan untuk aturan O-1.
         if jenis not in ("buy", "sell"):
             raise DataUnavailable(f"Jenis transaksi {jenis} tidak dikenal")
         sebelum = _angka(r.get("share_percentage_before"), "share_percentage_before", opsional=True)
@@ -142,7 +190,36 @@ def transaksi_orang_dalam(ticker: str) -> list[TransaksiOrangDalam]:
 
 
 def aliran_asing(ticker: str) -> list[AliranAsing]:
-    raise DataUnavailable("TODO(B2): parser aliran_asing")
+    rows = _daftar(_ambil(ticker, "aliran_asing").get("data"), "aliran_asing.data")
+    if not rows:
+        raise DataUnavailable("Aliran asing kosong")
+    return sorted((AliranAsing(
+        tanggal=_tanggal(r.get("date"), "date"),
+        bersih_rp=_angka(r.get("net_foreign_inflow"), "net_foreign_inflow"),
+    ) for r in rows), key=lambda r: r.tanggal)
+
+
+def komposisi_bulanan(ticker: str) -> list[KomposisiBulanan]:
+    rows = _daftar(_ambil(ticker, "komposisi_pemegang").get("data"), "komposisi_pemegang.data")
+    if not rows:
+        raise DataUnavailable("Komposisi pemegang kosong")
+    hasil = []
+    for r in rows:
+        lokal = _angka(r.get("total_l"), "total_l")
+        asing = _angka(r.get("total_f"), "total_f")
+        ritel = _angka(r.get("individual_l"), "individual_l")
+        pemegang = _angka(r.get("numbers_of_shareholders"), "numbers_of_shareholders", opsional=True)
+        if lokal < 0 or asing < 0 or lokal + asing <= 0 or not 0 <= ritel <= lokal:
+            raise DataUnavailable("Jumlah saham komposisi tidak sesuai")
+        if pemegang is not None and (pemegang < 0 or not pemegang.is_integer()):
+            raise DataUnavailable("Jumlah pemegang tidak sesuai")
+        hasil.append(KomposisiBulanan(
+            tanggal=_tanggal(r.get("date"), "date"),
+            porsi_asing=asing / (lokal + asing),
+            porsi_ritel_lokal=ritel / (lokal + asing),
+            jumlah_pemegang=int(pemegang) if pemegang is not None else None,
+        ))
+    return sorted(hasil, key=lambda r: r.tanggal)
 
 
 def harga_harian(ticker: str) -> list[HargaHarian]:
