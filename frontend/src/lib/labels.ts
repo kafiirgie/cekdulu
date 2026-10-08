@@ -29,11 +29,11 @@ export const VERDICT_LABEL: Record<Verdict, string> = {
 
 /** Arti tiap vonis (FINAL_PLAN §3.1), untuk Metodologi. */
 export const VERDICT_ARTI: Record<Verdict, string> = {
-  sesuai: 'Klaim cocok dengan data yang tercatat, sesuai aturan pemeriksanya.',
-  menyesatkan: 'Angkanya ada, tapi konteks penting hilang atau periode yang dipakai tidak adil.',
+  sesuai: 'Klaim cocok dengan data yang tercatat, setelah dicek dengan aturan tertulis di halaman ini.',
+  menyesatkan: 'Angkanya ada di data, tapi hanya dari periode yang dipilih-pilih, atau konteks pentingnya tidak disebut.',
   tidak_sesuai: 'Data menunjukkan hal yang berbeda dari klaim.',
   tidak_bisa_dicek: 'Prediksi, opini, atau rumor tanpa angka. Kami tidak menebak.',
-  info: 'Konteks penting yang tidak disebut di klaim; muncul di "Yang tidak diceritakan".',
+  info: 'Konteks penting yang tidak disebut di dalam klaim. Ini catatan tambahan, bukan penilaian.',
 }
 
 export const STATUS_LABEL: Record<FormStatus, string> = {

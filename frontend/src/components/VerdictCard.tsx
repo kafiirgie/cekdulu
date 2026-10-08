@@ -1,6 +1,7 @@
-// Kartu vonis di layar Hasil: cap, kalimat, sumber; "Lihat detail" membuka alasan, aturan, angka, dan grafik.
-import { ChevronDown } from 'lucide-react'
+// Kartu vonis di layar Hasil: cap, kalimat, sumber; "Lihat detail" membuka alasan, angka, grafik, dan aturan.
+import { BookOpen, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import Grafik from '@/components/hasil/Grafik'
 import type { ItemKartu } from '@/components/hasil/kartu'
 import PanelTanya from '@/components/hasil/PanelTanya'
@@ -11,26 +12,41 @@ import type { Card } from '@/lib/contract'
 import { fmt } from '@/lib/format'
 import { VERDICT_LABEL } from '@/lib/labels'
 
-function Aturan({ card, className }: { card: Card; className: string }) {
+// Rujukan aturan disimpan di balik satu klik supaya kartu tidak terasa teknis di awal.
+function Aturan({ card }: { card: Card }) {
+  const [buka, setBuka] = useState(false)
   if (!card.rule_id) return null
   return (
-    <span className={`block text-[12.5px] text-muted-foreground ${className}`}>
-      Aturan {card.rule_id}
-      {card.rule_text && `: ${card.rule_text}`}
-    </span>
+    <div className="mt-2.5">
+      <button
+        onClick={() => setBuka(!buka)}
+        aria-expanded={buka}
+        className="inline-flex items-center gap-1.5 py-1 text-[13px] font-semibold text-muted-foreground hover:text-ink"
+      >
+        <BookOpen aria-hidden="true" className="size-3.5" />
+        Aturan yang dipakai
+        <ChevronDown aria-hidden="true" className={`size-3.5 transition-transform duration-200 ${buka ? 'rotate-180' : ''}`} />
+      </button>
+      {buka && (
+        <div className="mt-1.5 rounded-[10px] border border-dashed border-line-2 bg-surface-2 px-3.5 py-3 text-sm leading-relaxed">
+          <span className="font-mono text-[11.5px] font-semibold text-muted-foreground">Aturan {card.rule_id}</span>
+          {card.rule_text && <span className="mt-1 block text-ink">{card.rule_text}</span>}
+          <Link to="/metodologi" className="mt-2 inline-block text-[13px] font-semibold text-ink-2 underline underline-offset-2 hover:text-ink">
+            Lihat semua aturan
+          </Link>
+        </div>
+      )}
+    </div>
   )
 }
 
 function Detail({ card }: { card: Card }) {
   return (
     <div className="mt-1 text-[15px] text-ink-2">
-      {card.reason ? (
+      {card.reason && (
         <div data-verdict={card.verdict} className="mt-2.5 mb-1 rounded-[10px] border border-l-[3px] border-line-2 border-l-[var(--c)] bg-surface-2 px-3 py-2.5 text-ink">
           <b className="font-stamp text-[15px] tracking-[0.06em] text-[var(--c)] uppercase">{VERDICT_LABEL[card.verdict]}</b> karena: {card.reason}
-          <Aturan card={card} className="mt-1.5" />
         </div>
-      ) : (
-        <Aturan card={card} className="mt-2.5 mb-1" />
       )}
       {(card.evidence.length > 0 || card.chart) && (
         <div className="mt-2.5 rounded-md border border-line bg-surface-2 p-3.5">
@@ -49,6 +65,7 @@ function Detail({ card }: { card: Card }) {
           {card.chart && <Grafik chart={card.chart} />}
         </div>
       )}
+      <Aturan card={card} />
     </div>
   )
 }
