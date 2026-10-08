@@ -59,11 +59,12 @@ class Laba(Checker):
 
         n = param("L-2", "jumlah_kuartal")
         if claim is not None and (klaim := angka_persen(claim.text)) is not None and yoy is not None:
-            banding = f"Kami hitung ulang dari laporan keuangan: laba kuartal {k[-1].periode} dibanding kuartal yang sama tahun lalu ({k[-5].periode})."
+            banding = (f"Kami hitung ulang dari laporan keuangan: laba kuartal yang berakhir {k[-1].periode} "
+                       f"dibanding kuartal yang sama tahun lalu (berakhir {k[-5].periode}).")
             tol = f"{param('L-1', 'toleransi_poin_persen'):g} poin persen"
             if aturan_l2(klaim, tren):
                 v, rid = "menyesatkan", "L-2"
-                h = f"Klaim bilang laba {_arah(klaim)}, tapi selama {n} kuartal terakhir trennya justru {_arah(-klaim)}."
+                h = f"Klaim bilang laba {_arah(klaim)}, tapi selama {n} kuartal terakhir trennya justru {_arah(tren)}."
                 alasan = f"Satu kuartal pilihan bisa menutupi tren yang sebaliknya. Lihat laba {n} kuartal terakhir di bawah."
             elif aturan_l1(klaim, yoy):
                 v, rid = "sesuai", "L-1"

@@ -28,14 +28,19 @@ def _judul_pemegang(ritel: list[float], jumlah: list[float]) -> str:
             f"pemegang sahamnya {g_jumlah} dari {angka_id(jumlah[0])} ke {angka_id(jumlah[1])}.")
 
 
-def _alasan_pemegang(verdict: str, n: int, mulai: str, akhir: str) -> str:
-    syarat = (f"Klaim \"diserbu ritel\" butuh dua hal naik bersamaan: porsi investor ritel (minimal "
-              f"{param('P-1', 'batas_perubahan_porsi') * 100:g} poin persen) dan jumlah pemegang saham. ")
-    hasil = {"sesuai": "Keduanya naik", "menyesatkan": "Hanya salah satunya yang naik",
-             "tidak_sesuai": "Keduanya tidak naik"}.get(verdict)
+def _alasan_pemegang(verdict: str, pemegang_naik: bool, n: int, mulai: str, akhir: str) -> str:
+    """Sebut syarat P-1 mana yang terpenuhi; diturunkan dari vonis aturan, bukan dihitung ulang di sini."""
     periode = f"{n} bulan terakhir ({mulai}–{akhir})"
-    inti = f"{syarat}{hasil} dalam {periode}." if hasil else f"Data {periode}."
-    return f"{inti} Bandingkan hanya dalam saham yang sama, karena cakupan data berbeda antar emiten."
+    catatan = "Porsi dihitung terhadap saham yang tercatat, jadi bandingkan hanya dalam saham yang sama."
+    if verdict == "info":
+        return f"Data {periode}. {catatan}"
+    ritel_naik = verdict == "sesuai" or (verdict == "menyesatkan" and not pemegang_naik)
+    batas = f"{param('P-1', 'batas_perubahan_porsi') * 100:g} poin persen"
+    ritel = f"porsi investor ritel {'naik' if ritel_naik else 'tidak naik'} minimal {batas}"
+    jumlah = f"jumlah pemegang saham {'naik' if pemegang_naik else 'tidak naik'}"
+    sambung = "dan" if ritel_naik == pemegang_naik else "tapi"
+    return (f"Klaim \"diserbu ritel\" butuh dua hal naik bersamaan: porsi investor ritel dan jumlah pemegang saham. "
+            f"Dalam {periode}, {ritel}, {sambung} {jumlah}. {catatan}")
 
 
 def kartu_pemegang(ticker: str, claim: Claim | None = None, today: date | None = None):
@@ -66,7 +71,7 @@ def kartu_pemegang(ticker: str, claim: Claim | None = None, today: date | None =
     verdict = aturan_p1(perubahan, jumlah_p[1] - jumlah_p[0]) if claim else "info"
     return card(verdict=verdict, check="pemegang", rule_id="P-1", claim=claim,
                 headline=_judul_pemegang(ritel, jumlah_p),
-                reason=_alasan_pemegang(verdict, len(rows), awal["tanggal"], akhir["tanggal"]),
+                reason=_alasan_pemegang(verdict, jumlah_p[1] > jumlah_p[0], len(rows), awal["tanggal"], akhir["tanggal"]),
                 evidence=[Evidence(label="Porsi ritel lokal awal", value=ritel[0], fmt="pct"),
                           Evidence(label="Porsi ritel lokal akhir", value=ritel[1], fmt="pct"),
                           Evidence(label="Jumlah pemegang awal", value=jumlah_p[0], fmt="int"),
