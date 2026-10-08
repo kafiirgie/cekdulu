@@ -87,3 +87,44 @@ def angka_persen(teks: str) -> Optional[float]:
 def rp(x: float) -> str:
     """14650 → 'Rp14.650' (format Indonesia)."""
     return "Rp" + f"{x:,.0f}".replace(",", ".")
+
+
+# ---------- angka & tanggal untuk kalimat kartu (format Indonesia) ----------
+def _koma(teks: str) -> str:
+    return teks.replace(",", "_").replace(".", ",").replace("_", ".")
+
+
+def angka_id(x: float) -> str:
+    """591364 → '591.364'."""
+    return _koma(f"{x:,.0f}")
+
+
+def persen_id(x: float, desimal: int = 1) -> str:
+    """0.224 → '22,4%'; nol di belakang koma dibuang (0.24 → '24%')."""
+    teks = f"{x * 100:.{desimal}f}".rstrip("0").rstrip(".") if desimal else f"{x * 100:.0f}"
+    return _koma(teks) + "%"
+
+
+def rp_kata(x: float) -> str:
+    """-224_100_000_000 → 'Rp224,1 miliar' (tanpa tanda; arah ditulis di kalimat)."""
+    x = abs(x)
+    for batas, satuan in ((1e12, "triliun"), (1e9, "miliar"), (1e6, "juta")):
+        if x >= batas:
+            return f"Rp{_koma(f'{x / batas:.1f}').removesuffix(',0')} {satuan}"
+    return rp(x)
+
+
+_BULAN = ("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des")
+
+
+def tanggal_id(d: date) -> str:
+    """date(2025, 5, 9) → '9 Mei 2025'."""
+    return f"{d.day} {_BULAN[d.month - 1]} {d.year}"
+
+
+def periode_bulan_id(teks: str) -> str:
+    """'2023-01..2026-08' → 'Jan 2023–Agu 2026'; bentuk lain dikembalikan apa adanya."""
+    m = re.fullmatch(r"(\d{4})-(\d{2})\.\.(\d{4})-(\d{2})", teks)
+    if not m:
+        return teks
+    return f"{_BULAN[int(m[2]) - 1]} {m[1]}–{_BULAN[int(m[4]) - 1]} {m[3]}"
