@@ -76,7 +76,7 @@ export default function BagikanKeGrup({ hasil, teksKlaim }: Props) {
   const kartu = useRef<HTMLDivElement>(null)
   return (
     <Dialog>
-      <div className="sticky bottom-0 z-20 -mx-4 mt-6 flex justify-center bg-gradient-to-t from-page from-45% to-transparent px-4 pt-3.5 pb-[calc(14px+env(safe-area-inset-bottom))]">
+      <div className="sticky bottom-0 z-20 -mx-5 mt-6 flex justify-center bg-gradient-to-t from-page from-45% to-transparent px-5 pt-3.5 pb-[calc(14px+env(safe-area-inset-bottom))]">
         <DialogTrigger asChild>
           <Button className="shadow-lift">
             Bagikan ke grup <Panah arah="keluar" />
