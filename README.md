@@ -12,11 +12,11 @@ Sectors Hackathon 2026 · Track 3 Market Intelligence · Not investment advice.
 
 ## Submission links
 
-- App: **pending C4 deployment**
+- App: https://cekdulu-zeta.vercel.app
 - Demo video (≤3 minutes): **pending D6 upload**
 - Teaser (≤1 minute): **pending D6 upload**
 
-These three placeholders must be replaced before the submission is frozen on
+The two video placeholders must be replaced before the submission is frozen on
 8 Oct 2026 at 23:59 WIB.
 
 ---
@@ -229,7 +229,8 @@ decimals and Rupiah as full amounts; formatting is performed by the frontend.
 The selected setup is one Render backend instance plus a Vercel frontend:
 
 1. Deploy the repository through `render.yaml`. In Render, provide
-   `LLM_API_KEY` and set `CORS_ORIGINS` to the final Vercel origin.
+   `LLM_API_KEY` (and optionally `JEV_API_KEY`) and set `CORS_ORIGINS` to the
+   final Vercel origin.
 2. Run `python deploy/pack_fixtures.py`. In the Render dashboard, create a
    Secret File named `fixtures.zip.b64` and paste the generated file's contents.
    The generated file is ignored by Git; never commit fixture contents. Keep
@@ -259,14 +260,13 @@ a single instance.
 | Lane | Responsibility | Owner |
 |---|---|---|
 | A | Frontend | Kafi |
-| B | Checking engine | **TBD — confirm before submission** |
-| C | AI, Tanya, deployment | **TBD — confirm before submission** |
-| D | Modules, extra cards, video | **Aufa — confirm before submission** |
+| B | Checking engine | Dito |
+| C | AI, Tanya, deployment | Aufa |
+| D | Modules, extra cards, video | Rakha |
 
 ## Before submission
 
-- Replace the three submission-link placeholders.
-- Confirm the Lane B, C, and D owner names.
+- Replace the two video-link placeholders.
 - Decide whether the proposed rules (A-3, N-1, P-1, Q-1, C-1) ship as proposed or final.
 - Test the public URL from a real phone and verify MGLV/MDKA fixture numbers.
-- Make the repository public, submit before 8 Oct 2026 23:59 WIB, then freeze it.
+- Submit before 8 Oct 2026 23:59 WIB, then freeze the repository.
