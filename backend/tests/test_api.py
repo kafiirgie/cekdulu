@@ -194,3 +194,30 @@ def test_tanya_jev_di_luar_kartu_jawab_jujur(client_mock, monkeypatch):
     }).json()
     assert body["answer_kind"] == "tidak_ada"
     assert "tidak ada di kartu" in body["answer"]
+
+
+@pytest.fixture
+def client_demo(monkeypatch, tmp_path):
+    """Mode fixture dengan satu saham demo (MGLV); data mesin tetap buatan."""
+    (tmp_path / "MGLV").mkdir()
+    konfigurasi = Settings(data_mode="fixture", fixtures_dir=tmp_path, llm_provider="none")
+    monkeypatch.setattr(main, "settings", konfigurasi)
+    monkeypatch.setattr(main.sectors, "settings", konfigurasi)
+    monkeypatch.setattr("app.ai.provider.get_llm", lambda: NoLLM())
+    main.quota._pakai.clear()
+    return TestClient(main.app)
+
+
+def test_saham_di_luar_data_demo_ditolak_tanpa_memakai_kuota(client_demo):
+    r = client_demo.post("/api/klaim", json={"text": "BBCA katanya bagus banget"})
+    assert r.status_code == 404
+    assert r.json()["detail"] == "BBCA belum ada di data demo. Coba salah satu: MGLV."
+    r = client_demo.post("/api/cek", json={"ticker": "bbca"}, headers={"X-Device-Id": "demo"})
+    assert r.status_code == 404
+    assert main.quota.status("demo").used == 0
+
+
+def test_saham_demo_tetap_bisa_dicek(client_demo, data_palsu):
+    r = client_demo.post("/api/cek", json={"ticker": "MGLV"}, headers={"X-Device-Id": "demo"})
+    assert r.status_code == 200
+    assert main.quota.status("demo").used == 1

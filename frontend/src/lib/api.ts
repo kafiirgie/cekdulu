@@ -22,13 +22,24 @@ import { deviceId } from './device'
 export const API_MODE = (import.meta.env.VITE_API_MODE ?? 'mock') as 'mock' | 'api'
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 
-/** Galat HTTP dengan kodenya, supaya layar bisa membedakan mis. 404 (hasil cek sudah hilang dari server). */
+/**
+ * Galat HTTP dengan kodenya, supaya layar bisa membedakan mis. 404 (hasil cek sudah hilang dari server).
+ * `pesan` = kalimat dari server (FastAPI `detail` berupa teks), kalau ada.
+ */
 export class GalatHttp extends Error {
   status: number
-  constructor(path: string, status: number) {
+  pesan: string | null
+  constructor(path: string, status: number, pesan: string | null = null) {
     super(`${path} → HTTP ${status}`)
     this.status = status
+    this.pesan = pesan
   }
+}
+
+async function galatDari(path: string, r: Response): Promise<GalatHttp> {
+  const d: unknown = await r.json().catch(() => null)
+  const detail = d && typeof d === 'object' && 'detail' in d ? d.detail : null
+  return new GalatHttp(path, r.status, typeof detail === 'string' ? detail : null)
 }
 
 const tunggu = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -52,7 +63,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     const d = await r.json()
     throw new KuotaHabisError(d.detail.quota)
   }
-  if (!r.ok) throw new GalatHttp(path, r.status)
+  if (!r.ok) throw await galatDari(path, r)
   return r.json()
 }
 
