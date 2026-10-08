@@ -1,6 +1,6 @@
 // Layar 2 — Input: tempel teks dari grup, unggah screenshot, atau ketik kode saham saja.
-import { ImagePlus, X } from 'lucide-react'
-import { useEffect, useState, type ChangeEvent } from 'react'
+import { ClipboardPaste, ImagePlus, X } from 'lucide-react'
+import { useCallback, useEffect, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import JudulLayar from '@/components/JudulLayar'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,19 @@ interface Gambar {
   base64: string
 }
 
+function gambarDariClipboard(data: DataTransfer | null): File | null {
+  if (!data) return null
+  for (const item of Array.from(data.items)) {
+    if (item.kind === 'file' && item.type.startsWith('image/')) return item.getAsFile()
+  }
+  return Array.from(data.files).find((file) => file.type.startsWith('image/')) ?? null
+}
+
+function namaClipboard(mime: string): string {
+  const ekstensi = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg'
+  return `screenshot-clipboard.${ekstensi}`
+}
+
 function ChipContoh({ teks, onPilih }: { teks: string; onPilih: () => void }) {
   return (
     <Button variant="outline" onClick={onPilih} className="h-auto justify-start px-3.5 py-2 text-left text-sm font-normal whitespace-normal">
@@ -32,19 +45,15 @@ function ChipContoh({ teks, onPilih }: { teks: string; onPilih: () => void }) {
 interface UnggahProps {
   gambar: Gambar | null
   onGambar: (g: Gambar | null) => void
-  onGagalBaca: () => void
+  onFile: (file: File) => void
+  disabled: boolean
 }
 
-function UnggahScreenshot({ gambar, onGambar, onGagalBaca }: UnggahProps) {
-  async function pilih(e: ChangeEvent<HTMLInputElement>) {
+function UnggahScreenshot({ gambar, onGambar, onFile, disabled }: UnggahProps) {
+  function pilih(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
     e.target.value = ''
-    if (!f) return
-    try {
-      onGambar({ nama: f.name, base64: await kecilkanGambar(f) })
-    } catch {
-      onGagalBaca()
-    }
+    if (f) onFile(f)
   }
 
   if (gambar) {
@@ -58,8 +67,8 @@ function UnggahScreenshot({ gambar, onGambar, onGagalBaca }: UnggahProps) {
     )
   }
   return (
-    <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-line-2 bg-surface-2 px-3.5 py-2 text-sm font-semibold focus-within:outline-[2.5px] focus-within:outline-offset-2 focus-within:outline-ink">
-      <input type="file" accept="image/*" onChange={pilih} className="sr-only" />
+    <label className={`inline-flex items-center gap-2 rounded-full border border-line-2 bg-surface-2 px-3.5 py-2 text-sm font-semibold focus-within:outline-[2.5px] focus-within:outline-offset-2 focus-within:outline-ink ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
+      <input type="file" accept="image/*" onChange={pilih} disabled={disabled} className="sr-only" />
       <ImagePlus className="size-4" aria-hidden="true" />
       Unggah screenshot
     </label>
@@ -83,6 +92,7 @@ function useLama(aktif: boolean, ms = 3000) {
 export default function Input() {
   const { text, setText, setKlaim, setHasil, mulaiCek } = useCek()
   const [gambar, setGambar] = useState<Gambar | null>(null)
+  const [memprosesGambar, setMemprosesGambar] = useState(false)
   const [loading, setLoading] = useState(false)
   const [pesan, setPesan] = useState<string | null>(null)
   const menungguLama = useLama(loading)
@@ -93,11 +103,62 @@ export default function Input() {
   function isiTeks(t: string) {
     setText(t)
     setGambar(null)
+    setPesan(null)
   }
   function isiGambar(g: Gambar | null) {
     setGambar(g)
     if (g) setText('')
     setPesan(null)
+  }
+
+  const pasangGambar = useCallback(async (file: File, nama = file.name || namaClipboard(file.type)) => {
+    if (!file.type.startsWith('image/')) {
+      setPesan('Clipboard tidak berisi gambar. Tempel gambar atau gunakan Unggah screenshot.')
+      return
+    }
+    setMemprosesGambar(true)
+    setPesan(null)
+    try {
+      const base64 = await kecilkanGambar(file)
+      setGambar({ nama, base64 })
+      setText('')
+    } catch {
+      setPesan('Gambar ini tidak bisa dibuka. Coba screenshot lain.')
+    } finally {
+      setMemprosesGambar(false)
+    }
+  }, [setText])
+
+  useEffect(() => {
+    const tempel = (e: ClipboardEvent) => {
+      const file = gambarDariClipboard(e.clipboardData)
+      if (!file) return // paste teks tetap memakai perilaku browser biasa
+      e.preventDefault()
+      void pasangGambar(file, file.name || namaClipboard(file.type))
+    }
+    window.addEventListener('paste', tempel)
+    return () => window.removeEventListener('paste', tempel)
+  }, [pasangGambar])
+
+  async function tempelDariClipboard() {
+    setPesan(null)
+    if (!navigator.clipboard || typeof navigator.clipboard.read !== 'function') {
+      setPesan('Browser ini belum mendukung tempel gambar. Gunakan Unggah screenshot.')
+      return
+    }
+    try {
+      const items = await navigator.clipboard.read()
+      for (const item of items) {
+        const mime = item.types.find((type) => type.startsWith('image/'))
+        if (!mime) continue
+        const blob = await item.getType(mime)
+        await pasangGambar(new File([blob], namaClipboard(mime), { type: mime }))
+        return
+      }
+      setPesan('Clipboard tidak berisi gambar. Salin screenshot lalu coba lagi.')
+    } catch {
+      setPesan('Clipboard tidak bisa dibaca. Izinkan akses atau gunakan Unggah screenshot.')
+    }
   }
 
   function permintaan(): KlaimRequest {
@@ -151,17 +212,26 @@ export default function Input() {
           className="kertas-bergaris min-h-[140px] w-full resize-y border-0 bg-transparent px-0.5 text-ink outline-none placeholder:text-muted-foreground"
         />
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2.5 border-t border-line pt-3">
-          <UnggahScreenshot
-            gambar={gambar}
-            onGambar={isiGambar}
-            onGagalBaca={() => setPesan('Gambar ini tidak bisa dibuka. Coba screenshot lain.')}
-          />
-          <Button disabled={!(text.trim() || gambar) || loading} onClick={lanjut}>
-            {loading ? 'Membaca klaim…' : <>Pecah jadi klaim <Panah /></>}
+          <div className="flex flex-wrap items-center gap-2">
+            <UnggahScreenshot
+              gambar={gambar}
+              onGambar={isiGambar}
+              onFile={(file) => void pasangGambar(file)}
+              disabled={memprosesGambar}
+            />
+            {!gambar && (
+              <Button variant="outline" disabled={memprosesGambar} onClick={() => void tempelDariClipboard()}>
+                <ClipboardPaste className="size-4" aria-hidden="true" />
+                Tempel clipboard
+              </Button>
+            )}
+          </div>
+          <Button disabled={!(text.trim() || gambar) || loading || memprosesGambar} onClick={lanjut}>
+            {memprosesGambar ? 'Menyiapkan gambar…' : loading ? 'Membaca klaim…' : <>Pecah jadi klaim <Panah /></>}
           </Button>
         </div>
         <p className="mt-2.5 mb-0 text-[12.5px] text-muted-foreground">
-          Screenshot dibaca oleh AI (Google Gemini). Potong nama dan nomor HP sebelum mengunggah.
+          Unggah atau tempel screenshot (Ctrl+V). Screenshot dibaca oleh AI (Google Gemini). Potong nama dan nomor HP sebelum mengunggah.
         </p>
       </div>
       {menungguLama && (
