@@ -69,6 +69,12 @@ export interface CekResponse {
 
 export interface TanyaRequest { cek_id: string; card: string; question: string }
 
+export interface RingkasRequest { cek_id: string }
+/** "Artinya apa?" satu kartu: AI menulis ulang fakta kartu, kode memeriksanya. `kunci` = TanyaRequest.card. */
+export interface RingkasItem { kunci: string; teks: string }
+/** Hanya kartu yang lolos pemeriksaan kode; kartu lain cukup memakai kalimat kode. */
+export interface RingkasResponse { items: RingkasItem[]; used_ai: boolean }
+
 /** Nilai `bagian` ditentukan kode (JEV), bukan teks bebas LLM. */
 export type BagianJawaban = 'angka_bukti' | 'alasan_aturan' | 'sumber_tanggal' | 'istilah' | 'di_luar_kartu'
 /** Bagian internal yang dipakai kode untuk merakit jawaban. */

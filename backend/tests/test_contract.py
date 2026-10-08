@@ -5,7 +5,8 @@ import pytest
 
 from app.catalog import catalog, glosarium, known_ids
 from app.config import settings
-from app.schemas import CekResponse, FreeFloatList, Glosarium, GlosariumKey, KlaimRequest, KlaimResponse, TanyaRequest, TanyaResponse, KomoditasList, KomoditasDetail
+from app.schemas import (CekResponse, FreeFloatList, Glosarium, GlosariumKey, KlaimRequest, KlaimResponse, KomoditasDetail,
+                         KomoditasList, RingkasRequest, RingkasResponse, TanyaRequest, TanyaResponse)
 
 EX = settings.contract_dir / "examples"
 RULE_IDS = {r["id"] for r in catalog()["rules"]}
@@ -40,6 +41,15 @@ def test_contoh_lain_valid():
     FreeFloatList.model_validate(load("modul_free_float_list.json"))
     KomoditasList.model_validate(load("modul_komoditas_list_emas.json"))
     KomoditasDetail.model_validate(load("modul_komoditas_detail_mdka.json"))
+
+
+def test_contoh_ringkas_menunjuk_kartu_yang_ada():
+    r = load("ringkas.json")
+    RingkasRequest.model_validate(r["req"])
+    res = RingkasResponse.model_validate(r["res"])
+    kartu = CekResponse.model_validate(load("cek_res_mdka.json"))
+    kunci = {c.claim_id for c in kartu.claims} | {f"u{i}" for i in range(len(kartu.untold))}
+    assert {i.kunci for i in res.items} <= kunci
 
 
 def test_katalog_konsisten():
