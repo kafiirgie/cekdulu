@@ -5,7 +5,9 @@
 Batas peran AI (FINAL_PLAN §5) — dijaga di kode, bukan hanya di prompt:
 - extract_claims: boleh memecah teks/screenshot jadi klaim + memilih pemeriksa.
   Pemeriksa yang dipilih divalidasi terhadap rules.json; yang tak dikenal dibuang.
-- answer: HANYA boleh memakai angka di kartu yang dikirim. Guard penolakan jalan dulu.
+- ringkas (ai/ringkas.py, lewat `minta_json` kalau penyedianya punya): menulis ulang fakta kartu
+  jadi "Artinya apa?". Kode membuang tulisan yang memuat angka, arah, kode saham, atau vonis yang
+  tidak ada di kartu, atau berbau saran.
 - TIDAK PERNAH: menentukan vonis, menghitung angka, memilih data, memberi saran.
 """
 from __future__ import annotations

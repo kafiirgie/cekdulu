@@ -9,6 +9,10 @@ export interface ItemKartu {
   kutipan?: string
   /** Alamat kartu untuk /api/tanya: claim_id untuk klaim, u0, u1, … untuk "Yang tidak diceritakan". */
   kunciTanya?: string
+  /** "Artinya apa?" dari /api/ringkas (ditulis ulang AI, diperiksa kode); kosong = tidak ada. */
+  artinya?: string
+  /** true selama /api/ringkas belum menjawab untuk kartu ini. */
+  memuatArtinya?: boolean
 }
 
 /** Teks klaim per id, dari hasil pemecahan klaim. */

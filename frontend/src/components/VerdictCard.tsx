@@ -9,6 +9,7 @@ import PanelTanya from '@/components/hasil/PanelTanya'
 import Sumber from '@/components/hasil/Sumber'
 import TautanModul from '@/components/hasil/TautanModul'
 import Stamp from '@/components/Stamp'
+import StatusIkon from '@/components/StatusIkon'
 import type { Card } from '@/lib/contract'
 import { fmt, tanggalDalamTeks } from '@/lib/format'
 
@@ -35,6 +36,25 @@ function AngkaPendukung({ card }: { card: Card }) {
           {semua ? 'Tampilkan lebih sedikit' : `Lihat ${sisa} angka lainnya`}
         </button>
       )}
+    </div>
+  )
+}
+
+/** Kotak "Artinya apa?": ditulis ulang AI dari fakta kartu, lalu diperiksa kode (/api/ringkas). */
+function Artinya({ item }: { item: ItemKartu }) {
+  if (item.memuatArtinya) {
+    return (
+      <p className="mt-3 mb-0 flex items-center gap-2 text-[13px] text-muted-foreground" aria-live="polite">
+        <StatusIkon status="jalan" className="size-3.5" /> Menyiapkan penjelasan singkat…
+      </p>
+    )
+  }
+  if (!item.artinya) return null
+  return (
+    <div className="mt-3 rounded-[10px] border-l-[3px] border-hl-edge bg-hl-soft px-3.5 py-3" aria-live="polite">
+      <p className="m-0 text-[13px] font-bold text-ink">Artinya apa?</p>
+      <p className="mt-1 mb-0 text-[15px] leading-relaxed text-ink">{tanggalDalamTeks(item.artinya)}</p>
+      <p className="mt-1.5 mb-0 text-[11.5px] text-ink-2">Ditulis ulang AI dari fakta di kartu ini, lalu diperiksa kode.</p>
     </div>
   )
 }
@@ -78,6 +98,7 @@ export default function VerdictCard({ item }: { item: ItemKartu }) {
         {kutipan && <p className="m-0 mb-1 text-[12.5px] font-bold text-[var(--c)]">Yang ditemukan</p>}
         <h3 className="m-0 max-w-[40ch] text-[17.5px] leading-[1.32] font-bold tracking-[-0.02em]">{card.headline}</h3>
         {card.reason && <p className="mt-2 mb-0 text-[15px] leading-relaxed text-ink-2">{tanggalDalamTeks(card.reason)}</p>}
+        <Artinya item={item} />
       </div>
       {card.evidence.length > 0 && <AngkaPendukung card={card} />}
       {card.chart && <Grafik chart={card.chart} />}

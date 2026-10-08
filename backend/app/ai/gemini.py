@@ -15,6 +15,9 @@ from ..schemas import Claim, KlaimResponse
 # untuk unggahan screenshot sampai 4 MB. Turunkan lagi kalau modelnya lebih cepat.
 # Jika salah satu fase gagal, provider.py memakai NoLLM.
 BATAS_WAKTU = httpx.Timeout(connect=3.0, read=20.0, write=10.0, pool=1.0)
+# Ringkasan dipanggil di latar setelah hasil cek tampil, jadi boleh lebih lama: model gratis
+# kadang butuh 15–25 detik untuk beberapa kartu, dan pengguna tidak menunggunya.
+BATAS_WAKTU_LATAR = httpx.Timeout(connect=3.0, read=45.0, write=10.0, pool=1.0)
 URL_API = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 
@@ -129,6 +132,21 @@ Pesan:
             return data["candidates"][0]["content"]["parts"][0]["text"]
         except (KeyError, IndexError, TypeError) as exc:
             raise ValueError("Gemini tidak mengembalikan JSON klaim") from exc
+
+    def minta_json(self, prompt: str, schema: dict) -> dict:
+        """Satu prompt teks → JSON sesuai schema. Dipakai ai/ringkas.py; isinya tetap diperiksa kode."""
+        response = httpx.post(
+            URL_API.format(model=self.model),
+            headers={"x-goog-api-key": self.api_key},
+            json={
+                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0.2, "maxOutputTokens": 2048,
+                                     "responseMimeType": "application/json", "responseJsonSchema": schema},
+            },
+            timeout=BATAS_WAKTU_LATAR,
+        )
+        response.raise_for_status()
+        return json.loads(self._teks_response(response.json()))
 
     def extract_claims(self, text: Optional[str], image_base64: Optional[str],
                        ticker: Optional[str]) -> KlaimResponse:

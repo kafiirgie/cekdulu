@@ -4,6 +4,7 @@ from __future__ import annotations
 import base64
 import binascii
 import json
+import threading
 from typing import Optional
 
 from fastapi import FastAPI, Header, HTTPException
@@ -13,6 +14,7 @@ from . import quota
 from .ai import guard
 from .ai.jev import get_jev
 from .ai.provider import extract_with_fallback
+from .ai.ringkas import ringkas as ringkas_kartu
 from .ai.tanya import jawab_tanya
 from .catalog import kamus
 from .config import settings
@@ -20,8 +22,8 @@ from .data import sectors
 from .engine import run_cek
 from .modul import free_float as m_ff
 from .modul import komoditas as m_k
-from .schemas import (CekRequest, CekResponse, FreeFloatList, KlaimRequest, KlaimResponse, TanyaRequest,
-                      TanyaResponse, KomoditasList, KomoditasDetail)
+from .schemas import (CekRequest, CekResponse, FreeFloatList, KlaimRequest, KlaimResponse, RingkasRequest,
+                      RingkasResponse, TanyaRequest, TanyaResponse, KomoditasList, KomoditasDetail)
 
 app = FastAPI(title="cek dulu. API", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), allow_methods=["*"],
@@ -29,6 +31,9 @@ app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), al
 
 # Hasil cek disimpan di memori supaya /api/tanya bisa merujuk kartu. Hilang kalau server restart.
 _CEK: dict[str, CekResponse] = {}
+_RINGKAS: dict[str, RingkasResponse] = {}
+_KUNCI_RINGKAS: dict[str, threading.Lock] = {}
+_KUNCI_BUAT = threading.Lock()
 EX = settings.contract_dir / "examples"
 BATAS_GAMBAR = 4 * 1024 * 1024
 
@@ -127,6 +132,29 @@ def tanya(req: TanyaRequest):
         raise HTTPException(404, "Kartu tidak ditemukan.")
     # Angka dan kalimat disusun kode; JEV hanya memilih bagian kartu yang relevan.
     return TanyaResponse(**jawab_tanya(kartu, req.question, jev=get_jev()))
+
+
+@app.post("/api/ringkas", response_model=RingkasResponse)
+def ringkas(req: RingkasRequest):
+    if settings.data_mode == "mock":
+        # Contoh hanya milik kartu MDKA; hasil contoh lain (MGLV) tidak boleh memakai teksnya.
+        contoh = _contoh("ringkas.json")
+        return RingkasResponse.model_validate(contoh["res"]) if req.cek_id == contoh["req"]["cek_id"] \
+            else RingkasResponse(items=[])
+    cek_res = _CEK.get(req.cek_id)
+    if cek_res is None:
+        raise HTTPException(404, "Hasil cek tidak ditemukan (server mungkin restart). Cek ulang dulu.")
+    # Satu panggilan AI per hasil cek: permintaan kedua untuk cek yang sama menunggu yang pertama.
+    # Tanpa ini dua panggilan serentak bisa kena batas kuota gratis dan yang gagal menimpa yang berhasil.
+    with _KUNCI_BUAT:
+        kunci = _KUNCI_RINGKAS.setdefault(req.cek_id, threading.Lock())
+    with kunci:
+        if req.cek_id in _RINGKAS:
+            return _RINGKAS[req.cek_id]
+        res = ringkas_kartu(cek_res)
+        if res.used_ai:  # galat sementara tidak disimpan, supaya muat ulang bisa mencoba lagi
+            _RINGKAS[req.cek_id] = res
+        return res
 
 
 @app.get("/api/modul/free-float", response_model=FreeFloatList)

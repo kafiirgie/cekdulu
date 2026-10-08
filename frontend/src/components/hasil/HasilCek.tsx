@@ -1,11 +1,12 @@
 // Layar 5 — Hasil: ringkasan, kartu per klaim, "Yang tidak diceritakan", ajakan ke formulir lengkap.
-import type { CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import Panah from '@/components/Panah'
 import Seksi from '@/components/Seksi'
 import StatusIkon from '@/components/StatusIkon'
 import Stamp from '@/components/Stamp'
 import { Button } from '@/components/ui/button'
+import { api } from '@/lib/api'
 import type { CekResponse, FormRow } from '@/lib/contract'
 import { dataPer } from '@/lib/format'
 import { isStandar, STATUS_LABEL } from '@/lib/labels'
@@ -85,14 +86,38 @@ interface Props {
   teksKlaim: Record<string, string>
 }
 
+/**
+ * "Artinya apa?" per kartu klaim, diminta sekali setelah hasil tampil. `null` = masih menunggu;
+ * gagal dianggap kosong, jadi kartu cukup memakai kalimat kode.
+ */
+function useArtinya(cekId: string): Record<string, string> | null {
+  const [hasil, setHasil] = useState<{ id: string; teks: Record<string, string> } | null>(null)
+  useEffect(() => {
+    let aktif = true
+    api.ringkas({ cek_id: cekId }).then(
+      (r) => aktif && setHasil({ id: cekId, teks: Object.fromEntries(r.items.map((i) => [i.kunci, i.teks])) }),
+      () => aktif && setHasil({ id: cekId, teks: {} }),
+    )
+    return () => {
+      aktif = false
+    }
+  }, [cekId])
+  return hasil?.id === cekId ? hasil.teks : null
+}
+
 export default function HasilCek({ hasil, teksAsli, teksKlaim }: Props) {
+  const artinya = useArtinya(hasil.id)
+  const klaim = itemKlaim(hasil, teksKlaim).map((k) => ({
+    ...k,
+    artinya: k.kunciTanya ? artinya?.[k.kunciTanya] : undefined,
+    memuatArtinya: artinya === null && k.card.verdict !== 'tidak_bisa_dicek',
+  }))
   return (
     <section className="pb-6">
       <Ringkasan hasil={hasil} teksAsli={teksAsli} />
       {hasil.claims.length > 0 && (
         <Seksi judul="Klaim yang diperiksa" sub="Dinilai dengan aturan tertulis">
-          <DaftarKartu item={itemKlaim(hasil, teksKlaim)} mulai={1} />
-
+          <DaftarKartu item={klaim} mulai={1} />
         </Seksi>
       )}
       {hasil.untold.length > 0 && (
