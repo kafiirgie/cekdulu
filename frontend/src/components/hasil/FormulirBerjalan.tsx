@@ -68,7 +68,7 @@ export default function FormulirBerjalan({ hasil, teksKlaim, onSelesai }: Props)
           {selesai} dari {steps.length} pemeriksaan
         </div>
       </div>
-      {sabuk.length > 0 && <Sabuk contoh={sabuk} className="-mx-4 mt-2 sm:-mx-5" />}
+      {sabuk.length > 0 && <Sabuk contoh={sabuk} className="-mx-5 mt-2 sm:-mx-6" />}
       <KotakDaftar
         judul={`Formulir inspeksi · ${hasil.ticker}`}
         keterangan={`${steps.length - nModul} standar${nModul > 0 ? ` + ${nModul} modul` : ''}`}

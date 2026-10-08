@@ -1,6 +1,5 @@
 // Layar 11 — Metodologi: alasan aturan, vonis, pemeriksa + aturan (rules.json lewat api.rules()), peran AI, batas, kartu konteks, sumber data.
 import { useEffect, useState } from 'react'
-import { Pil } from '@/components/beranda/Bagian'
 import DaftarAturan from '@/components/DaftarAturan'
 import Istilah from '@/components/Istilah'
 import JudulLayar from '@/components/JudulLayar'
@@ -9,7 +8,7 @@ import Seksi from '@/components/Seksi'
 import Stamp from '@/components/Stamp'
 import { api } from '@/lib/api'
 import type { Catalog, Verdict } from '@/lib/contract'
-import { ISTILAH_CEK } from '@/lib/istilah'
+import { ISTILAH, ISTILAH_CEK, istilah, type KunciIstilah } from '@/lib/istilah'
 import { ATURAN_TIDAK_BISA_DICEK, VERDICT_ARTI } from '@/lib/labels'
 
 // Peran AI (FINAL_PLAN §5).
@@ -86,6 +85,40 @@ function AlasanAturan() {
   )
 }
 
+/** Bagian nama yang sendirinya istilah kamus (Radar "Free Float") diberi ikon info; sisanya teks biasa. */
+function LabelBeristilah({ label }: { label: string }) {
+  const kecil = label.toLowerCase()
+  const i = ISTILAH.find((x) => kecil.includes(x.nama.toLowerCase()))
+  if (!i) return <>{label}</>
+  const awal = kecil.indexOf(i.nama.toLowerCase())
+  const akhir = awal + i.nama.length
+  return (
+    <>
+      {label.slice(0, awal)}
+      <Istilah k={i.key}>{label.slice(awal, akhir)}</Istilah>
+      {label.slice(akhir)}
+    </>
+  )
+}
+
+/**
+ * Nama pemeriksa diberi ikon info hanya kalau istilahnya memang nama itu (Laba → Laba bersih).
+ * Kalau beda (Saham vs komoditas → Korelasi), istilahnya ditulis terpisah supaya yang digarisbawahi = yang dijelaskan.
+ */
+function NamaPemeriksa({ label, k }: { label: string; k?: KunciIstilah }) {
+  if (k && istilah(k).nama.toLowerCase().startsWith(label.toLowerCase())) return <Istilah k={k}>{label}</Istilah>
+  return (
+    <>
+      <LabelBeristilah label={label} />
+      {k && (
+        <span className="ml-2 text-[13px] font-medium text-muted-foreground">
+          istilah: <Istilah k={k} />
+        </span>
+      )}
+    </>
+  )
+}
+
 function GrupPemeriksa({ cat, standar }: { cat: Catalog; standar: boolean }) {
   const cek = cat.checks.filter((c) => c.standar === standar)
   return (
@@ -94,15 +127,14 @@ function GrupPemeriksa({ cat, standar }: { cat: Catalog; standar: boolean }) {
       keterangan={standar ? 'selalu dijalankan' : 'aktif kalau syaratnya terpenuhi'}
       className="mb-3.5"
     >
-      {cek.map((c) => {
-        const istilah = ISTILAH_CEK[c.id]
-        return (
-          <li key={c.id} className="grid gap-2 border-t border-line px-4 py-3 first:border-t-0">
-            <span className="text-[15px] font-bold">{istilah ? <Istilah k={istilah}>{c.label}</Istilah> : c.label}</span>
-            <DaftarAturan aturan={cat.rules.filter((r) => r.check === c.id)} />
-          </li>
-        )
-      })}
+      {cek.map((c) => (
+        <li key={c.id} className="grid gap-2 border-t border-line px-4 py-3 first:border-t-0">
+          <span className="text-[15px] font-bold">
+            <NamaPemeriksa label={c.label} k={ISTILAH_CEK[c.id]} />
+          </span>
+          <DaftarAturan aturan={cat.rules.filter((r) => r.check === c.id)} />
+        </li>
+      ))}
     </KotakDaftar>
   )
 }
@@ -127,7 +159,7 @@ function PeranAi() {
       {KOLOM_AI.map(({ judul, isi, gaya }) => (
         <div key={judul} className={`rounded-lg border p-3.5 ${gaya}`}>
           <h3 className="m-0 mb-2 text-sm font-bold">{judul}</h3>
-          <ul className="m-0 grid gap-1 pl-4 text-sm text-ink-2">
+          <ul className="m-0 grid list-disc gap-1 pl-5 text-sm text-ink-2 marker:text-hl-edge">
             {isi.map((x) => (
               <li key={x}>{x}</li>
             ))}
@@ -146,7 +178,7 @@ function SumberData() {
         dividen, laporan orang dalam, suspensi, kepemilikan, segmen pendapatan, rating analis, aksi korporasi). Setiap
         angka di hasil menampilkan sumber dan tanggal datanya.
       </p>
-      <ul className="m-0 grid gap-1.5 pl-4">
+      <ul className="m-0 grid list-disc gap-1.5 pl-5 marker:text-hl-edge">
         {SUMBER_LUAR.map(({ nama, isi }) => (
           <li key={nama}>
             <b className="text-ink">{nama}</b>: {isi}
@@ -169,9 +201,6 @@ export default function Metodologi() {
   }, [])
   return (
     <section className="pb-6">
-      <div className="mt-3.5">
-        <Pil>Metodologi</Pil>
-      </div>
       <JudulLayar
         judul={
           <>

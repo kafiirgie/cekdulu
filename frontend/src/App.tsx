@@ -9,6 +9,7 @@ import DetailPemeriksa from '@/pages/DetailPemeriksa'
 import Formulir from '@/pages/Formulir'
 import Hasil from '@/pages/Hasil'
 import Input from '@/pages/Input'
+import Kamus from '@/pages/Kamus'
 import Konfirmasi from '@/pages/Konfirmasi'
 import KuotaHabis from '@/pages/KuotaHabis'
 import Metodologi from '@/pages/Metodologi'
@@ -34,6 +35,7 @@ export default function App() {
               <Route path="alat/komoditas" element={<ModulKomoditas />} />
               <Route path="alat/komoditas/:ticker" element={<DetailKomoditas />} />
               <Route path="metodologi" element={<Metodologi />} />
+              <Route path="kamus" element={<Kamus />} />
               <Route path="kuota-habis" element={<KuotaHabis />} />
             </Route>
           </Route>

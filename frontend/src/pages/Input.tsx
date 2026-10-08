@@ -34,10 +34,13 @@ function namaClipboard(mime: string): string {
 
 function ChipContoh({ teks, onPilih }: { teks: string; onPilih: () => void }) {
   return (
-    <Button variant="outline" onClick={onPilih} className="h-auto justify-start px-3.5 py-2 text-left text-sm font-normal whitespace-normal">
-      {teks.split(/(\b[A-Z]{4}\b)/).map((bagian, i) =>
-        i % 2 ? <span key={i} className="font-mono font-semibold">{bagian}</span> : bagian,
-      )}
+    // shrink + max-w-full: tombol bawaan shrink-0, jadi contoh panjang meluber di layar HP tanpa ini.
+    <Button variant="outline" onClick={onPilih} className="h-auto max-w-full shrink justify-start px-3.5 py-2 text-left text-sm font-normal whitespace-normal">
+      <span>
+        {teks.split(/(\b[A-Z]{4}\b)/).map((bagian, i) =>
+          i % 2 ? <span key={i} className="font-mono font-semibold">{bagian}</span> : bagian,
+        )}
+      </span>
     </Button>
   )
 }
