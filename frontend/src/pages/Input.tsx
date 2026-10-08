@@ -1,5 +1,5 @@
 // Layar 2 — Input: tempel teks dari grup, unggah screenshot, atau ketik kode saham saja.
-import { ClipboardPaste, ImagePlus, X } from 'lucide-react'
+import { ImagePlus, X } from 'lucide-react'
 import { useCallback, useEffect, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import JudulLayar from '@/components/JudulLayar'
@@ -140,27 +140,6 @@ export default function Input() {
     return () => window.removeEventListener('paste', tempel)
   }, [pasangGambar])
 
-  async function tempelDariClipboard() {
-    setPesan(null)
-    if (!navigator.clipboard || typeof navigator.clipboard.read !== 'function') {
-      setPesan('Browser ini belum mendukung tempel gambar. Gunakan Unggah screenshot.')
-      return
-    }
-    try {
-      const items = await navigator.clipboard.read()
-      for (const item of items) {
-        const mime = item.types.find((type) => type.startsWith('image/'))
-        if (!mime) continue
-        const blob = await item.getType(mime)
-        await pasangGambar(new File([blob], namaClipboard(mime), { type: mime }))
-        return
-      }
-      setPesan('Clipboard tidak berisi gambar. Salin screenshot lalu coba lagi.')
-    } catch {
-      setPesan('Clipboard tidak bisa dibaca. Izinkan akses atau gunakan Unggah screenshot.')
-    }
-  }
-
   function permintaan(): KlaimRequest {
     if (gambar) return { image_base64: gambar.base64 }
     if (KODE_SAJA.test(text)) return { ticker: text.trim().toUpperCase() }
@@ -212,26 +191,18 @@ export default function Input() {
           className="kertas-bergaris min-h-[140px] w-full resize-y border-0 bg-transparent px-0.5 text-ink outline-none placeholder:text-muted-foreground"
         />
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2.5 border-t border-line pt-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <UnggahScreenshot
-              gambar={gambar}
-              onGambar={isiGambar}
-              onFile={(file) => void pasangGambar(file)}
-              disabled={memprosesGambar}
-            />
-            {!gambar && (
-              <Button variant="outline" disabled={memprosesGambar} onClick={() => void tempelDariClipboard()}>
-                <ClipboardPaste className="size-4" aria-hidden="true" />
-                Tempel clipboard
-              </Button>
-            )}
-          </div>
+          <UnggahScreenshot
+            gambar={gambar}
+            onGambar={isiGambar}
+            onFile={(file) => void pasangGambar(file)}
+            disabled={memprosesGambar}
+          />
           <Button disabled={!(text.trim() || gambar) || loading || memprosesGambar} onClick={lanjut}>
             {memprosesGambar ? 'Menyiapkan gambar…' : loading ? 'Membaca klaim…' : <>Pecah jadi klaim <Panah /></>}
           </Button>
         </div>
         <p className="mt-2.5 mb-0 text-[12.5px] text-muted-foreground">
-          Unggah atau tempel screenshot (Ctrl+V). Screenshot dibaca oleh AI (Google Gemini). Potong nama dan nomor HP sebelum mengunggah.
+          Di komputer, bisa juga tempel screenshot dengan Ctrl+V. Screenshot dibaca oleh AI (Google Gemini). Potong nama dan nomor HP sebelum mengunggah.
         </p>
       </div>
       {menungguLama && (
