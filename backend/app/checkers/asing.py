@@ -10,7 +10,7 @@ from ..catalog import param
 from ..data import normal
 from ..data.sectors import DataUnavailable
 from ..schemas import Claim, Evidence, Source
-from .base import Checker, Outcome, card
+from .base import Checker, Outcome, card, persen_id, rp_kata
 
 _KATA_JUAL = ("jual", "kabur", "keluar", "lepas", "buang", "turun", "berkurang")
 
@@ -72,6 +72,11 @@ def _periode(teks: str) -> tuple[Optional[str], Optional[int]]:
     return None, None
 
 
+def _judul_asing(fakta: str, *, berlawanan: bool) -> str:
+    """Judul kartu = temuan utamanya, dengan angka; "justru" kalau data berlawanan arah dengan klaim."""
+    return ("Justru sebaliknya: " + fakta if berlawanan else fakta[0].upper() + fakta[1:]) + "."
+
+
 class Asing(Checker):
     id = "asing"
 
@@ -85,6 +90,7 @@ class Asing(Checker):
         ev, src = [], []
         arah_harian = perubahan = None
         konteks = []
+        fakta_harian = fakta_bulanan = ""
         try:
             aliran = [r for r in normal.aliran_asing(ticker) if r.tanggal <= today]
             n_hari = param("A-1", "jendela_hari_bursa")
@@ -93,7 +99,14 @@ class Asing(Checker):
             aliran = sorted(aliran, key=lambda r: r.tanggal)[-n_hari:]
             borong, total, porsi = aturan_a1(aliran)
             arah_harian = 1 if borong else (-1 if total < 0 else 0)
-            konteks.append(f"Aliran bersih {n_hari} hari bursa {'positif' if total > 0 else 'negatif' if total < 0 else 'nol'}; {porsi:.0%} hari masuk bersih.")
+            hari_masuk = round(porsi * len(aliran))
+            fakta_harian = (f"dalam {n_hari} hari bursa terakhir asing {'masuk' if total > 0 else 'keluar'} bersih {rp_kata(total)}"
+                            if total else f"dalam {n_hari} hari bursa terakhir beli dan jual asing seimbang")
+            if total > 0 and not borong:
+                fakta_harian += f", tapi hanya {hari_masuk} dari {len(aliran)} hari yang masuk bersih"
+            konteks.append(f"Dalam {n_hari} hari bursa terakhir, asing membeli lebih banyak daripada menjual di {hari_masuk} dari "
+                           f"{len(aliran)} hari ({persen_id(porsi, 0)}); disebut borong kalau total masuk bersih dan minimal "
+                           f"{persen_id(param('A-1', 'porsi_hari_masuk'), 0)} harinya masuk bersih.")
             ev.extend([Evidence(label=f"Aliran bersih asing {n_hari} hari bursa", value=total, fmt="rp"),
                        Evidence(label="Porsi hari masuk bersih", value=porsi, fmt="pct")])
             src.append(Source(name=f"Sectors · foreign flow · {aliran[0].tanggal}–{aliran[-1].tanggal}", as_of=str(aliran[-1].tanggal)))
@@ -109,7 +122,13 @@ class Asing(Checker):
                 raise DataUnavailable("Komposisi belum mencakup periode klaim")
             perubahan, perubahan_ritel = aturan_a2(komposisi)
             arah_bulanan = arah_a2(perubahan)
-            konteks.append(f"Porsi asing {'naik' if arah_bulanan > 0 else 'turun' if arah_bulanan < 0 else 'datar (perubahan di bawah ambang aturan)'} pada {len(komposisi)} observasi bulanan ({komposisi[0].tanggal}–{komposisi[-1].tanggal}). Porsi dihitung dari saham lokal + asing yang tercatat, bukan seluruh saham emiten.")
+            gerak = "naik" if arah_bulanan > 0 else "turun" if arah_bulanan < 0 else "cenderung datar"
+            fakta_bulanan = (f"porsi kepemilikan asing {gerak} dari {persen_id(komposisi[0].porsi_asing)} ke "
+                             f"{persen_id(komposisi[-1].porsi_asing)} dalam {len(komposisi)} bulan")
+            batas_poin = f"{param('A-2', 'batas_perubahan_porsi') * 100:g} poin persen"
+            konteks.append(f"Porsi kepemilikan asing {gerak if arah_bulanan else f'datar (berubah kurang dari {batas_poin})'} "
+                           f"selama {len(komposisi)} bulan ({komposisi[0].tanggal}–{komposisi[-1].tanggal}). "
+                           "Porsi ini dihitung dari saham lokal + asing yang tercatat, bukan seluruh saham emiten.")
             ev.extend([Evidence(label="Porsi asing awal (komposisi tercatat)", value=komposisi[0].porsi_asing, fmt="pct"),
                        Evidence(label="Porsi asing akhir (komposisi tercatat)", value=komposisi[-1].porsi_asing, fmt="pct"),
                        Evidence(label="Perubahan porsi asing", value=perubahan, fmt="pct"),
@@ -134,7 +153,7 @@ class Asing(Checker):
             konteks.append("Hanya satu dataset tersedia; vonis memakai tren kepemilikan bulanan." if pakai_bulanan
                            else "Hanya satu dataset tersedia; vonis memakai aliran harian.")
         verdict = "menyesatkan" if konflik else "sesuai" if arah == arah_klaim else "tidak_sesuai"
-        h = "Tergantung jendela waktu: aliran harian dan tren kepemilikan bulanan berlawanan." if konflik else (
-            "Sesuai data untuk periode yang diperiksa." if verdict == "sesuai" else "Tidak sesuai data untuk periode yang diperiksa.")
+        h = (f"Tergantung jendela waktu: {fakta_harian}, tapi {fakta_bulanan}." if konflik
+             else _judul_asing(fakta_bulanan if pakai_bulanan else fakta_harian, berlawanan=arah == -arah_klaim))
         return Outcome("aman", h, card(verdict=verdict, check=self.id, rule_id="A-3" if konflik else "A-2" if pakai_bulanan else "A-1",
                                         claim=claim, headline=h, reason=" ".join(konteks), evidence=ev, sources=src))

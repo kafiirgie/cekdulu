@@ -3,7 +3,8 @@ Setiap aturan di contract/rules.json idealnya punya minimal satu tes di sini."""
 from datetime import date, timedelta
 
 from app.checkers.asing import arah_a2, aturan_a1, aturan_a2, aturan_a3
-from app.checkers.base import angka_persen, angka_rupiah, rp
+from app.checkers.base import (angka_id, angka_persen, angka_rupiah, periode_bulan_id, persen_id, rp, rp_kata,
+                               tanggal_id)
 from app.checkers.dividen import aturan_d1, aturan_d1_periode, aturan_d2
 from app.checkers.free_float import aturan_f1
 from app.checkers.laba import arah_tren, aturan_l1, aturan_l2, pertumbuhan_yoy
@@ -28,6 +29,14 @@ def test_angka_dari_teks_grup():
     assert angka_rupiah("harga 14.650") == [14650]
     assert angka_persen("laba naik 200%") == 2.0
     assert rp(14650) == "Rp14.650"
+
+
+def test_angka_untuk_kalimat_kartu():
+    assert angka_id(591364) == "591.364"
+    assert persen_id(0.224) == "22,4%" and persen_id(0.24) == "24%" and persen_id(0.914, 0) == "91%"
+    assert rp_kata(-224_100_000_000) == "Rp224,1 miliar" and rp_kata(2e12) == "Rp2 triliun" and rp_kata(600) == "Rp600"
+    assert tanggal_id(date(2025, 5, 9)) == "9 Mei 2025"
+    assert periode_bulan_id("2023-01..2026-08") == "Jan 2023–Agu 2026" and periode_bulan_id("2024") == "2024"
 
 
 # ---------- L ----------

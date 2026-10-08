@@ -7,7 +7,7 @@ from ..data import bahan
 from ..data.sectors import DataUnavailable
 from ..schemas import Claim, Evidence, Source
 from .asing import _periode
-from .base import Checker, Outcome, card
+from .base import Checker, Outcome, angka_id, card, persen_id
 
 
 def aturan_p1(perubahan_ritel: float, perubahan_pemegang: float) -> str:
@@ -15,6 +15,27 @@ def aturan_p1(perubahan_ritel: float, perubahan_pemegang: float) -> str:
     ritel_naik = perubahan_ritel >= batas or isclose(perubahan_ritel, batas)
     pemegang_naik = perubahan_pemegang > 0
     return "sesuai" if ritel_naik and pemegang_naik else "menyesatkan" if ritel_naik or pemegang_naik else "tidak_sesuai"
+
+
+def _gerak(awal: float, akhir: float) -> str:
+    return "naik" if akhir > awal else "turun" if akhir < awal else "tetap"
+
+
+def _judul_pemegang(ritel: list[float], jumlah: list[float]) -> str:
+    g_ritel, g_jumlah = _gerak(*ritel), _gerak(*jumlah)
+    sambung = "dan" if g_ritel == g_jumlah else "tapi"
+    return (f"Porsi investor ritel {g_ritel} dari {persen_id(ritel[0])} ke {persen_id(ritel[1])}, {sambung} jumlah "
+            f"pemegang sahamnya {g_jumlah} dari {angka_id(jumlah[0])} ke {angka_id(jumlah[1])}.")
+
+
+def _alasan_pemegang(verdict: str, n: int, mulai: str, akhir: str) -> str:
+    syarat = (f"Klaim \"diserbu ritel\" butuh dua hal naik bersamaan: porsi investor ritel (minimal "
+              f"{param('P-1', 'batas_perubahan_porsi') * 100:g} poin persen) dan jumlah pemegang saham. ")
+    hasil = {"sesuai": "Keduanya naik", "menyesatkan": "Hanya salah satunya yang naik",
+             "tidak_sesuai": "Keduanya tidak naik"}.get(verdict)
+    periode = f"{n} bulan terakhir ({mulai}–{akhir})"
+    inti = f"{syarat}{hasil} dalam {periode}." if hasil else f"Data {periode}."
+    return f"{inti} Bandingkan hanya dalam saham yang sama, karena cakupan data berbeda antar emiten."
 
 
 def kartu_pemegang(ticker: str, claim: Claim | None = None, today: date | None = None):
@@ -44,8 +65,8 @@ def kartu_pemegang(ticker: str, claim: Claim | None = None, today: date | None =
     perubahan = ritel[1] / cakupan[1] - ritel[0] / cakupan[0]
     verdict = aturan_p1(perubahan, jumlah_p[1] - jumlah_p[0]) if claim else "info"
     return card(verdict=verdict, check="pemegang", rule_id="P-1", claim=claim,
-                headline=f"Porsi ritel {ritel[0]:.1%} → {ritel[1]:.1%}; pemegang {jumlah_p[0]:,.0f} → {jumlah_p[1]:,.0f}.",
-                reason=f"{len(rows)} observasi bulanan: {awal['tanggal']}–{akhir['tanggal']}. Porsi ritel pada kartu memakai seluruh saham emiten; arah dihitung relatif terhadap saham tercatat. Cakupan berbeda per emiten; hanya bandingkan tren dalam satu emiten. Kenaikan porsi ritel tidak otomatis berarti jumlah pemegang naik.",
+                headline=_judul_pemegang(ritel, jumlah_p),
+                reason=_alasan_pemegang(verdict, len(rows), awal["tanggal"], akhir["tanggal"]),
                 evidence=[Evidence(label="Porsi ritel lokal awal", value=ritel[0], fmt="pct"),
                           Evidence(label="Porsi ritel lokal akhir", value=ritel[1], fmt="pct"),
                           Evidence(label="Jumlah pemegang awal", value=jumlah_p[0], fmt="int"),

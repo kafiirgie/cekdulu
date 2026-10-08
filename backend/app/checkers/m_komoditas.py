@@ -7,7 +7,8 @@ from typing import Optional
 from ..modul import komoditas as k
 from ..data.sectors import DataUnavailable
 from ..schemas import Claim, Evidence
-from .base import Checker, Outcome, card
+from ..catalog import param
+from .base import Checker, Outcome, card, periode_bulan_id, persen_id
 
 
 class MKomoditas(Checker):
@@ -20,15 +21,18 @@ class MKomoditas(Checker):
         porsi = k.porsi_pendapatan(ticker, jenis)
         terbesar, porsi_besar = k.komoditas_terbesar(ticker)
         menyesatkan = k.aturan_k1(porsi)
-        h = (f"{porsi_besar:.0%} pendapatan {ticker} dari {terbesar}; porsi murni {jenis} {porsi:.0%}." if menyesatkan
-             else f"{porsi:.0%} pendapatan {ticker} memang dari {jenis}.")
+        h = (f"Pendapatan {ticker} paling banyak dari {terbesar} ({persen_id(porsi_besar, 0)}), sedangkan dari {jenis} hanya {persen_id(porsi, 0)}."
+             if menyesatkan else f"{persen_id(porsi, 0)} pendapatan {ticker} memang dari {jenis}.")
         ev = [Evidence(label=f"Porsi pendapatan murni {jenis}", value=porsi, fmt="pct"),
               Evidence(label=f"Sumber terbesar: {terbesar}", value=porsi_besar, fmt="pct")]
         sumber = [k.sumber_segmen(ticker)]
-        alasan = "Segmen campuran tidak dihitung sebagai pendapatan murni satu komoditas. Korelasi bukan sebab-akibat atau prediksi."
+        alasan = (f"Sebuah saham baru pantas disebut saham {jenis} kalau minimal "
+                  f"{persen_id(param('K-1', 'batas_porsi_pendapatan'), 0)} pendapatannya dari {jenis}. "
+                  "Segmen campuran tidak dihitung sebagai pendapatan murni satu komoditas.")
         try:
             data = k.item(ticker, jenis)
-            alasan += f" Hubungan dengan {jenis}: {data.kategori}, periode {data.periode}."
+            alasan += (f" Harga saham dan harga {jenis} dunia punya hubungan {data.kategori} ({periode_bulan_id(data.periode)}); "
+                       "hubungan ini bukan sebab-akibat atau ramalan.")
             ev.append(Evidence(label="Korelasi perubahan bulanan", value=data.korelasi, fmt="num"))
             for label, nilai in (("Total return saham", data.total_return_saham),
                                  (f"Perubahan harga {jenis}", data.perubahan_komoditas)):
