@@ -11,7 +11,7 @@ from app.ai.provider import NoLLM
 from app.config import Settings
 from app.data import normal
 from app.engine import run_cek
-from app.schemas import CekRequest, Claim
+from app.schemas import CekRequest
 
 HARI = date(2026, 9, 30)
 
@@ -73,7 +73,7 @@ def test_fallback_klaim_mdka():
 @pytest.fixture
 def client_mock(monkeypatch):
     monkeypatch.setattr(main, "settings", Settings(data_mode="mock"))
-    monkeypatch.setattr(main, "get_llm", lambda: NoLLM())
+    monkeypatch.setattr("app.ai.provider.get_llm", lambda: NoLLM())
     main.quota._pakai.clear()
     return TestClient(main.app)
 

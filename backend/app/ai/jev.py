@@ -202,9 +202,6 @@ class Jev:
         response.raise_for_status()
         return response.json().get("answers", {})
 
-
-
-
     def saring(self, kalimat: str) -> dict[str, Any]:
         """Satu panggilan untuk tiga pertanyaan sekaligus: klaim? prediksi? target harga?
 
@@ -303,7 +300,6 @@ def get_jev() -> Optional[Jev]:
     return Jev(settings.jev_base_url, settings.jev_api_key, settings.jev_model)
 
 
-
 def pilih_bagian(answers: dict[str, Any]) -> Optional[str]:
     jawab = answers.get(KUNCI_BAGIAN)
     pilihan = jawab.get("choice") if isinstance(jawab, dict) else None
@@ -314,7 +310,6 @@ def pilih_istilah(answers: dict[str, Any]) -> Optional[str]:
     jawab = answers.get(KUNCI_ISTILAH)
     pilihan = jawab.get("choice") if isinstance(jawab, dict) else None
     return pilihan if pilihan in {i["key"] for i in glosarium()["istilah"]} else None
-
 
 
 def yakin(answers: dict[str, Any]) -> float:

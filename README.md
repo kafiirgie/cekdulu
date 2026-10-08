@@ -142,6 +142,25 @@ a focused retry after tightening those prompt rules reached the 8-second timeout
 Therefore C1 must keep the hard timeout and automatic `NoLLM` fallback. No more
 live requests are used for C0, to conserve the development quota.
 
+### Second classifier: TypeSafe JEV
+
+Ask (Tanya) answers and claim filtering use TypeSafe JEV (`/systemone`), which
+only returns scores or labels from a closed set; it never writes text.
+
+- **Ask:** JEV picks which part of the card answers the question (numbers, rule,
+  sources, a glossary term, or "not on this card"). Code then writes the
+  sentence from the card's own fields (`backend/app/ai/tanya.py`), so no number
+  can be invented. JEV is also a second advice guard after the regex: it can
+  refuse a question but never allow one the regex refused.
+- **Claims:** for each claim, one JEV call flags chatter (greetings,
+  questions), pure predictions, and price targets. Code drops chatter and removes
+  the checkers from predictions and targets, so they get `tidak_bisa_dicek`.
+  JEV can only remove checkers, never add one.
+
+Set `JEV_API_KEY` in the root `.env` to enable it (`TANYA_MODE=off` disables
+it). Without a key or when a call fails, Ask answers with a code-only summary
+of the card and claims keep the keyword heuristics, so nothing returns an error.
+
 References: [Gemini models](https://ai.google.dev/gemini-api/docs/models),
 [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing), and
 [structured output](https://ai.google.dev/gemini-api/docs/structured-output).
@@ -154,12 +173,14 @@ References: [Gemini models](https://ai.google.dev/gemini-api/docs/models),
 | Split a message into exact-substring claims | Compute or invent a number |
 | Identify a ticker written in the message | Choose market data |
 | Pick IDs from the checker catalogue | Predict a price or return |
-| Rephrase facts already present on a result card | Give buy, sell, hold, or target-price advice |
+| Pick which part of a result card answers a question | Give buy, sell, hold, or target-price advice |
+| Flag predictions, price targets, and chatter | Write the text of a Tanya answer |
 
 These limits are enforced in code, not only in prompts. Unknown checker IDs and
 hallucinated claims are dropped, spans are recomputed from the source text,
-prediction claims receive no checker, advice is refused before the LLM call,
-and a Tanya answer is discarded if it contains a number absent from the card.
+prediction claims receive no checker, advice phrasing is refused by regex before
+any model call, and every Tanya answer is assembled by code from the card's own
+fields.
 
 ## Rules
 
