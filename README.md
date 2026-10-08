@@ -161,6 +161,18 @@ Set `JEV_API_KEY` in the root `.env` to enable it (`TANYA_MODE=off` disables
 it). Without a key or when a call fails, Ask answers with a code-only summary
 of the card and claims keep the keyword heuristics, so nothing returns an error.
 
+### Plain-language notes ("Artinya apa?")
+
+After the results render, the frontend calls `/api/ringkas`. Gemini gets only
+each claim card's code-written facts (verdict, headline, explanation, numbers)
+and rewrites them as one or two plain sentences for beginners. Code then checks
+every note (`backend/app/ai/ringkas.py`) and drops it if it contains a number
+not in the card's headline, a direction word (naik, turun, masuk, keluar…) or
+ticker the card doesn't use, a different verdict, or advice wording. The note is
+labelled as AI-rewritten. Prediction cards and "Yang tidak diceritakan" cards
+get no note. Without a key, on a timeout, or when every note fails the check,
+cards simply show the code-written text; checking a claim never waits for it.
+
 References: [Gemini models](https://ai.google.dev/gemini-api/docs/models),
 [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing), and
 [structured output](https://ai.google.dev/gemini-api/docs/structured-output).
@@ -175,17 +187,20 @@ References: [Gemini models](https://ai.google.dev/gemini-api/docs/models),
 | Pick IDs from the checker catalogue | Predict a price or return |
 | Pick which part of a result card answers a question | Give buy, sell, hold, or target-price advice |
 | Flag predictions, price targets, and chatter | Write the text of a Tanya answer |
+| Rewrite a claim card's facts as a short "Artinya apa?" note | Write a card's headline, explanation, or numbers |
 
 These limits are enforced in code, not only in prompts. Unknown checker IDs and
 hallucinated claims are dropped, spans are recomputed from the source text,
 prediction claims receive no checker, advice phrasing is refused by regex before
-any model call, and every Tanya answer is assembled by code from the card's own
-fields.
+any model call, every Tanya answer is assembled by code from the card's own
+fields, and an "Artinya apa?" note is shown only after code checks it against
+the card.
 
 ## Rules
 
-`contract/rules.json` is the single source of truth for all thresholds. “Usulan”
-means the threshold is still a team proposal; the UI must display that label.
+`contract/rules.json` is the single source of truth for all thresholds. All
+rules are currently `final`; a rule set back to `usulan` (a threshold still under
+team discussion) shows that label in the UI.
 
 | ID | Check | Status | Rule summary |
 |---|---|---|---|

@@ -11,10 +11,11 @@ import komoditasMdka from '@contract/examples/modul_komoditas_detail_mdka.json'
 import komoditasEmas from '@contract/examples/modul_komoditas_list_emas.json'
 import glosarium from '@contract/glosarium.json'
 import rules from '@contract/rules.json'
+import ringkasContoh from '@contract/examples/ringkas.json'
 import tanyaContoh from '@contract/examples/tanya.json'
 import type {
   Catalog, CekRequest, CekResponse, FreeFloatList, KlaimRequest, KlaimResponse, KomoditasDetail, KomoditasList,
-  TanyaRequest, TanyaResponse,
+  RingkasRequest, RingkasResponse, TanyaRequest, TanyaResponse,
 } from './contract'
 import { KuotaHabisError } from './contract'
 import { deviceId } from './device'
@@ -115,6 +116,14 @@ export const api = {
       return komoditasMdka as KomoditasDetail
     }
     return get(`/api/modul/komoditas/${encodeURIComponent(ticker)}`)
+  },
+  // Dipanggil setelah hasil tampil; gagal = kartu tanpa kotak "Artinya apa?". Contoh mock hanya milik MDKA.
+  async ringkas(req: RingkasRequest): Promise<RingkasResponse> {
+    if (API_MODE === 'mock') {
+      await tunggu(900)
+      return req.cek_id === ringkasContoh.req.cek_id ? ringkasContoh.res : { items: [], used_ai: false }
+    }
+    return post('/api/ringkas', req)
   },
   async rules(): Promise<Catalog> {
     if (API_MODE === 'mock') return { ...rules, glosarium } as unknown as Catalog

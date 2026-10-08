@@ -21,12 +21,13 @@ const KOLOM_AI = [
       'Memilih pemeriksa yang relevan dengan klaim',
       'Menandai ramalan dan target harga, supaya tidak diberi vonis',
       'Memilih bagian kartu yang menjawab pertanyaan lanjutan',
+      'Menulis ulang fakta kartu jadi catatan singkat "Artinya apa?", yang lalu diperiksa kode',
     ],
     gaya: 'border-line bg-surface',
   },
   {
     judul: 'AI tidak dipakai untuk',
-    isi: ['Menentukan vonis', 'Menghitung angka', 'Memilih data', 'Menulis kalimat hasil dan jawaban', 'Memberi saran beli atau jual', 'Menebak harga'],
+    isi: ['Menentukan vonis', 'Menghitung angka', 'Memilih data', 'Menulis judul, penjelasan, dan angka di kartu hasil', 'Menyusun jawaban Tanya', 'Memberi saran beli atau jual', 'Menebak harga'],
     gaya: 'border-dashed border-line-2 bg-surface-2',
   },
 ]
