@@ -51,14 +51,23 @@ def _kalimat_h2(dari: float, ke: float, awal: normal.HargaHarian, akhir: normal.
     jendela = f"Data yang dicek: {mulai}–{akhir.tanggal}; kelonggaran {persen_id(tol, 0)} untuk tiap harga."
     if ok:
         return (f"Harga {rp(awal.close)} memang pernah tercatat, dan harga terakhirnya {rp(akhir.close)}.",
-                f"Harga penutupan {rp(awal.close)} tercatat pada {awal.tanggal}. Harga penutupan terakhir {rp(akhir.close)} "
-                f"pada {akhir.tanggal}, dekat dengan {rp(ke)} yang disebut di klaim. {jendela}")
+                f"{_perjalanan(awal, akhir)}, dekat dengan {rp(ke)} yang disebut di klaim. {jendela}")
     if abs(awal.close - dari) > tol * dari:
         return (f"Harga {rp(dari)} tidak pernah tercatat di data kami.",
                 f"Harga penutupan yang paling dekat adalah {rp(awal.close)} pada {awal.tanggal}. {jendela}")
     return (f"Harga terakhirnya {rp(akhir.close)}, jauh dari {rp(ke)} yang disebut di klaim.",
-            f"Harga {rp(awal.close)} memang tercatat pada {awal.tanggal}, tapi harga penutupan terakhir pada "
-            f"{akhir.tanggal} berbeda lebih dari {persen_id(tol, 0)} dari klaim. {jendela}")
+            f"{_perjalanan(awal, akhir)}, berbeda lebih dari {persen_id(tol, 0)} dari {rp(ke)} di klaim. {jendela}")
+
+
+def _perjalanan(awal: normal.HargaHarian, akhir: normal.HargaHarian) -> str:
+    """Harga awal → harga terakhir, dengan arah yang dihitung kode. Arah ikut ditulis supaya catatan
+    "Artinya apa?" boleh memakai kata "naik"/"turun" (ai/ringkas.py hanya mengizinkan arah yang ada di kartu)."""
+    if awal.tanggal >= akhir.tanggal or awal.close == akhir.close:
+        return (f"Harga penutupan {rp(awal.close)} tercatat pada {awal.tanggal}; harga penutupan terakhir "
+                f"{rp(akhir.close)} pada {akhir.tanggal}")
+    arah = "naik" if akhir.close > awal.close else "turun"
+    return (f"Harga penutupan {rp(awal.close)} tercatat pada {awal.tanggal}, lalu {arah} ke {rp(akhir.close)} "
+            f"pada {akhir.tanggal} (harga terakhir)")
 
 
 # Garis setahun cukup ~120 titik; lebih dari itu hanya memperbesar respons tanpa mengubah bentuknya.
