@@ -63,6 +63,15 @@ def _validasi_gambar(image_base64: Optional[str]) -> None:
         raise HTTPException(422, "Screenshot kosong.")
 
 
+def _pastikan_tersedia(ticker: Optional[str]) -> None:
+    """Mode fixture hanya punya data saham demo. Tanpa ini, saham lain lolos ke cek,
+    semua pemeriksa jadi `data_kurang`, dan kuota tetap terpakai."""
+    tersedia = sectors.ticker_tersedia()
+    if ticker and tersedia is not None and ticker.upper() not in tersedia:
+        raise HTTPException(404, f"{ticker.upper()} belum ada di data demo. "
+                                 f"Coba salah satu: {', '.join(tersedia)}.")
+
+
 @app.get("/api/health")
 def health():
     return {"ok": True, "mode": settings.data_mode, "llm": settings.llm_provider,
@@ -82,11 +91,15 @@ def klaim(req: KlaimRequest):
     if settings.data_mode == "mock":
         from .ai.fallback import cari_ticker
         return _contoh_ticker("klaim_res", req.ticker or cari_ticker(req.text or ""))
-    return extract_with_fallback(req.text, req.image_base64, req.ticker)
+    res = extract_with_fallback(req.text, req.image_base64, req.ticker)
+    _pastikan_tersedia(res.ticker)
+    return res
 
 
 @app.post("/api/cek", response_model=CekResponse)
 def cek(req: CekRequest, x_device_id: str = Header(default="anon")):
+    if settings.data_mode != "mock":
+        _pastikan_tersedia(req.ticker)
     q = quota.pakai(x_device_id)
     if q is None:
         raise HTTPException(429, detail={"code": "kuota_habis", "quota": quota.status(x_device_id).model_dump()})

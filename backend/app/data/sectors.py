@@ -54,6 +54,15 @@ def _file(base: Path, ticker: str, kunci: str) -> Path:
     return base / ticker.upper() / f"{kunci}.json"
 
 
+def ticker_tersedia() -> list[str] | None:
+    """Kode saham yang punya fixture. None = tidak dibatasi (live bisa menarik saham apa pun)."""
+    if settings.data_mode != "fixture":
+        return None
+    if not settings.fixtures_dir.exists():
+        return []
+    return sorted(p.name for p in settings.fixtures_dir.iterdir() if p.is_dir())
+
+
 def credits_used() -> int:
     return _credits_used
 
