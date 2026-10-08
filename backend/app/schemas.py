@@ -55,9 +55,15 @@ class Evidence(_Model):
     fmt: Fmt = "num"
 
 
+class ChartSeries(_Model):
+    name: str
+    points: list[tuple[str, float]]  # (label: tanggal ISO atau nama kategori, nilai mentah)
+    fmt: Fmt = "num"
+
+
 class Chart(_Model):
     type: Literal["line", "bar"]
-    series: list[dict[str, Any]]
+    series: list[ChartSeries]
 
 
 class Source(_Model):

@@ -28,7 +28,9 @@ export interface KlaimResponse {
 }
 
 export interface Evidence { label: string; value: number | string | null; fmt: Fmt }
-export interface Chart { type: 'line' | 'bar'; series: { name: string; points: [string, number][] }[] }
+/** Label titik = tanggal ISO atau nama kategori; nilai mentah, diformat FE dengan `fmt` (bawaan BE: 'num'). */
+export interface ChartSeries { name: string; points: [string, number][]; fmt: Fmt }
+export interface Chart { type: 'line' | 'bar'; series: ChartSeries[] }
 export interface Source { name: string; as_of?: string | null }
 
 export interface Card {

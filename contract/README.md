@@ -16,7 +16,7 @@ The test `backend/tests/test_contract.py` validates every example against the Py
 
 1. **Changing the contract = its own PR** labelled `kontrak`, announced in the group, and approved at least by the owners of Lane A (FE) and Lane B (BE).
 2. Change all three places together: `examples/`, `schemas.py`, `contract.ts`.
-3. Raw numbers as decimals / full Rupiah (`0.25` = 25%, `14650` = Rp14,650). **The FE does the formatting**, using `fmt`: `pct` · `rp` · `int` · `num` · `x`.
+3. Raw numbers as decimals / full Rupiah (`0.25` = 25%, `14650` = Rp14,650). **The FE does the formatting**, using `fmt`: `pct` · `rp` · `int` · `num` · `x`. A card's optional `chart` follows the same rule: each series is `{name, points: [[label, value], …], fmt}`, where a label is an ISO date or a short category name.
 4. Every card must have `sources[]` (name + date). A "tidak bisa dicek" (can't be checked) card may leave it empty.
 5. Rule IDs (`rule_id`) must exist in `rules.json`. Tests fail otherwise.
 6. **Glossary terms live in `glosarium.json` only.** Add a term there, then add its key to `schemas.py → GlosariumKey` and `contract.ts → KunciGlosarium`. `tests/test_contract.py` (BE) and `frontend/src/lib/glosarium.test.mjs` (FE) fail if the three drift apart. The FE never keeps its own copy of the text; `lib/istilah.ts` imports the JSON.
