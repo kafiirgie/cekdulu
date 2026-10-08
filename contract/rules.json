@@ -27,83 +27,89 @@
   "rules": [
     {
       "id": "L-1", "check": "laba", "status": "final",
-      "text": "Klaim \"laba naik X%\" dihitung ulang dari laporan kuartalan. Sesuai jika selisih dengan hitungan kami tidak lebih dari toleransi.",
+      "text": "Kalau klaimnya \"laba naik X%\", kami hitung ulang kenaikannya dari laporan keuangan per kuartal. Sesuai data kalau hitungan kami beda paling banyak 5 poin persen. Contoh: klaim naik 30%, hitungan kami 27%, masih sesuai.",
       "params": { "toleransi_poin_persen": 5 }
     },
     {
       "id": "L-2", "check": "laba", "status": "final",
-      "text": "Menyesatkan jika klaim memakai satu kuartal/periode pilihan sementara tren 4 kuartal terakhir berlawanan arah.",
+      "text": "Menyesatkan kalau klaim hanya memamerkan satu kuartal atau periode pilihan, padahal arah laba selama 4 kuartal terakhir justru sebaliknya.",
       "params": { "jumlah_kuartal": 4 }
     },
     {
       "id": "V-1", "check": "valuasi", "status": "final",
-      "text": "Klaim PER/PBV sesuai jika selisihnya tidak lebih dari 15% dari hitungan kami. Forward PE kosong ditampilkan \"tidak tersedia\", bukan 0.",
+      "text": "PER dan PBV adalah ukuran mahal-murahnya harga saham. Angka PER atau PBV di klaim sesuai data kalau bedanya paling banyak 15% dari hitungan kami. Kalau perkiraan PER ke depan (forward PE) tidak ada di data, kami tulis \"tidak tersedia\", bukan 0.",
       "params": { "toleransi_relatif": 0.15 }
     },
     {
       "id": "D-1", "check": "dividen", "status": "final",
-      "text": "\"Dividen besar\" sesuai jika yield 12 bulan minimal 1,5× rata-rata sektor. Menyesatkan jika klaim memakai periode lain dan selisihnya lebih dari 2 poin persen.",
+      "text": "Klaim \"dividen besar\" sesuai data kalau imbal dividen 12 bulan terakhir minimal 1,5 kali rata-rata sektornya. Kalau klaim memakai angka dari periode lain dan bedanya lebih dari 2 poin persen dari angka 12 bulan terakhir, klaimnya menyesatkan.",
       "params": { "kelipatan_sektor": 1.5, "selisih_periode_poin": 0.02 },
       "catatan": "Sumber rata-rata yield sektor belum diputuskan (keputusan terbuka #4)."
     },
     {
       "id": "D-2", "check": "dividen", "status": "final",
-      "text": "Payout ratio di atas 100% dicatat sebagai temuan: dividen dibayar melebihi laba, belum tentu berulang.",
+      "text": "Dicatat kalau dividen yang dibagikan lebih besar dari laba perusahaan (payout ratio di atas 100%). Dividen sebesar ini belum tentu bisa terulang.",
       "params": { "batas_payout": 1.0 }
     },
     {
       "id": "O-1", "check": "orang_dalam", "status": "final",
-      "text": "Temuan jika ada transaksi orang dalam di atas Rp1 miliar dalam 12 bulan terakhir. Tidak ada transaksi = aman.",
+      "text": "Dicatat kalau orang dalam (direksi, komisaris, atau pemegang saham besar) menjual atau membeli saham perusahaannya senilai lebih dari Rp1 miliar per transaksi dalam 12 bulan terakhir. Tidak ada transaksi sebesar itu berarti tidak ada temuan.",
       "params": { "batas_nilai_rp": 1000000000, "jendela_hari": 365 }
     },
     {
       "id": "A-1", "check": "asing", "status": "final",
-      "text": "\"Asing borong\" sesuai jika aliran bersih asing 20 hari bursa terakhir positif DAN minimal 60% harinya masuk bersih.",
+      "text": "Klaim \"asing borong\" sesuai data kalau dalam 20 hari bursa terakhir uang investor asing yang masuk lebih banyak daripada yang keluar, dan asing lebih banyak membeli daripada menjual di minimal 60% hari itu (12 dari 20 hari).",
       "params": { "jendela_hari_bursa": 20, "porsi_hari_masuk": 0.6 }
     },
     {
       "id": "A-2", "check": "asing", "status": "final",
-      "text": "Tren porsi asing/ritel dari 3–6 observasi komposisi bulanan terakhir, hanya dibandingkan dalam satu emiten sebagai porsi saham lokal + asing yang tercatat. Perubahan absolut porsi asing di bawah 1 poin persen dianggap datar; minimal 1 poin persen menentukan arah naik/turun. Tren datar bukan arus keluar.",
+      "text": "Kami lihat perubahan porsi saham yang dipegang investor asing dan ritel lokal selama 3–6 bulan terakhir. Perubahan kurang dari 1 poin persen dianggap datar, bukan naik atau turun. Datar tidak sama dengan asing keluar.",
+      "catatan": "Hanya dibandingkan dalam satu emiten, sebagai porsi saham lokal + asing yang tercatat, dari 3–6 observasi komposisi bulanan. Ambang 1 poin persen berlaku untuk perubahan absolut porsi asing.",
       "params": { "bulan_min": 3, "bulan_maks": 6, "batas_perubahan_porsi": 0.01 }
     },
     {
-      "id": "A-3", "check": "asing", "status": "usulan",
-      "text": "Klaim tanpa periode menyesatkan jika arah A-1 dan A-2 berlawanan, setelah ambang perubahan A-2 diterapkan (tergantung jendela waktu). Jika hanya satu dataset tersedia, klaim tanpa periode diputus dari dataset itu dan keterbatasannya dijelaskan. Klaim dengan periode 20 hari bursa memakai A-1; klaim 3–6 bulan memakai A-2 pada jumlah observasi yang disebut. Tren lain hanya menjadi konteks dan tidak mengubah vonis. Periode dikenali melalui kata kunci di kode, bukan AI. Periode lain atau data untuk periode yang disebut tidak lengkap tidak bisa dicek; dataset lain tidak menggantikan periode klaim.",
+      "id": "A-3", "check": "asing", "status": "final",
+      "text": "Kalau klaim soal asing tidak menyebut waktu, kami cocokkan dua hal: transaksi 20 hari bursa terakhir (aturan A-1) dan porsi kepemilikan 3–6 bulan terakhir (aturan A-2). Kalau arah keduanya berlawanan, klaimnya menyesatkan. Kalau klaim menyebut waktunya, kami hanya memakai data untuk waktu itu; waktu lain atau data yang tidak lengkap tidak bisa dicek.",
+      "catatan": "Ambang perubahan A-2 diterapkan dulu. Jika hanya satu dataset tersedia, klaim tanpa periode diputus dari dataset itu dan keterbatasannya dijelaskan. Klaim 20 hari bursa memakai A-1; klaim 3–6 bulan memakai A-2 pada jumlah observasi yang disebut. Tren lain hanya konteks dan tidak mengubah vonis. Periode dikenali lewat kata kunci di kode, bukan AI. Dataset lain tidak menggantikan periode klaim.",
       "params": {}
     },
     {
       "id": "H-1", "check": "lonjakan_harga", "status": "final",
-      "text": "Temuan jika harga berubah lebih dari 25% dalam 21 hari bursa. Lompatan pada tanggal aksi korporasi (ex-dividen, split, right issue) tidak dihitung, karena harga Sectors tidak disesuaikan.",
+      "text": "Dicatat kalau harga saham naik atau turun lebih dari 25% dalam 21 hari bursa (sekitar sebulan). Lompatan harga di hari pembagian dividen, pemecahan saham (split), atau right issue tidak ikut dihitung.",
+      "catatan": "Harga Sectors tidak disesuaikan untuk aksi korporasi, jadi return harian pada tanggal ex-dividen, split, dan right issue dianggap 0.",
       "params": { "batas_perubahan": 0.25, "jendela_hari_bursa": 21 }
     },
     {
       "id": "H-2", "check": "lonjakan_harga", "status": "final",
-      "text": "Klaim \"dari A ke B\" sesuai jika harga awal A pernah tercatat sebagai harga penutupan harian di mana pun dalam jendela data dengan toleransi ±10%, dan harga penutupan terakhir berada dalam ±10% dari klaim akhir B. Harga awal tidak harus menjadi harga terendah jendela. Tanggal harga awal, tanggal harga terakhir, dan jendela data ditampilkan.",
+      "text": "Klaim \"dari harga A jadi B\" sesuai data kalau harga A memang pernah tercatat sebagai harga penutupan di data kami, dan harga penutupan terakhir dekat dengan B. Keduanya boleh meleset paling banyak 10%. Tanggal kedua harga ikut ditampilkan.",
+      "catatan": "Toleransi ±10% berlaku untuk harga awal dan harga akhir. Harga awal boleh di mana pun dalam jendela data dan tidak harus harga terendah. Jendela data ikut ditampilkan.",
       "params": { "toleransi_relatif": 0.10 }
     },
     {
       "id": "S-1", "check": "suspensi", "status": "final",
-      "text": "Temuan jika ada suspensi perdagangan dalam 36 bulan terakhir. Alasan tertulis BEI ditampilkan.",
+      "text": "Dicatat kalau perdagangan saham ini pernah dihentikan sementara oleh bursa (suspensi) dalam 36 bulan terakhir. Alasan resmi dari BEI ikut ditampilkan.",
       "params": { "jendela_bulan": 36 }
     },
     {
       "id": "F-1", "check": "free_float", "status": "final",
-      "text": "Temuan jika porsi saham publik di bawah 15%; modul Radar Free Float aktif. Definisi Sectors tidak persis sama dengan BEI.",
+      "text": "Dicatat kalau porsi saham yang dipegang publik (free float) di bawah 15%. Saham seperti ini ikut masuk Radar Free Float. Definisi free float di Sectors tidak persis sama dengan BEI.",
       "params": { "batas_free_float": 0.15 }
     },
     {
       "id": "R-1", "check": "m_free_float", "status": "final",
-      "text": "Nilai yang harus dilepas = (target − free float) × kapitalisasi pasar. Hari serap = nilai dilepas ÷ rata-rata nilai transaksi harian 60 hari. Tekanan: ringan < 20 hari, sedang 20–60, berat > 60. Ditampilkan maksimal \"> 1.000 hari\".",
+      "text": "Untuk saham yang free float-nya di bawah target BEI, kami perkirakan nilai saham yang harus dilepas ke publik, lalu berapa hari pasar butuh untuk menyerapnya dengan rata-rata transaksi harian 60 hari terakhir. Tekanannya ringan kalau di bawah 20 hari, sedang kalau 20–60 hari, dan berat kalau lebih dari 60 hari. Angka yang sangat besar ditulis \"> 1.000 hari\".",
+      "catatan": "Nilai yang harus dilepas = (target − free float) × kapitalisasi pasar. Hari serap = nilai dilepas ÷ rata-rata nilai transaksi harian 60 hari.",
       "params": { "hari_ringan": 20, "hari_berat": 60, "batas_tampil_hari": 1000, "jendela_likuiditas_hari": 60 }
     },
     {
       "id": "K-1", "check": "m_komoditas", "status": "final",
-      "text": "Klaim \"saham X = saham komoditas Y\" menyesatkan jika porsi pendapatan dari Y di bawah 50%.",
+      "text": "Klaim \"saham X itu saham komoditas Y\", misalnya \"MDKA saham emas\", menyesatkan kalau kurang dari 50% pendapatan perusahaan berasal dari Y.",
       "params": { "batas_porsi_pendapatan": 0.5 }
     },
     {
       "id": "K-2", "check": "m_komoditas", "status": "final",
-      "text": "Hubungan saham–komoditas dari korelasi perubahan bulanan dengan harga pasar World Bank (bukan HBA): lemah < 0,3; sedang 0,3–0,6; cukup kuat ≥ 0,6.",
+      "text": "Kami ukur seberapa sering harga saham bergerak searah dengan harga komoditasnya dari bulan ke bulan, memakai harga dunia dari World Bank. Hubungannya lemah kalau di bawah 0,3, sedang kalau 0,3–0,6, dan cukup kuat mulai 0,6.",
+      "catatan": "Korelasi perubahan bulanan dengan harga pasar World Bank, bukan HBA.",
       "params": { "batas_lemah": 0.3, "batas_kuat": 0.6 }
     },
     {
@@ -114,8 +120,8 @@
     {
       "id": "N-1",
       "check": "analis",
-      "status": "usulan",
-      "text": "Klaim semua rekomendasi buy sesuai hanya jika seluruh rekomendasi buy atau strong buy. Klaim mayoritas/sebagian besar sesuai jika minimal 90% rekomendasi buy atau strong buy. Jumlah rekomendasi bukan jumlah analis; proyeksi EPS dan pendapatan adalah konteks dari analis, bukan prediksi kami.",
+      "status": "final",
+      "text": "Klaim \"semua analis bilang beli\" sesuai data hanya kalau seluruh rekomendasi yang tercatat adalah buy atau strong buy. Klaim \"mayoritas\" atau \"sebagian besar\" sesuai kalau minimal 90%. Yang dihitung jumlah rekomendasi, bukan jumlah analis. Proyeksi laba dan pendapatan dari analis hanya konteks, bukan prediksi kami.",
       "params": {
         "porsi_semua": 1.0,
         "porsi_mayoritas": 0.9
@@ -124,8 +130,9 @@
     {
       "id": "P-1",
       "check": "pemegang",
-      "status": "usulan",
-      "text": "Klaim diserbu ritel diperiksa pada 3–6 observasi bulanan terakhir dalam satu emiten. Sesuai jika porsi ritel lokal naik minimal 1 poin persen dan jumlah pemegang saham naik. Menyesatkan jika hanya satu indikator naik; tidak sesuai jika keduanya tidak naik. Jika salah satu indikator kosong, data tidak cukup. Cakupan saham tercatat dan periode ditampilkan; periode khusus belum didukung.",
+      "status": "final",
+      "text": "Klaim \"diserbu ritel\" kami cek dari data 3–6 bulan terakhir. Sesuai data kalau porsi investor ritel lokal naik minimal 1 poin persen dan jumlah pemegang sahamnya juga naik. Menyesatkan kalau hanya salah satu yang naik, tidak sesuai kalau keduanya tidak naik.",
+      "catatan": "Hanya dalam satu emiten. Jika salah satu indikator kosong, data tidak cukup. Cakupan saham tercatat dan periode ditampilkan; periode khusus belum didukung.",
       "params": {
         "bulan_min": 3,
         "bulan_maks": 6,
@@ -135,8 +142,9 @@
     {
       "id": "Q-1",
       "check": null,
-      "status": "usulan",
-      "text": "Likuiditas rendah dicatat jika rata-rata perkiraan nilai transaksi (harga penutupan × volume) pada 60 hari bursa terakhir di bawah Rp1 miliar per hari. Ini perkiraan, bukan nilai transaksi aktual atau saran investasi. Seluruh 60 observasi harus tersedia.",
+      "status": "final",
+      "text": "Dicatat kalau rata-rata nilai transaksi saham ini selama 60 hari bursa terakhir di bawah Rp1 miliar per hari. Saham yang sepi seperti ini bisa sulit dijual dengan cepat. Nilainya perkiraan dari harga penutupan × volume.",
+      "catatan": "Seluruh 60 observasi harus tersedia. Perkiraan, bukan nilai transaksi aktual atau saran investasi.",
       "params": {
         "jendela_hari_bursa": 60,
         "batas_nilai_harian_rp": 1000000000
@@ -145,8 +153,9 @@
     {
       "id": "C-1",
       "check": null,
-      "status": "usulan",
-      "text": "Aksi korporasi dari snapshot kalender ditampilkan jika tanggal ex berada antara tanggal pemeriksaan dan 90 hari berikutnya. Harga pelaksanaan right issue dibandingkan dengan harga penutupan terbaru jika tersedia; tidak digunakan untuk memberi saran transaksi.",
+      "status": "final",
+      "text": "Menampilkan aksi korporasi, seperti pembagian dividen atau right issue, yang tanggal penentuan haknya (tanggal ex) jatuh dalam 90 hari ke depan. Untuk right issue, harga tebusnya dibandingkan dengan harga penutupan terakhir.",
+      "catatan": "Dari snapshot kalender aksi korporasi. Perbandingan harga right issue hanya jika harga penutupan tersedia; tidak dipakai untuk saran transaksi.",
       "params": {
         "jendela_hari": 90
       }

@@ -60,7 +60,7 @@
       "headline": "82% pendapatan MDKA dari proyek nikel, bukan emas.",
       "reason": "Emas hanya bagian kecil dari pendapatan. Hubungan harga saham dengan emas sedang (0,40); dengan tembaga 0,46. Jan 2023–Agu 2026 MDKA turun 36% saat emas naik 132%.",
       "rule_id": "K-1",
-      "rule_text": "Menyesatkan jika porsi pendapatan dari komoditas yang disebut di bawah 50%.",
+      "rule_text": "Klaim \"saham X itu saham komoditas Y\", misalnya \"MDKA saham emas\", menyesatkan kalau kurang dari 50% pendapatan perusahaan berasal dari Y.",
       "evidence": [
         {
           "label": "Porsi pendapatan proyek nikel 2024",
@@ -123,7 +123,7 @@
       "headline": "\"Pasti ikut naik\" adalah prediksi. Kami tidak menebak harga.",
       "reason": "Data hanya bisa menunjukkan hubungan di masa lalu.",
       "rule_id": "T-1",
-      "rule_text": "Prediksi, opini, dan rumor tanpa angka diberi vonis Tidak bisa dicek.",
+      "rule_text": "Prediksi (\"pasti terbang\"), opini, dan rumor tanpa angka diberi vonis Tidak bisa dicek. Kami tidak menebak.",
       "evidence": [],
       "chart": null,
       "sources": []
