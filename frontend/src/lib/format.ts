@@ -29,6 +29,14 @@ export function tanggal(teks: string): string {
   return FORMAT_TANGGAL.format(d)
 }
 
+const TANGGAL_ISO = /\b\d{4}-\d{2}-\d{2}\b/g
+
+/** Tanggal ISO di dalam kalimat dari backend ("… pada 2025-09-26") → "26 Sep 2025"; rentang "a-b" jadi "a–b". */
+export const tanggalDalamTeks = (teks: string) =>
+  teks
+    .replace(/\b(\d{4}-\d{2}-\d{2})-(\d{4}-\d{2}-\d{2})\b/g, '$1–$2')
+    .replace(TANGGAL_ISO, (iso) => tanggal(iso))
+
 /** Perubahan dengan tanda: 0.7985 → "+79,9%", -0.3579 → "-35,8%". */
 export const persenBertanda = (n: number | null) => (n != null && n > 0 ? `+${fmt(n, 'pct')}` : fmt(n, 'pct'))
 

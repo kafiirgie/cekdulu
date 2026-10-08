@@ -90,7 +90,7 @@ export default function HasilCek({ hasil, teksAsli, teksKlaim }: Props) {
     <section className="pb-6">
       <Ringkasan hasil={hasil} teksAsli={teksAsli} />
       {hasil.claims.length > 0 && (
-        <Seksi judul="Klaim yang diperiksa" sub="Ketuk untuk lihat alasannya">
+        <Seksi judul="Klaim yang diperiksa" sub="Dinilai dengan aturan tertulis">
           <DaftarKartu item={itemKlaim(hasil, teksKlaim)} mulai={1} />
 
         </Seksi>
