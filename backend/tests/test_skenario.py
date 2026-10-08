@@ -82,7 +82,9 @@ def test_antm_analis_dan_konteks_proyeksi():
     perlu_fixture("ANTM", "report")
     hasil = cek("Semua analis rekomendasi buy ANTM")
     assert hasil.claims[0].verdict == "tidak_sesuai"  # 68/70 bukan seluruh rekomendasi.
-    assert any(k.check == "analis" for k in hasil.untold)
+    # Proyeksi analis tampil sebagai konteks di kartu klaim itu sendiri, tidak diulang di "Yang tidak diceritakan".
+    assert any(e.label.startswith("Proyeksi") for e in hasil.claims[0].evidence)
+    assert not any(k.check == "analis" for k in hasil.untold)
 
 
 def test_antm_mayoritas_rekomendasi_buy():

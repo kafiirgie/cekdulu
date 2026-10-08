@@ -1,6 +1,7 @@
 """Pemeriksa modul — "saham X = saham komoditas Y?". Aturan K-1, K-2.  [Lane D]"""
 from __future__ import annotations
 
+import re
 from datetime import date
 from typing import Optional
 
@@ -11,6 +12,11 @@ from ..catalog import param
 from .base import Checker, Outcome, card, periode_bulan_id, persen_id
 
 
+def _tentang_saham(teks: str, ticker: str) -> bool:
+    """K-1 hanya untuk klaim yang mengaitkan saham dengan komoditas ("MDKA saham emas", "saham emas")."""
+    return bool(re.search(rf"\b({re.escape(ticker)}|saham|emiten)\b", teks, re.IGNORECASE))
+
+
 class MKomoditas(Checker):
     id = "m_komoditas"
 
@@ -18,6 +24,14 @@ class MKomoditas(Checker):
         jenis = k.komoditas_disebut(claim.text) if claim else None
         if claim is None or jenis is None:
             return Outcome("tidak_relevan", "Klaim tidak menyebut komoditas.")
+        if not _tentang_saham(claim.text, ticker):
+            # "emas lagi naik" membahas harga emas, bukan "MDKA = saham emas". K-1 menjawab pertanyaan lain,
+            # dan belum ada aturan untuk harga komoditas, jadi jujur: tidak bisa dicek (bukan salinan kartu K-1).
+            return Outcome("tidak_relevan", f"Klaim membahas harga {jenis}, bukan saham {ticker}.", card(
+                verdict="tidak_bisa_dicek", check=self.id, claim=claim,
+                headline=f"\"{claim.text}\" membahas harga {jenis}, bukan saham {ticker}.",
+                reason=(f"Kami belum punya aturan untuk memeriksa naik-turunnya harga {jenis}. Seberapa sering saham "
+                        f"{ticker} bergerak bersama harga {jenis} bisa kamu lihat di modul Saham vs komoditas.")))
         porsi = k.porsi_pendapatan(ticker, jenis)
         terbesar, porsi_besar = k.komoditas_terbesar(ticker)
         menyesatkan = k.aturan_k1(porsi)

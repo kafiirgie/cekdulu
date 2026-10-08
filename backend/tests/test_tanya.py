@@ -612,6 +612,18 @@ def test_jev_mematikan_vonis_target_berangka(monkeypatch):
     assert jev_palsu.dipanggil == 1
 
 
+def test_sinyal_target_tanpa_angka_tidak_mematikan_vonis(monkeypatch):
+    """JEV menilai "rekomendasi buy" sebagai target; tanpa angka itu bukan target harga."""
+    kalimat = "Semua analis rekomendasi buy ANTM"
+    monkeypatch.setattr(provider, "_get_jev_prediksi", lambda: JevTarget(0.6))
+
+    res = provider._normalisasi(
+        KlaimResponse(ticker="ANTM", claims=[Claim(id="c1", text=kalimat, checks=["analis"])]),
+        kalimat, None, used_ai=True, dari_gambar=False)
+
+    assert res.claims[0].checks == ["analis"]
+
+
 def test_jev_membiarkan_klaim_data_berangka(monkeypatch):
     """Klaim data yang benar ("dari 600 ke 14.650") tetap diperiksa."""
     kalimat = "dari 600 ke 14.650"

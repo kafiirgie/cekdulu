@@ -121,6 +121,50 @@ def test_analis_data_kosong_tidak_menjadi_nol(monkeypatch):
         kartu_analis("UJI")
 
 
+def _rating(buy, strong_buy, hold):
+    return [{"jumlah_rekomendasi": str(buy + strong_buy + hold), "buy": str(buy), "strong_buy": str(strong_buy),
+             "hold": str(hold), "sell": "0", "strong_sell": "0", "diperbarui": "2026-09-30"}]
+
+
+@pytest.mark.parametrize("teks,rating,judul", [
+    ("Semua analis rekomendasi buy UJI", (60, 8, 2), "Tidak semua: 68 dari 70 rekomendasi adalah buy atau strong buy."),
+    ("Mayoritas analis bilang buy UJI", (50, 6, 14),
+     "56 dari 70 rekomendasi adalah buy atau strong buy (80%), di bawah batas 90% untuk disebut mayoritas."),
+    ("Semua analis rekomendasi buy UJI", (60, 10, 0), "70 dari 70 rekomendasi adalah buy atau strong buy."),
+])
+def test_analis_judul_menyebut_syarat_yang_gagal(monkeypatch, teks, rating, judul):
+    from app.schemas import Claim
+    monkeypatch.setattr(bahan, "baris", lambda *args: _rating(*rating))
+    assert kartu_analis("UJI", Claim(id="c1", text=teks, checks=["analis"])).headline == judul
+
+
+@pytest.mark.parametrize("teks", ["emas lagi naik", "harga emas dunia naik terus"])
+def test_klaim_harga_komoditas_saja_tidak_dinilai_k1(teks):
+    """'emas lagi naik' bukan klaim 'MDKA = saham emas'; jangan salin vonis K-1 ke klaim ini."""
+    from app.checkers.m_komoditas import MKomoditas
+    from app.schemas import Claim
+    out = MKomoditas().run("MDKA", Claim(id="c2", text=teks, checks=["m_komoditas"]), HARI)
+    assert out.card.verdict == "tidak_bisa_dicek" and out.card.check == "m_komoditas"
+    assert "bukan saham MDKA" in out.card.headline
+
+
+@pytest.mark.parametrize("teks", ["MDKA saham emas", "katanya ini saham emas", "mdka emiten emas"])
+def test_klaim_yang_mengaitkan_saham_dan_komoditas_tetap_dinilai(teks):
+    from app.checkers.m_komoditas import _tentang_saham
+    assert _tentang_saham(teks, "MDKA")
+
+
+def test_kartu_konteks_tidak_mengulang_kartu_klaim(monkeypatch):
+    """Penyedia 'analis' menambah kartu konteks yang sama persis dengan kartu klaim N-1; jangan dobel."""
+    from app.engine import run_cek
+    from app.schemas import CekRequest, Claim
+    monkeypatch.setattr(bahan, "baris", lambda nama, ticker: _rating(60, 8, 2) if nama == "rating_analis" else [])
+    res = run_cek(CekRequest(ticker="UJI", claims=[Claim(id="c1", text="Semua analis rekomendasi buy UJI",
+                                                          checks=["analis"])]), HARI)
+    assert [c.check for c in res.claims] == ["analis"]
+    assert not any(c.check == "analis" for c in res.untold)
+
+
 def test_pemegang_data_kosong_dan_bulan_hilang(monkeypatch):
     asli = bahan.baris("komposisi_pemegang_saham", "BUMI")[-6:]
     rows = [dict(r) for r in asli]
