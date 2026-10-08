@@ -12,9 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from . import quota
 from .ai import guard
 from .ai.jev import get_jev
-from .ai.provider import extract_with_fallback, get_llm
+from .ai.provider import extract_with_fallback
 from .ai.tanya import jawab_tanya
-from .catalog import catalog, kamus
+from .catalog import kamus
 from .config import settings
 from .data import sectors
 from .engine import run_cek

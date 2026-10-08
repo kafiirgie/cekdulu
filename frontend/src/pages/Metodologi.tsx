@@ -20,14 +20,14 @@ const KOLOM_AI = [
       'Membaca teks dan screenshot',
       'Memecah teks jadi klaim dan kode saham',
       'Memilih pemeriksa yang relevan dengan klaim',
-      'Menulis ulang hasil ke bahasa sehari-hari',
-      'Menjawab pertanyaan lanjutan, hanya dari angka di kartu',
+      'Menandai ramalan dan target harga, supaya tidak diberi vonis',
+      'Memilih bagian kartu yang menjawab pertanyaan lanjutan',
     ],
     gaya: 'border-line bg-surface',
   },
   {
     judul: 'AI tidak dipakai untuk',
-    isi: ['Menentukan vonis', 'Menghitung angka', 'Memilih data', 'Memberi saran beli atau jual', 'Menebak harga'],
+    isi: ['Menentukan vonis', 'Menghitung angka', 'Memilih data', 'Menulis kalimat hasil dan jawaban', 'Memberi saran beli atau jual', 'Menebak harga'],
     gaya: 'border-dashed border-line-2 bg-surface-2',
   },
 ]

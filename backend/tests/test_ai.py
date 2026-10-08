@@ -9,8 +9,7 @@ import pytest
 from app.ai import gemini, guard
 from app.ai import provider
 from app.ai.gemini import GeminiLLM
-from app.ai.grounding import jawaban_berdasarkan_kartu
-from app.schemas import Card, Claim, Evidence, KlaimResponse, Source
+from app.schemas import Claim, KlaimResponse
 
 
 class LLMPalsu:
@@ -25,16 +24,10 @@ class LLMPalsu:
             ],
         )
 
-    def answer(self, card, question):
-        return "tidak dipakai"
-
 
 class LLMError:
     def extract_claims(self, text, image_base64, ticker):
         raise TimeoutError("lebih dari 8 detik")
-
-    def answer(self, card, question):
-        raise TimeoutError
 
 
 def test_span_dihitung_ulang_dan_hasil_ai_disaring(monkeypatch):
@@ -153,9 +146,6 @@ class LLMScreenshot:
             used_ai=True,
         )
 
-    def answer(self, card, question):
-        return "tidak dipakai"
-
 
 def test_screenshot_disorot_pada_teks_bacaan_ai(monkeypatch):
     monkeypatch.setattr(provider, "get_llm", lambda: LLMScreenshot())
@@ -183,44 +173,6 @@ def test_screenshot_tanpa_ai_tidak_menebak(monkeypatch):
 def test_teks_biasa_tanpa_source_text(monkeypatch):
     monkeypatch.setattr(provider, "get_llm", lambda: LLMPalsu())
     assert provider.extract_with_fallback("BBRI asing net buy", None, None).source_text is None
-
-
-KARTU = Card(
-    claim_id="c1",
-    verdict="menyesatkan",
-    check="m_komoditas",
-    headline="Pendapatan emas bukan yang utama",
-    reason="Proyek nikel menyumbang 82% pendapatan pada 2024.",
-    rule_id="K-1",
-    rule_text="Menyesatkan jika porsinya di bawah 50%.",
-    evidence=[
-        Evidence(label="Porsi nikel", value=0.82, fmt="pct"),
-        Evidence(label="Korelasi", value=0.25, fmt="num"),
-        Evidence(label="Nilai transaksi", value=9.35e12, fmt="rp"),
-    ],
-    sources=[Source(name="Sectors · get-segments", as_of="2024-12-31")],
-)
-
-
-@pytest.mark.parametrize("jawaban", [
-    "Porsi pendapatan nikel yang tercantum adalah 82% pada 2024.",
-    "Korelasinya tercatat 0,25.",
-    "Nilai transaksi di kartu adalah Rp9,35 T.",
-    "Sumber kartu bertanggal 31 Desember 2024.",
-    "data ini tidak ada di kartu",
-])
-def test_lima_jawaban_wajar_tidak_mengarang_angka(monkeypatch, jawaban):
-    class ResponsePalsu:
-        def raise_for_status(self):
-            return None
-
-        def json(self):
-            return {"candidates": [{"content": {"parts": [{"text": jawaban}]}}]}
-
-    monkeypatch.setattr("app.ai.gemini.httpx.post", lambda *args, **kwargs: ResponsePalsu())
-    hasil = GeminiLLM("key-palsu", "model-palsu").answer(KARTU, "Jelaskan kartu ini")
-    assert hasil == jawaban
-    assert jawaban_berdasarkan_kartu(KARTU, hasil)
 
 
 @pytest.mark.parametrize("pertanyaan", [
@@ -256,18 +208,3 @@ def test_variasi_saran_ditolak(pertanyaan):
 ])
 def test_pertanyaan_data_tidak_ditolak(pertanyaan):
     assert not guard.minta_saran(pertanyaan)
-
-
-def test_jawaban_dengan_angka_asing_ditolak(monkeypatch):
-    class ResponsePalsu:
-        def raise_for_status(self):
-            return None
-
-        def json(self):
-            return {"candidates": [{"content": {"parts": [{
-                "text": "Porsi pendapatannya 99%.",
-            }]}}]}
-
-    monkeypatch.setattr("app.ai.gemini.httpx.post", lambda *args, **kwargs: ResponsePalsu())
-    with pytest.raises(ValueError, match="angka"):
-        GeminiLLM("key-palsu", "model-palsu").answer(KARTU, "Berapa porsinya?")

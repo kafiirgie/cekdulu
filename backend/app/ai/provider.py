@@ -15,7 +15,7 @@ from typing import Optional, Protocol
 
 from ..catalog import known_ids
 from ..config import settings
-from ..schemas import Card, KlaimResponse
+from ..schemas import KlaimResponse
 from . import fallback
 from .jev import get_jev, saring_jev
 
@@ -30,19 +30,6 @@ def _get_jev_prediksi():
         return get_jev()
     except Exception:
         return None
-
-
-def _layak_diperiksa(kalimat: str, jev_pred) -> bool:
-    """False = sapaan/pertanyaan/ngobrol, bukan klaim saham.
-
-    Heuristik `fallback.bukan_klaim` selalu jalan; kalau JEV ada, ia yang memutuskan
-    (hasil ukur: non-klaim maks 0,28 vs klaim min 0,55). JEV mati/gagal -> klaim DIPERTAHANKAN.
-    """
-    if fallback.bukan_klaim(kalimat):
-        return False
-    if jev_pred is None:
-        return True
-    return bool(saring_jev(jev_pred, kalimat)["klaim"])
 
 
 class LLM(Protocol):
