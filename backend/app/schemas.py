@@ -140,6 +140,23 @@ class TanyaResponse(_Model):
     bagian: Optional[BagianJawaban] = None
 
 
+# ---------- /api/ringkas ----------
+class RingkasRequest(_Model):
+    cek_id: str
+
+
+class RingkasItem(_Model):
+    kunci: str  # sama dengan TanyaRequest.card: claim_id, atau u0, u1, … untuk "Yang tidak diceritakan"
+    teks: str
+
+
+class RingkasResponse(_Model):
+    # "Artinya apa?" per kartu: AI menulis ulang fakta kartu, kode memeriksa angka, arah, dan vonisnya.
+    # Kartu yang tidak lolos tidak ikut; FE tetap menampilkan kalimat kode saja.
+    items: list[RingkasItem]
+    used_ai: bool = False
+
+
 # ---------- /api/rules ----------
 class GlosariumItem(_Model):
     key: str

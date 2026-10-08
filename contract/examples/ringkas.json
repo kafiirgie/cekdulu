@@ -1,0 +1,15 @@
+{
+  "_catatan": "CONTOH bentuk. Teks asli ditulis ulang AI dari fakta kartu cek_res_mdka.json lalu diperiksa kode.",
+  "req": {
+    "cek_id": "cek_contoh_mdka"
+  },
+  "res": {
+    "items": [
+      {
+        "kunci": "c1",
+        "teks": "Sebagian besar pendapatan MDKA datang dari nikel, bukan emas. Jadi harga emas yang naik tidak otomatis menjadi pendapatan besar untuk MDKA."
+      }
+    ],
+    "used_ai": true
+  }
+}
