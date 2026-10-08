@@ -46,6 +46,11 @@ def _tidak_bisa_dicek(claim: Claim, alasan: str, rule_id: Optional[str] = "T-1")
                 rule_id=rule_id, rule_text=rule(rule_id)["text"] if rule_id else None)
 
 
+def _sudah_ada(kartu: Card, cards: list[Card]) -> bool:
+    """Kartu "Yang tidak diceritakan" yang isinya sudah ada di kartu klaim (pemeriksa + aturan sama) tidak diulang."""
+    return any(k.check == kartu.check and k.rule_id == kartu.rule_id for k in cards)
+
+
 def ringkasan(claims: list[Card], n_untold: int) -> str:
     if not claims:
         teks = "Kami menjalankan 8 pemeriksaan standar untuk saham ini."
@@ -94,12 +99,11 @@ def run_cek(req: CekRequest, today: Optional[date] = None) -> CekResponse:
         form.append(FormRow(check="m_free_float", status="modul_aktif", why="Free float di bawah 15%."))
 
     # 4) Temuan aturan lain tetap tampil (mis. D-2 saat klaim yield memakai D-1).
-    untold = [o.card for cid, o in std_out.items() if o.status == "temuan" and o.card
-              and not any(k.check == cid and k.rule_id == o.card.rule_id for k in cards)]
+    untold = [o.card for o in std_out.values() if o.status == "temuan" and o.card and not _sudah_ada(o.card, cards)]
     for pid, provider in PROVIDERS.items():
         try:
             k = provider(ticker, req.claims, today)
-            if k is not None:
+            if k is not None and not _sudah_ada(k, cards):
                 untold.append(k)
         except DataUnavailable:
             pass

@@ -5,7 +5,7 @@ from ..catalog import param
 from ..data import bahan
 from ..data.sectors import DataUnavailable
 from ..schemas import Claim, Evidence, Source
-from .base import Checker, Outcome, card
+from .base import Checker, Outcome, card, persen_id
 
 
 def aturan_n1(porsi_buy: float, semua: bool) -> bool:
@@ -32,12 +32,18 @@ def kartu_analis(ticker: str, claim: Claim | None = None):
                 raise DataUnavailable("Tahun proyeksi kosong")
             ev.append(Evidence(label=f"{label} {r['tahun_proyeksi']} (analis)", value=nilai, fmt="pct"))
     verdict = "info"
+    headline = f"{buy:.0f} dari {jumlah:.0f} rekomendasi adalah buy atau strong buy."
     if claim:
         import re
         semua = bool(re.search(r"\b(semua|seluruh|all)\b", claim.text.lower()))
         verdict = "sesuai" if aturan_n1(buy / jumlah, semua) else "tidak_sesuai"
+        if verdict == "tidak_sesuai":
+            # Judul menyebut syarat yang tidak terpenuhi, supaya "68 dari 70" tidak terbaca sebagai pembenaran.
+            headline = ("Tidak semua: " + headline if semua else
+                        f"{headline[:-1]} ({persen_id(buy / jumlah, 0)}), di bawah batas "
+                        f"{persen_id(param('N-1', 'porsi_mayoritas'), 0)} untuk disebut mayoritas.")
     return card(verdict=verdict, check="analis", rule_id="N-1", claim=claim,
-                headline=f"{buy:.0f} dari {jumlah:.0f} rekomendasi adalah buy atau strong buy.",
+                headline=headline,
                 reason="Jumlah rekomendasi bukan jumlah analis. Proyeksi adalah estimasi analis yang dilaporkan Sectors, bukan prediksi atau saran kami.",
                 evidence=ev, sources=[Source(name="Sectors · report future", as_of=r["diperbarui"])])
 

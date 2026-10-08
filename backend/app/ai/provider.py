@@ -113,8 +113,11 @@ def _normalisasi(res: KlaimResponse, teks: Optional[str], ticker: Optional[str],
         if fallback.prediksi_tanpa_angka(klaim.text) or putus["prediksi"]:
             checks = []
         # Target/prediksi harga berangka juga tidak boleh diberi vonis (T-1), walau
-        # angkanya terlihat seperti klaim "dari A ke B".
-        if checks and putus["target"]:
+        # angkanya terlihat seperti klaim "dari A ke B". Target harga selalu berangka
+        # ("TP 20rb", "naik ke 20.000"); tanpa angka, sinyal target JEV salah baca
+        # ("Semua analis rekomendasi buy ANTM" dinilai target), dan prediksi tanpa angka
+        # sudah ditangkap pemeriksaan prediksi di atas.
+        if checks and putus["target"] and re.search(r"\d", klaim.text):
             checks = []
         klaim_bersih.append(klaim.model_copy(update={
             "id": f"c{len(klaim_bersih) + 1}",
