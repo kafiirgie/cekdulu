@@ -6,7 +6,7 @@ from typing import Optional
 
 from ..catalog import param
 from ..data import normal
-from ..schemas import Claim, Evidence, Source
+from ..schemas import Chart, ChartSeries, Claim, Evidence, Source
 from .base import Checker, Outcome, angka_rupiah, card, persen_id, rp, tanggal_id
 
 
@@ -61,6 +61,20 @@ def _kalimat_h2(dari: float, ke: float, awal: normal.HargaHarian, akhir: normal.
             f"{akhir.tanggal} berbeda lebih dari {persen_id(tol, 0)} dari klaim. {jendela}")
 
 
+# Garis setahun cukup ~120 titik; lebih dari itu hanya memperbesar respons tanpa mengubah bentuknya.
+_TITIK_MAKS = 120
+
+
+def _grafik_harga(urut: list[normal.HargaHarian]) -> Chart:
+    """Garis harga penutupan (urut tanggal); titik terakhir selalu ikut supaya ujung grafik = harga terakhir."""
+    langkah = max(1, -(-len(urut) // _TITIK_MAKS))
+    titik = urut[::langkah]
+    if titik[-1] is not urut[-1]:
+        titik.append(urut[-1])
+    return Chart(type="line", series=[ChartSeries(name="Harga penutupan harian", fmt="rp",
+                                                  points=[(str(x.tanggal), x.close) for x in titik])])
+
+
 class LonjakanHarga(Checker):
     id = "lonjakan_harga"
 
@@ -85,6 +99,7 @@ class LonjakanHarga(Checker):
                                   Evidence(label="Harga terakhir", value=akhir.close, fmt="rp")],
                         sources=[Source(name="Sectors · harga harian · harga awal", as_of=str(awal.tanggal)),
                                  Source(name="Sectors · harga harian · harga terakhir", as_of=str(akhir.tanggal))],
+                        chart=_grafik_harga(sorted(harga, key=lambda x: x.tanggal)),
                     ),
                 )
 
@@ -96,8 +111,11 @@ class LonjakanHarga(Checker):
         teks = f"Harga pernah {'naik' if ubah > 0 else 'turun'} {persen_id(abs(ubah), 0)} hanya dalam {n} hari bursa (sekitar sebulan), sampai {tanggal_id(tgl)}."
         alasan = (f"Kami mencatat setiap perubahan harga lebih dari {persen_id(param('H-1', 'batas_perubahan'), 0)} dalam {n} hari bursa. "
                   "Lompatan di hari pembagian dividen, pemecahan saham, atau right issue tidak ikut dihitung.")
+        urut = sorted(harga, key=lambda x: x.tanggal)
+        akhir_jendela = next(i for i, x in enumerate(urut) if x.tanggal == tgl)
         return Outcome(
             "temuan", teks,
             card(verdict="info", check=self.id, rule_id="H-1", headline=teks, reason=alasan,
-                 evidence=[Evidence(label=f"Perubahan {n} hari bursa", value=ubah, fmt="pct")], sources=src),
+                 evidence=[Evidence(label=f"Perubahan {n} hari bursa", value=ubah, fmt="pct")], sources=src,
+                 chart=_grafik_harga(urut[max(0, akhir_jendela - n):akhir_jendela + 1])),
         )

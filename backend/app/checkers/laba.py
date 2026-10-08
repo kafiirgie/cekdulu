@@ -10,7 +10,7 @@ from typing import Optional
 
 from ..catalog import param
 from ..data import normal
-from ..schemas import Claim, Evidence, Source
+from ..schemas import Chart, ChartSeries, Claim, Evidence, Source
 from .base import Checker, Outcome, angka_persen, card, persen_id
 
 
@@ -44,6 +44,12 @@ def aturan_l2(klaim: float, tren: int) -> bool:
     return tren != 0 and (klaim > 0) != (tren > 0)
 
 
+def _label_kuartal(periode: str) -> str:
+    """Tanggal akhir kuartal '2025-06-30' → 'Q2 2025' (cukup pendek untuk sumbu grafik)."""
+    tahun, bulan = int(periode[:4]), int(periode[5:7])
+    return f"Q{(bulan - 1) // 3 + 1} {tahun}"
+
+
 def _arah(x: float) -> str:
     return "naik" if x > 0 else "turun" if x < 0 else "tetap"
 
@@ -56,8 +62,10 @@ class Laba(Checker):
         yoy, tren = pertumbuhan_yoy(k), arah_tren(k)
         src = [Source(name="Sectors · laporan kuartalan", as_of=k[-1].periode if k else None)]
         ev = [Evidence(label=f"Laba bersih {x.periode}", value=x.laba_bersih, fmt="rp") for x in k[-4:]]
-
         n = param("L-2", "jumlah_kuartal")
+        grafik = Chart(type="bar", series=[ChartSeries(name=f"Laba bersih {n} kuartal terakhir", fmt="rp",
+                                                       points=[(_label_kuartal(x.periode), x.laba_bersih) for x in k[-n:]])])
+
         if claim is not None and (klaim := angka_persen(claim.text)) is not None and yoy is not None:
             banding = (f"Kami hitung ulang dari laporan keuangan: laba kuartal yang berakhir {k[-1].periode} "
                        f"dibanding kuartal yang sama tahun lalu (berakhir {k[-5].periode}).")
@@ -75,12 +83,12 @@ class Laba(Checker):
                 h = f"Hitungan kami: laba kuartal terakhir {_arah(yoy)} {persen_id(abs(yoy), 0)}, bukan {_arah(klaim)} {persen_id(abs(klaim), 0)} seperti di klaim."
                 alasan = f"{banding} Bedanya dengan angka di klaim lebih dari {tol}."
             return Outcome("aman", h, card(verdict=v, check=self.id, rule_id=rid, claim=claim, headline=h,
-                                            reason=alasan, evidence=ev, sources=src))
+                                            reason=alasan, evidence=ev, sources=src, chart=grafik))
 
         if tren < 0:
             return Outcome("temuan", "Laba turun dalam tren 4 kuartal terakhir.",
                            card(verdict="info", check=self.id, rule_id="L-2",
                                 headline=f"Laba cenderung turun dalam {n} kuartal terakhir.",
                                 reason=f"Dari {k[-n:][0].periode} sampai {k[-1].periode}, laba bersih lebih sering turun daripada naik.",
-                                evidence=ev, sources=src))
+                                evidence=ev, sources=src, chart=grafik))
         return Outcome("aman", "Tren laba 4 kuartal tidak turun.")

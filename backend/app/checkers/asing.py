@@ -9,7 +9,7 @@ from typing import Optional
 from ..catalog import param
 from ..data import normal
 from ..data.sectors import DataUnavailable
-from ..schemas import Claim, Evidence, Source
+from ..schemas import Chart, ChartSeries, Claim, Evidence, Source
 from .base import Checker, Outcome, card, persen_id, rp_kata
 
 _KATA_JUAL = ("jual", "kabur", "keluar", "lepas", "buang", "turun", "berkurang")
@@ -91,6 +91,7 @@ class Asing(Checker):
         arah_harian = perubahan = None
         konteks = []
         fakta_harian = fakta_bulanan = ""
+        grafik_harian = grafik_bulanan = None
         try:
             aliran = [r for r in normal.aliran_asing(ticker) if r.tanggal <= today]
             n_hari = param("A-1", "jendela_hari_bursa")
@@ -110,6 +111,9 @@ class Asing(Checker):
             ev.extend([Evidence(label=f"Aliran bersih asing {n_hari} hari bursa", value=total, fmt="rp"),
                        Evidence(label="Porsi hari masuk bersih", value=porsi, fmt="pct")])
             src.append(Source(name=f"Sectors · foreign flow · {aliran[0].tanggal}–{aliran[-1].tanggal}", as_of=str(aliran[-1].tanggal)))
+            grafik_harian = Chart(type="bar", series=[ChartSeries(
+                name="Beli bersih asing per hari (minus = jual bersih)", fmt="rp",
+                points=[(str(r.tanggal), r.bersih_rp) for r in aliran])])
         except DataUnavailable:
             if periode == "harian":
                 raise
@@ -134,6 +138,9 @@ class Asing(Checker):
                        Evidence(label="Perubahan porsi asing", value=perubahan, fmt="pct"),
                        Evidence(label="Perubahan porsi ritel lokal", value=perubahan_ritel, fmt="pct")])
             src.append(Source(name="Sectors · shareholders composition", as_of=str(komposisi[-1].tanggal)))
+            grafik_bulanan = Chart(type="line", series=[ChartSeries(
+                name="Porsi kepemilikan asing per bulan", fmt="pct",
+                points=[(str(r.tanggal), r.porsi_asing) for r in komposisi])])
         except DataUnavailable:
             if periode == "bulanan":
                 raise
@@ -156,4 +163,5 @@ class Asing(Checker):
         h = (f"Tergantung jendela waktu: {fakta_harian}, tapi {fakta_bulanan}." if konflik
              else _judul_asing(fakta_bulanan if pakai_bulanan else fakta_harian, berlawanan=arah == -arah_klaim))
         return Outcome("aman", h, card(verdict=verdict, check=self.id, rule_id="A-3" if konflik else "A-2" if pakai_bulanan else "A-1",
-                                        claim=claim, headline=h, reason=" ".join(konteks), evidence=ev, sources=src))
+                                        claim=claim, headline=h, reason=" ".join(konteks), evidence=ev, sources=src,
+                                        chart=grafik_bulanan if pakai_bulanan else grafik_harian))
