@@ -17,6 +17,15 @@ def test_h2_sesuai_menyebut_kedua_harga():
     judul, alasan = _kalimat_h2(600, 14000, AWAL, AKHIR, MULAI, ok=True)
     assert judul == "Harga Rp600 memang pernah tercatat, dan harga terakhirnya Rp14.650."
     assert "dekat dengan Rp14.000 yang disebut di klaim" in alasan and "2025-09-26–2026-09-29" in alasan
+    assert "lalu naik ke Rp14.650 pada 2026-09-29" in alasan
+
+
+def test_h2_arah_hanya_ditulis_kalau_harga_awal_lebih_dulu():
+    sesudah = normal.HargaHarian(date(2026, 10, 1), 600)
+    _, alasan = _kalimat_h2(600, 14000, sesudah, AKHIR, MULAI, ok=True)
+    assert "naik" not in alasan and "turun" not in alasan
+    _, alasan = _kalimat_h2(600, 500, AWAL, normal.HargaHarian(date(2026, 9, 29), 480), MULAI, ok=True)
+    assert "lalu turun ke Rp480" in alasan
 
 
 def test_h2_tidak_sesuai_menyebut_bagian_yang_meleset():
