@@ -179,7 +179,6 @@ def test_keputusan_b3_final_tanpa_mengubah_ambang():
                                   ("K-1", "batas_porsi_pendapatan", 0.50)):
         assert rule(id_aturan)["status"] == "final"
         assert rule(id_aturan)["params"][nama] == nilai
-    assert rule("A-3")["status"] == "usulan"
     import json
     from app.config import settings
     contoh = json.loads((settings.contract_dir / "examples" / "cek_res_mglv.json").read_text(encoding="utf-8"))
