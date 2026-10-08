@@ -1,4 +1,4 @@
-// Layar 11 — Metodologi: vonis, pemeriksa + aturan (rules.json lewat api.rules()), peran AI, batas, kartu konteks, sumber data.
+// Layar 11 — Metodologi: alasan aturan, vonis, pemeriksa + aturan (rules.json lewat api.rules()), peran AI, batas, kartu konteks, sumber data.
 import { useEffect, useState } from 'react'
 import { Pil } from '@/components/beranda/Bagian'
 import DaftarAturan from '@/components/DaftarAturan'
@@ -32,6 +32,26 @@ const KOLOM_AI = [
   },
 ]
 
+// Alasan vonis memakai aturan tertulis, bukan jawaban AI (FINAL_PLAN §5).
+const ALASAN_ATURAN = [
+  {
+    judul: 'Angka tidak dikarang',
+    isi: 'AI bisa menyebut angka yang terdengar yakin padahal salah. Di sini setiap angka dihitung dari data Sectors dan ditampilkan bersama sumber dan tanggalnya.',
+  },
+  {
+    judul: 'Tidak terbawa emosi',
+    isi: 'Pesan yang heboh, penuh emoji, atau bikin FOMO tidak membuat klaim jadi lebih benar. Aturan hanya membaca isi klaim, lalu mencocokkannya dengan data.',
+  },
+  {
+    judul: 'Sama untuk semua saham',
+    isi: 'Batas angkanya sama untuk saham mana pun dan siapa pun yang mengirim. Data dan klaim yang sama selalu menghasilkan vonis yang sama.',
+  },
+  {
+    judul: 'Bisa kamu periksa sendiri',
+    isi: 'Semua aturan tertulis di halaman ini. Kartu hasil menyebut kode aturan yang dipakai, jadi kalau tidak setuju, kamu tahu bagian mana yang dipersoalkan.',
+  },
+]
+
 // Tanggal snapshot ikut data/bahan_produk/KAMUS_DATA.md; perbarui bersama datanya.
 const SUMBER_LUAR = [
   { nama: 'World Bank Pink Sheet (CC BY)', isi: 'harga komoditas dunia bulanan, diperbarui 2 Sep 2026' },
@@ -47,6 +67,19 @@ function LimaVonis() {
         <li key={v} className="grid grid-cols-[8.5rem_1fr] items-center gap-3 rounded-lg border border-line bg-surface p-3 shadow-soft">
           <Stamp verdict={v} miring={-4} className="justify-self-start text-xs" />
           <span className="text-sm text-ink-2">{VERDICT_ARTI[v]}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function AlasanAturan() {
+  return (
+    <ul className="m-0 grid list-none gap-2.5 p-0 sm:grid-cols-2">
+      {ALASAN_ATURAN.map(({ judul, isi }) => (
+        <li key={judul} className="rounded-lg border border-line bg-surface p-3.5 shadow-soft">
+          <h3 className="m-0 mb-1 text-sm font-bold">{judul}</h3>
+          <p className="m-0 text-sm text-ink-2">{isi}</p>
         </li>
       ))}
     </ul>
@@ -78,6 +111,10 @@ function DaftarPemeriksa({ cat, pesan }: { cat: Catalog | null; pesan: string | 
   if (!cat) return <p className="m-0 text-sm text-ink-2">{pesan ?? 'Memuat aturan…'}</p>
   return (
     <>
+      <p className="m-0 mb-3 text-sm text-ink-2">
+        Setiap aturan punya kode, mis. L-1 untuk aturan laba. Kode yang sama muncul di kartu hasil, jadi kamu bisa
+        melihat aturan mana yang menentukan vonisnya.
+      </p>
       <GrupPemeriksa cat={cat} standar />
       <GrupPemeriksa cat={cat} standar={false} />
     </>
@@ -135,14 +172,23 @@ export default function Metodologi() {
       <div className="mt-3.5">
         <Pil>Metodologi</Pil>
       </div>
-      <JudulLayar judul="Bagaimana cek dulu. memeriksa">
+      <JudulLayar
+        judul={
+          <>
+            Bagaimana <span className="stabilo whitespace-nowrap">cek dulu.</span> memeriksa
+          </>
+        }
+      >
         Setiap cek menjalankan pemeriksaan yang sama, dengan urutan yang sama. Vonis ditentukan oleh aturan tertulis di
         bawah ini dan dihitung dari data, bukan dipilih oleh AI.
       </JudulLayar>
+      <Seksi judul="Kenapa aturan, bukan AI?">
+        <AlasanAturan />
+      </Seksi>
       <Seksi judul="Lima vonis">
         <LimaVonis />
       </Seksi>
-      <Seksi judul="Pemeriksa dan aturannya" sub="usulan = angka sementara">
+      <Seksi judul="Pemeriksa dan aturannya">
         <DaftarPemeriksa cat={cat} pesan={pesan} />
       </Seksi>
       <Seksi judul="Peran AI" sub="aturan yang memutuskan">

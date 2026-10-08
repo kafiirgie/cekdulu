@@ -6,8 +6,8 @@ export default function DaftarAturan({ aturan }: { aturan: Rule[] }) {
   return (
     <ul className="m-0 grid list-none gap-2 p-0">
       {aturan.map((r) => (
-        <li key={r.id} className="rounded-[10px] border border-dashed border-line-2 bg-surface-2 px-3.5 py-3 font-mono text-[13px] leading-relaxed">
-          <b>{r.id}</b>
+        <li key={r.id} className="rounded-[10px] border border-dashed border-line-2 bg-surface-2 px-3.5 py-3 text-sm leading-relaxed">
+          <span className="font-mono text-[11.5px] font-semibold text-muted-foreground">Aturan {r.id}</span>
           {r.status === 'usulan' && <span className="ml-2 text-[11px] font-semibold text-menyesatkan">usulan</span>}
           <span className="mt-1 block text-ink">{r.text}</span>
         </li>
